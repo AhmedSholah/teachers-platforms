@@ -1,0 +1,142 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/*
+ * Design tokens
+ * -------------
+ * - "Cairo" is an Arabic-first typeface resolved & optimized by Nuxt Fonts.
+ * - "brand" is our single strong primary color (a modern, refined indigo).
+ * - `--ui-radius` (see :root below) softens the entire radius scale of every
+ *   Nuxt UI component for a premium, contemporary SaaS feel.
+ */
+@theme static {
+  --font-sans: "Cairo", "Noto Sans Arabic", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: oklch(0.962 0.018 272.314);
+  --color-brand-100: oklch(0.93 0.034 272.788);
+  --color-brand-200: oklch(0.87 0.065 274.039);
+  --color-brand-300: oklch(0.785 0.115 274.713);
+  --color-brand-400: oklch(0.673 0.182 276.935);
+  --color-brand-500: oklch(0.585 0.233 277.117);
+  --color-brand-600: oklch(0.511 0.262 276.966);
+  --color-brand-700: oklch(0.457 0.24 277.023);
+  --color-brand-800: oklch(0.398 0.195 277.086);
+  --color-brand-900: oklch(0.359 0.144 278.697);
+  --color-brand-950: oklch(0.257 0.09 281.288);
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+:root {
+  /* Softens the entire radius scale of every Nuxt UI component
+     (rounded-md -> 7.5px, rounded-lg -> 10px, rounded-xl -> 15px, ...)
+     for a premium, contemporary SaaS feel. Declared unlayered on purpose:
+     Nuxt UI re-declares `--ui-radius` inside @layer theme, and unlayered
+     declarations always win the cascade. */
+  --ui-radius: 0.3125rem;
+
+  scroll-behavior: smooth;
+}
+
+[id] {
+  scroll-margin-top: calc(var(--ui-header-height) + 1.25rem);
+}
+
+::selection {
+  color: var(--color-brand-950);
+  background-color: var(--color-brand-100);
+}
+
+/* ==========================================================================
+   Decorative backgrounds
+   ========================================================================== */
+
+/* Subtle dotted pattern, used masked behind the hero */
+.bg-dots {
+  background-image: radial-gradient(circle, var(--color-brand-300) 1.2px, transparent 1.4px);
+  background-size: 24px 24px;
+}
+
+/* Faint grid lines for tinted cards (CTA gradient, mockup banner) */
+.bg-grid-light {
+  background-image:
+    linear-gradient(to left, rgb(255 255 255 / 0.08) 1px, transparent 1px),
+    linear-gradient(to top, rgb(255 255 255 / 0.08) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* ==========================================================================
+   Entrance animations
+   ========================================================================== */
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    translate: 0 22px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -9px;
+  }
+}
+
+@utility animate-hero-in {
+  /* Staggered entrance for above-the-fold content (fill mode "both" keeps
+     elements hidden during their animation-delay for a smooth stagger). */
+  animation: hero-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility animate-float {
+  animation: float-y 7s ease-in-out infinite;
+}
+
+@utility animate-float-slow {
+  animation: float-y 9s ease-in-out 1.5s infinite;
+}
+
+/* Scroll reveal (adds progressive entrance for below-the-fold content).
+   The v-reveal plugin sets .reveal on mount, .is-in once visible. */
+.reveal {
+  opacity: 0;
+  translate: 0 var(--reveal-y, 18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    translate 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal.is-in {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    scroll-behavior: auto;
+  }
+
+  .animate-hero-in,
+  .animate-float,
+  .animate-float-slow {
+    animation: none;
+  }
+
+  .reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+}

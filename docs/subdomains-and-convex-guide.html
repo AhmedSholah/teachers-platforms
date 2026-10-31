@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دليل معمارية النطاقات الفرعية و Convex — منصتك</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #eef2ff;
+      --primary-dark: #3730a3;
+      --neutral-900: #0f172a;
+      --neutral-800: #1e293b;
+      --neutral-700: #334155;
+      --neutral-600: #475569;
+      --neutral-200: #e2e8f0;
+      --neutral-100: #f1f5f9;
+      --neutral-50: #f8fafc;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-light: #fffbeb;
+      --border-radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--neutral-50);
+      color: var(--neutral-800);
+      line-height: 1.8;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 2.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px border var(--neutral-200);
+    }
+
+    header {
+      border-bottom: 2px solid var(--neutral-100);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--neutral-900);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--neutral-600);
+      font-size: 1.05rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+      margin-top: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.45rem;
+      color: var(--neutral-900);
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--neutral-200);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      color: var(--neutral-800);
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p, li {
+      color: var(--neutral-700);
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    ul, ol {
+      padding-right: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    pre {
+      direction: ltr;
+      text-align: left;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+
+    code {
+      direction: ltr;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: var(--neutral-100);
+      color: var(--primary-dark);
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.9em;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .card {
+      background: var(--neutral-50);
+      border: 1px solid var(--neutral-200);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card.alert-success {
+      background: var(--success-light);
+      border-color: #a7f3d0;
+      color: #065f46;
+    }
+
+    .card.alert-warning {
+      background: var(--warning-light);
+      border-color: #fde68a;
+      color: #92400e;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      border: 1px solid var(--neutral-200);
+      padding: 0.75rem 1rem;
+      text-align: right;
+    }
+
+    th {
+      background: var(--neutral-100);
+      color: var(--neutral-900);
+      font-weight: 600;
+    }
+
+    .toc {
+      background: var(--primary-light);
+      border: 1px solid #c7d2fe;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .toc h4 {
+      color: var(--primary-dark);
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .toc a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    .toc li {
+      margin-bottom: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>📚 معمارية المنصة: النطاقات الفرعية (Subdomains) و Convex</h1>
+      <p class="subtitle">ملخص وتوثيق شامل لحلول التوجيه، التوليد الثابت (ISG)، التحديث اللحظي (Live Sync)، وقواعد الأمان في Nuxt 4.</p>
+      <span class="badge">Nuxt 4 + Convex DB + Tailwind v4</span>
+    </header>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+      <h4>📑 فهرس المحتويات</h4>
+      <ol>
+        <li><a href="#section-1">1. التوجيه بالنطاق الفرعي واستخراج الـ Subdomain بأمان</a></li>
+        <li><a href="#section-2">2. تنظيم الصفحات بملفات منفصلة دون تكرار v-if/else (عبر router.options.ts)</a></li>
+        <li><a href="#section-3">3. معمارية التوليد الهجين (SSG للصفحة الرئيسية + SPA للداشبورد + ISG للمعلمين)</a></li>
+        <li><a href="#section-4">4. تفريغ الكاش لحظياً (Cache Busting) عند تحديث بيانات Convex</a></li>
+        <li><a href="#section-5">5. المعادلة الذهبية (SEO 100% + سرعة فائقة + تحديث مباشر Live Sync)</a></li>
+        <li><a href="#section-6">6. الحل الجاهز الرسمي: مكتبة nuxt-convex</a></li>
+      </ol>
+    </div>
+
+    <!-- Section 1 -->
+    <section id="section-1">
+      <h2>1. التوجيه بالنطاق الفرعي واستخراج الـ Subdomain بأمان</h2>
+      <p>لاستخراج اسم المعلم من الرابط (سواء في السيرفر SSR أو المتصفح Client)، تم إنشاء Composable محمي ضد هجمات الـ Host Header Injection واختراق المسارات:</p>
+      
+      <pre><code>// app/composables/useSubdomain.ts
+export const RESERVED_SUBDOMAINS = new Set([
+  'www', 'admin', 'administrator', 'api', 'app', 'auth', 
+  'billing', 'cdn', 'dashboard', 'dev', 'login', 'signup', 'status'
+])
+
+const SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
+
+export const useSubdomain = () => {
+  const url = useRequestURL()
+  const route = useRoute()
+
+  return computed&lt;string | null&gt;(() => {
+    let candidate: string | null = null
+
+    // تجربة سريعة في بيئة التطوير عبر: ?subdomain=ahmed
+    if (import.meta.dev) {
+      const q = route.query?.subdomain || route.query?.tenant
+      if (typeof q === 'string' && q.trim()) candidate = q.trim().toLowerCase()
+    }
+
+    if (!candidate) {
+      const host = url.hostname.toLowerCase()
+      if (/^(\d{1,3}\.){3}\d{1,3}$/.test(host) || host === '::1') return null
+
+      // Localhost: teacher1.localhost
+      if (host.endsWith('localhost')) {
+        const parts = host.split('.')
+        if (parts.length > 1 && parts[0] !== 'localhost') candidate = parts[0]
+      } 
+      // الإنتاج: teacher1.platform.com
+      else {
+        const parts = host.split('.')
+        if (parts.length >= 3) candidate = parts[0]
+      }
+    }
+
+    if (!candidate) return null
+    if (!SUBDOMAIN_REGEX.test(candidate)) return null
+    if (RESERVED_SUBDOMAINS.has(candidate)) return null
+
+    return candidate
+  })
+}</code></pre>
+
+      <div class="card alert-warning">
+        <strong>⚠️ قواعد أمان هامة:</strong>
+        <ul>
+          <li><strong>فحص قاعدة البيانات:</strong> تأكد دائماً أن المعلم موجود في الـ DB وإلا ارمِ خطأ 404.</li>
+          <li><strong>عزل الـ Cookies:</strong> لا تضع الـ Cookies بنطاق عام <code>Domain=.platform.com</code> حتى لا تشارك الجلسات بين منصات المعلمين المختلفة.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="section-2">
+      <h2>2. تنظيم الصفحات بملفات منفصلة دون تكرار v-if/else</h2>
+      <p>بدلاً من كتابة <code>v-if="subdomain"</code> داخل كل صفحة، نستخدم <strong>`app/router.options.ts`</strong> لتقسيم مجلدات الصفحات في Nuxt:</p>
+
+      <pre><code>app/pages/
+├── main/                       &lt;-- النطاق الرئيسي فقط (platform.com)
+│   ├── index.vue               --> platform.com/ (صفحة التسويق)
+│   └── dashboard.vue           --> platform.com/dashboard (لوحة إدارة المعلم)
+│
+├── tenant/                     &lt;-- النطاقات الفرعية فقط (teacher.platform.com)
+│   ├── index.vue               --> teacher.platform.com/ (بوابة كورسات الطلاب)
+│   └── dashboard.vue           --> teacher.platform.com/dashboard (لوحة متابعة الطالب)
+│
+└── login.vue                   &lt;-- صفحة مشتركة تعمل في كلا النطاقين!</code></pre>
+
+      <p>الكود المسؤول عن إعادة كتابة المسارات في <code>app/router.options.ts</code>:</p>
+      <pre><code>// app/router.options.ts
+import type { RouterConfig } from '@nuxt/schema'
+
+export default &lt;RouterConfig&gt;{
+  routes: (_routes) => {
+    let isSub = false
+
+    if (import.meta.server) {
+      const event = useRequestEvent()
+      const host = event ? getRequestHost(event).toLowerCase() : ''
+      isSub = host.includes('.') && !host.startsWith('www')
+    } else {
+      isSub = window.location.hostname.includes('.') && !window.location.hostname.startsWith('www')
+    }
+
+    const shared = _routes.filter(r => !r.path.startsWith('/main') && !r.path.startsWith('/tenant'))
+
+    if (isSub) {
+      const tenantRoutes = _routes
+        .filter(r => r.path.startsWith('/tenant'))
+        .map(r => ({ ...r, path: r.path.replace(/^\/tenant/, '') || '/' }))
+      return [...tenantRoutes, ...shared]
+    } else {
+      const mainRoutes = _routes
+        .filter(r => r.path.startsWith('/main'))
+        .map(r => ({ ...r, path: r.path.replace(/^\/main/, '') || '/' }))
+      return [...mainRoutes, ...shared]
+    }
+  }
+}</code></pre>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="section-3">
+      <h2>3. معمارية التوليد الهجين (Hybrid Rendering)</h2>
+      <p>في <code>nuxt.config.ts</code> نقوم بتحديد طريقة عمل كل جزء في المنصة:</p>
+
+      <pre><code>// nuxt.config.ts
+export default defineNuxtConfig({
+  routeRules: {
+    // 1. الصفحة الرئيسية: SSG (توليد مسبق لسرعة خارقة)
+    '/': { prerender: true },
+
+    // 2. صفحات المعلمين: ISG / SWR (توليد عند أول طلب وكاش لمدة ساعة)
+    '/tenant/**': { swr: 3600 },
+
+    // 3. لوحات التحكم: SPA كاملة (بدون SSR لتخفيف الحمل وسرعة التفاعل)
+    '/dashboard/**': { ssr: false },
+    '/login': { ssr: false }
+  }
+})</code></pre>
+    </section>
+
+    <!-- Section 4 -->
+    <section id="section-4">
+      <h2>4. تفريغ الكاش لحظياً (Cache Busting) مع Convex</h2>
+      <p>عندما يقوم المعلم بتعديل كورس في Convex، نرسل Webhook لحذف النسخة المخبأة (Cache) في السيرفر:</p>
+
+      <h3>1. إنشاء مسار التفريغ في Nuxt:</h3>
+      <pre><code>// server/api/revalidate.post.ts
+export default defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const config = useRuntimeConfig()
+
+  if (getHeader(event, 'x-revalidate-secret') !== config.revalidateSecret) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  }
+
+  const { subdomain } = body
+  const storage = useStorage('cache')
+  const keys = await storage.getKeys('nitro:handlers')
+
+  // حذف كاش المعلم المحدد فوراً
+  for (const key of keys) {
+    if (key.includes(subdomain)) {
+      await storage.removeItem(key)
+    }
+  }
+
+  return { revalidated: true }
+})</code></pre>
+
+      <h3>2. استدعاء التفريغ من Convex Action:</h3>
+      <pre><code>// convex/revalidate.ts
+import { internalAction } from "./_generated/server"
+
+export const bustTenantCache = internalAction({
+  args: { subdomain: v.string() },
+  handler: async (ctx, args) => {
+    await fetch(`https://yourplatform.com/api/revalidate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-revalidate-secret': process.env.REVALIDATE_SECRET
+      },
+      body: JSON.stringify({ subdomain: args.subdomain })
+    })
+  }
+})</code></pre>
+    </section>
+
+    <!-- Section 5 -->
+    <section id="section-5">
+      <h2>5. المعادلة الذهبية (SEO + أداء فائق + Live Sync)</h2>
+      <p>هذا المزيج يوفر أفضل تجربة ويب ممكنة بدون أي تضحيات:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>الميزة</th>
+            <th>كيف تتحقق؟</th>
+            <th>النتيجة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>SEO مثالي (100/100)</strong></td>
+            <td>الـ HTML يتم توليده عبر الـ SSR/ISG بالكامل مع العناوين والـ Meta Tags</td>
+            <td>جوجل وواتساب يرون المحتوى وصور المشاركة فوراً بدون جافاسكريبت</td>
+          </tr>
+          <tr>
+            <td><strong>أداء فائق (TTFB &lt; 20ms)</strong></td>
+            <td>الكاش يخدم آلاف الطلاب بدون أي استهلاك لقاعدة بيانات Convex</td>
+            <td>فتح الصفحة فوري على الموبايل وبأقل تكلفة خوادم ممكنة</td>
+          </tr>
+          <tr>
+            <td><strong>تحديث مباشر (Live Sync)</strong></td>
+            <td>بمجرد فتح الصفحة يفتح الـ WebSocket في الخلفية</td>
+            <td>تعديل الأسعار أو نفاد المقاعد يظهر مباشرة أمام الطالب دون تحديث الصفحة</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Section 6 -->
+    <section id="section-6">
+      <h2>6. الحل الجاهز الرسمي: مكتبة nuxt-convex</h2>
+      <p>لست بحاجة لكتابة كود الاتصال بالـ WebSockets والـ SSR يدوياً؛ توفر مكتبة <strong>nuxt-convex</strong> كل ذلك تلقائياً:</p>
+
+      <pre><code># 1. التثبيت
+pnpm add convex nuxt-convex</code></pre>
+
+      <pre><code>// 2. تفعيلها في nuxt.config.ts
+export default defineNuxtConfig({
+  modules: [
+    '@nuxt/ui',
+    'nuxt-convex'
+  ]
+})</code></pre>
+
+      <pre><code>&lt;!-- 3. الاستخدام بسطر واحد داخل صفحاتك --&gt;
+&lt;script setup lang="ts"&gt;
+import { api } from '#convex/api'
+
+const subdomain = useSubdomain()
+
+// سطر واحد يتكفل بالـ SSR، تمرير البيانات بدون Double-Fetch، والـ WebSocket المباشر!
+const { data: teacher, isLoading } = await useConvexQuery(api.teachers.getBySubdomain, {
+  subdomain: subdomain.value!
+})
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;div v-if="teacher"&gt;
+    &lt;h1&gt;منصة {{ teacher.name }}&lt;/h1&gt;
+    &lt;p&gt;سعر الكورس: {{ teacher.courses[0].price }} ج.م&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/template&gt;</code></pre>
+
+      <div class="card alert-success">
+        <strong>✨ النتيجة النهائية:</strong> كود صفحات نظيف جداً، روابط نظيفة، حماية كاملة، وأداء يعادل أكبر منصات التعليم العالمية.
+      </div>
+    </section>
+  </div>
+
+</body>
+</html>
+

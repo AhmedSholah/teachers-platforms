@@ -1,6 +1,13 @@
+<script setup lang="ts">
+import { ar } from '@nuxt/ui/locale'
+
+useHead({
+  htmlAttrs: { lang: 'ar', dir: 'rtl' }
+})
+</script>
+
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+  <UApp :locale="ar">
+    <NuxtPage />
+  </UApp>
 </template>
