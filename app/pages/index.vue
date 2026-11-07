@@ -2,306 +2,660 @@
 useHead({
   title: 'منصة المعلمين – الرئيسية'
 })
+
+// Dynamic rotating hero words
+const rotatingWords = ['دوراتك', 'دروسك', 'خبرتك', 'كتبك']
+const currentWordIndex = ref(0)
+let timer: ReturnType<typeof setInterval> | null = null
+
+onMounted(() => {
+  timer = setInterval(() => {
+    currentWordIndex.value = (currentWordIndex.value + 1) % rotatingWords.length
+  }, 2400)
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
+
+// Navigation links
+const navLinks = [
+  { label: 'كيف تعمل', href: '#how' },
+  { label: 'المميزات', href: '#features' },
+  { label: 'الأسعار', href: '#pricing' },
+  { label: 'الأسئلة الشائعة', href: '#faq' }
+]
+
+// How it works steps
+const steps = [
+  {
+    number: 1,
+    title: 'سجّل واختر اسماً',
+    description: 'أنشئ حسابك واختر اسم منصتك، وسنجهّز لك موقعك فوراً.',
+    icon: 'i-lucide-user-plus'
+  },
+  {
+    number: 2,
+    title: 'ارفع دوراتك',
+    description: 'أضف الفيديوهات والملفات والدروس، ونظّمها في دورات، وحدّد سعراً لكل دورة.',
+    icon: 'i-lucide-upload-cloud'
+  },
+  {
+    number: 3,
+    title: 'بِع لطلابك',
+    description: 'يشترك الطلاب ويدفعون على موقعك، وتتابع المبيعات والمتعلمين من لوحة تحكم واحدة. [شروط تحويل الأرباح]',
+    icon: 'i-lucide-banknote'
+  }
+]
+
+// Platform features
+const features = [
+  {
+    title: 'موقعك الخاص باسمك',
+    description: 'موقع خاص بكل معلم، جاهز فور التسجيل.',
+    icon: 'i-lucide-globe'
+  },
+  {
+    title: 'منشئ دورات سهل',
+    description: 'ارفع الدروس ونظّم الأقسام وانشر عندما تكون جاهزاً.',
+    icon: 'i-lucide-graduation-cap'
+  },
+  {
+    title: 'مدفوعات مدمجة',
+    description: 'حدّد الأسعار ودع الطلاب يشترون الدورات مباشرة من منصتك.',
+    icon: 'i-lucide-credit-card'
+  },
+  {
+    title: 'إدارة الطلاب',
+    description: 'اعرف من اشترك، وماذا اشترى، ومدى تقدّمه.',
+    icon: 'i-lucide-users'
+  },
+  {
+    title: 'هويتك البصرية',
+    description: 'أضف شعارك وألوانك ورسالة الترحيب لتبدو المنصة ملكاً لك.',
+    icon: 'i-lucide-palette'
+  },
+  {
+    title: 'تعمل على كل الأجهزة',
+    description: 'يتعلم الطلاب من الهاتف أو الجهاز اللوحي أو الحاسوب بنفس التجربة السلسة.',
+    icon: 'i-lucide-smartphone'
+  }
+]
+
+// Pricing plans
+const pricingPlans = [
+  {
+    id: 'starter',
+    name: 'أساسية',
+    description: 'للمعلمين الذين يبدأون أول دورة.',
+    price: '[السعر]',
+    period: '/ شهرياً',
+    popular: false,
+    features: [
+      'موقع خاص باسمك',
+      'عدد الدورات: [العدد]',
+      'عمولة المبيعات: [النسبة]'
+    ]
+  },
+  {
+    id: 'pro',
+    name: 'احترافية',
+    description: 'لمن يبيع دورات متعددة ويُنمّي جمهوره.',
+    price: '[السعر]',
+    period: '/ شهرياً',
+    popular: true,
+    badge: 'الأكثر اختياراً',
+    features: [
+      'كل مزايا الخطة الأساسية',
+      'شعارك وألوانك الخاصة',
+      'عمولة المبيعات: [النسبة]'
+    ]
+  },
+  {
+    id: 'academy',
+    name: 'أكاديمية',
+    description: 'للمؤسسات التعليمية وفرق التدريس.',
+    price: '[السعر]',
+    period: '/ شهرياً',
+    popular: false,
+    features: [
+      'كل مزايا الخطة الاحترافية',
+      'عدة معلمين على منصة واحدة',
+      'دعم ذو أولوية'
+    ]
+  }
+]
+
+// Frequently asked questions
+const faqItems = [
+  {
+    label: 'كيف أنشئ منصتي؟',
+    content: 'سجّل حسابك واختر اسم منصتك، وستكون منصتك جاهزة لتبدأ برفع دوراتك فوراً.'
+  },
+  {
+    label: 'هل أحتاج إلى خبرة تقنية؟',
+    content: 'لا. كل شيء يتم من لوحة تحكم بسيطة: ارفع الفيديوهات والملفات ونظّمها في دورات دون كتابة أي كود.'
+  },
+  {
+    label: 'ما أنواع المحتوى التي يمكنني رفعها؟',
+    content: 'يمكنك رفع الفيديوهات والملفات والدروس وتنظيمها في دورات. [الصيغ والأحجام المدعومة]'
+  },
+  {
+    label: 'كيف أستلم أرباح مبيعاتي؟',
+    content: 'يدفع الطلاب مباشرة على منصتك، وتتابع مبيعاتك من لوحة التحكم. [طرق وشروط تحويل الأرباح]'
+  },
+  {
+    label: 'هل يمكنني تخصيص شكل منصتي؟',
+    content: 'نعم، أضف شعارك وألوانك ورسالة الترحيب لتبدو المنصة ملكاً لك.'
+  },
+  {
+    label: 'هل يمكنني تجربة المنصة قبل الاشتراك؟',
+    content: '[تفاصيل التجربة المجانية]. يمكنك الاطلاع على الخطط والأسعار في قسم الأسعار.'
+  }
+]
 </script>
 
 <template>
-<div dir="rtl" style="width: 100%; min-height: 100vh; box-sizing: border-box; font-family: 'Cairo', system-ui, sans-serif; color: #0F172A; background: #FFFFFF; display: flex; flex-direction: column">
+  <div class="w-full min-h-screen bg-white text-slate-900 flex flex-col font-sans">
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      <UContainer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20 gap-4">
+          <!-- Brand Logo -->
+          <NuxtLink to="/" class="flex items-center gap-3 group focus:outline-none">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <UIcon name="i-lucide-graduation-cap" class="w-6 h-6 shrink-0" />
+            </div>
+            <span class="text-xl font-extrabold text-slate-900 tracking-tight">[اسم علامتك]</span>
+          </NuxtLink>
 
-<div style="border-bottom: 1px solid #E2E8F0">
-<div style="max-width: 1200px; margin: 0 auto; padding: 0 32px; box-sizing: border-box; min-height: 76px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
-<div style="display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px">
-<div style="width: 36px; height: 36px; border-radius: 10px; background: #2740E8; display: flex; align-items: center; justify-content: center">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5-9-5zM7 12v4c0 1.5 2.2 3 5 3s5-1.5 5-3v-4"></path></svg>
-</div>
-<span>[اسم علامتك]</span>
-</div>
-<div style="display: flex; flex-wrap: wrap; gap: 28px; font-size: 15px; font-weight: 500">
-<a href="#how">كيف تعمل</a>
-<a href="#features">المميزات</a>
-<a href="#pricing">الأسعار</a>
-</div>
-<div style="display: flex; align-items: center; gap: 20px; font-size: 15px; font-weight: 700">
-<NuxtLink to="/login">تسجيل الدخول</NuxtLink>
-<NuxtLink to="/register" class="btn" style="background: #2740E8; color: #FFFFFF; font-weight: 800; padding: 12px 20px; border-radius: 12px">أنشئ منصتي</NuxtLink>
-</div>
-</div>
-</div>
+          <!-- Nav Items -->
+          <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <a 
+              v-for="link in navLinks" 
+              :key="link.href" 
+              :href="link.href" 
+              class="hover:text-blue-600 transition-colors"
+            >
+              {{ link.label }}
+            </a>
+          </nav>
 
-<div style="background: #F3F6FF; background-image: radial-gradient(#C5D0F5 1.5px, transparent 1.5px); background-size: 26px 26px; position: relative; overflow: hidden">
-<div class="ic a1" style="top: 9%; left: 11%; --r: -8deg; color: #2740E8"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5-9-5zM7 12v4c0 1.5 2.2 3 5 3s5-1.5 5-3v-4"></path></svg></div>
-<div class="ic a2" style="top: 28%; left: 4%; --r: 7deg; color: #E89B00; animation-delay: -2s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M10 9.5v5l4.5-2.5-4.5-2.5z"></path></svg></div>
-<div class="ic a3" style="top: 50%; left: 12%; --r: -5deg; color: #2740E8; animation-delay: -4s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"></path></svg></div>
-<div class="ic a4" style="top: 72%; left: 5%; --r: 9deg; color: #E89B00; animation-delay: -1s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"></path></svg></div>
-<div class="ic a5" style="top: 10%; right: 6%; --r: 8deg; color: #2740E8; animation-delay: -3s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6c-2-1.5-5-2-9-2v14c4 0 7 .5 9 2 2-1.5 5-2 9-2V4c-4 0-7 .5-9 2zM12 6v14"></path></svg></div>
-<div class="ic a6" style="top: 32%; right: 12%; --r: -7deg; color: #E89B00; animation-delay: -5s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19l-4 1zM14 7l3 3"></path></svg></div>
-<div class="ic a7" style="top: 54%; right: 4%; --r: 6deg; color: #2740E8; animation-delay: -2.5s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h2"></path></svg></div>
-<div class="ic a8" style="top: 74%; right: 11%; --r: -9deg; color: #E89B00; animation-delay: -0.5s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3z"></path></svg></div>
-<div class="sp" style="left: 22%; top: 70%; background: #FFC247"></div>
-<div class="sp" style="left: 33%; top: 82%; background: #2740E8; animation-delay: -2s"></div>
-<div class="sp" style="left: 46%; top: 88%; background: #FFC247; animation-delay: -4s"></div>
-<div class="sp" style="left: 58%; top: 84%; background: #2740E8; animation-delay: -1s"></div>
-<div class="sp" style="left: 70%; top: 76%; background: #FFC247; animation-delay: -3s"></div>
-<div class="sp" style="left: 84%; top: 62%; background: #2740E8; animation-delay: -5s"></div>
-<div class="sp" style="left: 16%; top: 40%; background: #2740E8; animation-delay: -2.5s"></div>
-<div class="sp" style="left: 90%; top: 40%; background: #FFC247; animation-delay: -3.5s"></div>
-<div style="max-width: 1200px; margin: 0 auto; padding: 104px 32px 112px; box-sizing: border-box; display: flex; justify-content: center; position: relative">
-<div style="max-width: 760px; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 24px">
+          <!-- Auth Actions -->
+          <div class="flex items-center gap-3">
+            <UButton 
+              to="/login" 
+              variant="ghost" 
+              color="neutral" 
+              size="md"
+              class="font-bold text-slate-700 hover:text-blue-600 cursor-pointer"
+            >
+              تسجيل الدخول
+            </UButton>
+            <UButton 
+              to="/register" 
+              color="primary" 
+              size="md"
+              class="font-extrabold rounded-xl shadow-md shadow-blue-500/20 px-5 py-2.5 cursor-pointer"
+            >
+              أنشئ منصتي
+            </UButton>
+          </div>
+        </div>
+      </UContainer>
+    </header>
 
-<h1 class="u" style="margin: 0; font-size: 62px; line-height: 1.3; font-weight: 800; animation-delay: .1s"><span style="display: block">أنشئ منصتك التعليمية لبيع</span><span style="display: block"><span style="display: inline-block; position: relative; height: 1.3em; overflow: hidden; vertical-align: top; padding: 0 22px; color: #2740E8"><span style="position: absolute; left: 0; right: 0; bottom: .12em; height: .3em; border-radius: 8px; background: #FFE29A"></span><span class="rw" style="position: relative"><span>دوراتك</span><span>دروسك</span><span>خبرتك</span><span>كتبك</span><span>دوراتك</span></span></span></span><span style="display: block">في دقائق</span></h1>
-<p class="u" style="margin: 0; font-size: 19px; line-height: 1.6; color: #475569; max-width: 620px; animation-delay: .25s">ارفع دوراتك، وحدّد أسعارك، وابدأ البيع لطلابك.</p>
-<div id="start" class="u" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; animation-delay: .4s">
-<a href="#start" class="pulse btn" style="--ring: #2740E8; min-height: 56px; box-sizing: border-box; display: inline-flex; align-items: center; background: #2740E8; color: #FFFFFF; font-size: 17px; font-weight: 800; padding: 0 32px; border-radius: 12px">أنشئ منصتي</a>
-<a href="#video" style="min-height: 56px; box-sizing: border-box; display: inline-flex; align-items: center; background: #FFFFFF; border: 1px solid #CBD5E1; color: #0F172A; font-size: 17px; font-weight: 700; padding: 0 28px; border-radius: 12px">شاهد كيف تعمل</a>
-</div>
-<div class="u" style="animation-delay: .65s; font-size: 14px; color: #475569">اسمك وعلامتك وطلابك. [شروط التجربة المجانية]</div>
-</div>
-</div>
-</div>
+    <main class="flex-1 flex flex-col">
+      <!-- Hero Section -->
+      <section class="relative overflow-hidden bg-slate-50/70 border-b border-slate-100 py-20 lg:py-28">
+        <!-- Subtle Pattern Background -->
+        <div class="absolute inset-0 bg-[radial-gradient(#c5d0f5_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-70 pointer-events-none" />
 
-<div id="video" style="background: #0F172A">
-<div style="max-width: 1200px; margin: 0 auto; padding: 96px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px">
-<div style="text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center">
-<div style="font-size: 14px; font-weight: 700; color: #FFC247">شاهد الشرح</div>
-<h2 style="margin: 0; font-size: 40px; line-height: 1.35; font-weight: 800; color: #FFFFFF; max-width: 640px">تعرّف على المنصة في دقيقتين</h2>
-<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #CBD5E1; max-width: 560px">فيديو قصير يشرح كيف تنشئ منصتك وترفع دوراتك وتبدأ البيع.</p>
-</div>
-<div style="width: 100%; max-width: 960px; margin: 0 auto; aspect-ratio: 16 / 9; box-sizing: border-box; position: relative; display: flex; align-items: center; justify-content: center; background: #1B2559; border: 1px solid #33407F; border-radius: 20px; overflow: hidden">
-<div style="position: absolute; top: 20px; right: 20px; background: #2A3678; color: #FFFFFF; font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px">شرح المنصة</div>
-<button aria-label="تشغيل الفيديو" style="width: 96px; height: 96px; border: 3px solid #FFFFFF; border-radius: 50%; background: #2740E8; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="38" height="38" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true" style="margin-left: 4px"><path d="M8 5v14l11-7z"></path></svg></button>
-<div dir="ltr" style="position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; padding: 16px 24px; background: #121A45; display: flex; align-items: center; gap: 16px; color: #CBD5E1; font-size: 14px">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
-<div style="flex: 1; height: 5px; border-radius: 999px; background: #475085; position: relative"><div style="position: absolute; left: 0; top: -4px; width: 13px; height: 13px; border-radius: 50%; background: #FFC247"></div></div>
-<span>0:00 / [المدة]</span>
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16 9a4 4 0 010 6"></path></svg>
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg>
-</div>
-</div>
-<div style="text-align: center; font-size: 14px; color: #CBD5E1">[رابط فيديو الشرح] استبدل هذا العنصر بفيديو الشرح الخاص بك.</div>
-</div>
-</div>
+        <!-- Ambient Glowing Lights -->
+        <div class="absolute -top-24 start-1/12 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl pointer-events-none animate-pulse-subtle" />
+        <div class="absolute top-1/2 -translate-y-1/2 start-1/2 -translate-x-1/2 w-[600px] h-72 rounded-full bg-blue-200/25 blur-3xl pointer-events-none" />
+        <div class="absolute -bottom-20 end-1/12 w-96 h-96 rounded-full bg-amber-300/20 blur-3xl pointer-events-none animate-pulse-subtle anim-delay-1000" />
 
-<div id="how" style="background: #FFFFFF">
-<div style="max-width: 1200px; margin: 0 auto; padding: 96px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
-<div style="text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center">
-<div style="font-size: 14px; font-weight: 700; color: #2740E8">كيف تعمل المنصة</div>
-<h2 style="margin: 0; font-size: 40px; line-height: 1.35; font-weight: 800; max-width: 640px">من التسجيل إلى أول عملية بيع في ثلاث خطوات</h2>
-</div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px">
-<div style="border: 1px solid #E2E8F0; border-radius: 18px; padding: 32px; display: flex; flex-direction: column; gap: 14px">
-<div style="width: 44px; height: 44px; border-radius: 50%; background: #2740E8; color: #FFFFFF; font-weight: 800; display: flex; align-items: center; justify-content: center">1</div>
-<h3 style="margin: 0; font-size: 22px; font-weight: 800">سجّل واختر اسماً</h3>
-<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #475569">أنشئ حسابك واختر اسم منصتك، وسنجهّز لك موقعك فوراً.</p>
-</div>
-<div style="border: 1px solid #E2E8F0; border-radius: 18px; padding: 32px; display: flex; flex-direction: column; gap: 14px">
-<div style="width: 44px; height: 44px; border-radius: 50%; background: #2740E8; color: #FFFFFF; font-weight: 800; display: flex; align-items: center; justify-content: center">2</div>
-<h3 style="margin: 0; font-size: 22px; font-weight: 800">ارفع دوراتك</h3>
-<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #475569">أضف الفيديوهات والملفات والدروس، ونظّمها في دورات، وحدّد سعراً لكل دورة.</p>
-</div>
-<div style="border: 1px solid #E2E8F0; border-radius: 18px; padding: 32px; display: flex; flex-direction: column; gap: 14px">
-<div style="width: 44px; height: 44px; border-radius: 50%; background: #2740E8; color: #FFFFFF; font-weight: 800; display: flex; align-items: center; justify-content: center">3</div>
-<h3 style="margin: 0; font-size: 22px; font-weight: 800">بِع لطلابك</h3>
-<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #475569">يشترك الطلاب ويدفعون على موقعك، وتتابع المبيعات والمتعلمين من لوحة تحكم واحدة. [شروط تحويل الأرباح]</p>
-</div>
-</div>
-</div>
-</div>
+        <!-- Floating Animated Decorative Badges (Desktop & Large Screens) -->
+        <!-- Start Side Badges -->
+        <div class="absolute top-10 start-6 xl:start-14 hidden lg:flex items-center gap-3 p-2.5 xl:p-3 rounded-2xl bg-white/95 backdrop-blur-md border border-blue-100 shadow-xl shadow-blue-500/10 animate-float-slow hover:scale-105 transition-all duration-300 group cursor-default select-none z-10">
+          <div class="w-11 h-11 xl:w-12 xl:h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300 shadow-xs">
+            <UIcon name="i-lucide-graduation-cap" class="w-6 h-6 xl:w-7 xl:h-7 group-hover:rotate-6 transition-transform duration-300" />
+          </div>
+          <div class="hidden xl:flex flex-col pe-2">
+            <span class="text-xs font-black text-slate-800">+1,500 معلم</span>
+            <span class="text-[10px] font-medium text-slate-500">أنشأوا أكاديمياتهم</span>
+          </div>
+        </div>
 
-<div id="features" style="background: #F3F6FF">
-<div style="max-width: 1200px; margin: 0 auto; padding: 96px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
-<div style="text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center">
-<div style="font-size: 14px; font-weight: 700; color: #2740E8">المميزات</div>
-<h2 style="margin: 0; font-size: 40px; line-height: 1.35; font-weight: 800; max-width: 640px">كل ما يحتاجه المعلم لإدارة مدرسته على الإنترنت</h2>
-</div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px">
-<div style="background: #FFFFFF; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 12px">
-<div style="width: 44px; height: 44px; border-radius: 10px; background: #E3E8FF; color: #2740E8; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"></path></svg></div>
-<h3 style="margin: 0; font-size: 19px; font-weight: 800">موقعك الخاص باسمك</h3>
-<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #475569">موقع خاص بكل معلم، جاهز فور التسجيل.</p>
-</div>
-<div style="background: #FFFFFF; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 12px">
-<div style="width: 44px; height: 44px; border-radius: 10px; background: #E3E8FF; color: #2740E8; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5"></path></svg></div>
-<h3 style="margin: 0; font-size: 19px; font-weight: 800">منشئ دورات سهل</h3>
-<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #475569">ارفع الدروس ونظّم الأقسام وانشر عندما تكون جاهزاً.</p>
-</div>
-<div style="background: #FFFFFF; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 12px">
-<div style="width: 44px; height: 44px; border-radius: 10px; background: #E3E8FF; color: #2740E8; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M3 10h18"></path></svg></div>
-<h3 style="margin: 0; font-size: 19px; font-weight: 800">مدفوعات مدمجة</h3>
-<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #475569">حدّد الأسعار ودع الطلاب يشترون الدورات مباشرة من منصتك.</p>
-</div>
-<div style="background: #FFFFFF; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 12px">
-<div style="width: 44px; height: 44px; border-radius: 10px; background: #E3E8FF; color: #2740E8; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 5a3.5 3.5 0 010 6.5M18 14.5c2 .7 3.5 2.5 3.5 5.5"></path></svg></div>
-<h3 style="margin: 0; font-size: 19px; font-weight: 800">إدارة الطلاب</h3>
-<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #475569">اعرف من اشترك، وماذا اشترى، ومدى تقدّمه.</p>
-</div>
-<div style="background: #FFFFFF; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 12px">
-<div style="width: 44px; height: 44px; border-radius: 10px; background: #E3E8FF; color: #2740E8; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"></path><circle cx="16" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></svg></div>
-<h3 style="margin: 0; font-size: 19px; font-weight: 800">هويتك البصرية</h3>
-<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #475569">أضف شعارك وألوانك ورسالة الترحيب لتبدو المنصة ملكاً لك.</p>
-</div>
-<div style="background: #FFFFFF; border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 12px">
-<div style="width: 44px; height: 44px; border-radius: 10px; background: #E3E8FF; color: #2740E8; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"></rect><path d="M11 18h2"></path></svg></div>
-<h3 style="margin: 0; font-size: 19px; font-weight: 800">تعمل على كل الأجهزة</h3>
-<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #475569">يتعلم الطلاب من الهاتف أو الجهاز اللوحي أو الحاسوب بنفس التجربة السلسة.</p>
-</div>
-</div>
-</div>
-</div>
+        <div class="absolute top-44 start-4 xl:start-8 hidden lg:flex items-center justify-center w-14 h-14 rounded-2xl bg-white/95 backdrop-blur-md border border-red-100 shadow-xl shadow-red-500/10 text-red-500 animate-float-medium anim-delay-500 hover:scale-110 transition-all duration-300 group cursor-default select-none z-10">
+          <span class="absolute top-2 end-2 w-2 h-2 rounded-full bg-red-500 animate-ping opacity-75" />
+          <UIcon name="i-lucide-video" class="w-7 h-7 group-hover:scale-110 transition-transform duration-300" />
+        </div>
 
-<div id="pricing" style="background: #FFFFFF">
-<div style="max-width: 1200px; margin: 0 auto; padding: 96px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 48px">
-<div style="text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center">
-<div style="font-size: 14px; font-weight: 700; color: #2740E8">الأسعار</div>
-<h2 style="margin: 0; font-size: 40px; line-height: 1.35; font-weight: 800; max-width: 640px">اختر الخطة التي تناسب منصتك</h2>
-<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #475569; max-width: 520px">ابدأ بخطة بسيطة وارتقِ بها كلما كبرت منصتك وزاد عدد طلابك.</p>
-</div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; align-items: stretch">
+        <div class="absolute top-2/3 start-8 xl:start-16 hidden lg:flex items-center justify-center w-14 h-14 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-100 shadow-xl shadow-amber-500/10 text-amber-500 animate-float-reverse anim-delay-1000 hover:scale-110 transition-all duration-300 group cursor-default select-none z-10">
+          <UIcon name="i-lucide-lightbulb" class="w-7 h-7 group-hover:rotate-12 transition-transform duration-300" />
+        </div>
 
-<div style="border: 1px solid #E2E8F0; border-radius: 18px; padding: 32px; display: flex; flex-direction: column; gap: 20px">
-<h3 style="margin: 0; font-size: 22px; font-weight: 800">أساسية</h3>
-<div style="font-size: 15px; line-height: 1.6; color: #475569">للمعلمين الذين يبدؤون أول دورة.</div>
-<div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 40px; font-weight: 800">[السعر]</span><span style="font-size: 15px; color: #475569">/ شهرياً</span></div>
-<div style="display: flex; flex-direction: column; gap: 12px; flex: 1">
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #2740E8"><path d="M5 12l5 5 9-10"></path></svg><span>موقع خاص باسمك</span></div>
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #2740E8"><path d="M5 12l5 5 9-10"></path></svg><span>عدد الدورات: [العدد]</span></div>
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #2740E8"><path d="M5 12l5 5 9-10"></path></svg><span>عمولة المبيعات: [النسبة]</span></div>
-</div>
-<a href="#start" class="btn" style="text-align: center; background: #2740E8; color: #FFFFFF; padding: 14px 20px; border-radius: 12px; font-size: 16px; font-weight: 800">أنشئ منصتي</a>
-</div>
+        <div class="absolute bottom-12 start-6 xl:start-12 hidden lg:flex items-center justify-center w-13 h-13 rounded-2xl bg-white/95 backdrop-blur-md border border-emerald-100 shadow-xl shadow-emerald-500/10 text-emerald-600 animate-float-slow anim-delay-1500 hover:scale-110 transition-all duration-300 group cursor-default select-none z-10">
+          <UIcon name="i-lucide-globe" class="w-6 h-6 group-hover:rotate-45 transition-transform duration-500" />
+        </div>
 
-<div style="background: #0F172A; color: #FFFFFF; border-radius: 18px; padding: 32px; display: flex; flex-direction: column; gap: 20px">
-<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
-<h3 style="margin: 0; font-size: 22px; font-weight: 800">احترافية</h3>
-<span style="background: #FFC247; color: #0F172A; font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px">الأكثر اختياراً</span>
-</div>
-<div style="font-size: 15px; line-height: 1.6; color: #CBD5E1">لمن يبيع دورات متعددة وينمّي جمهوره.</div>
-<div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 40px; font-weight: 800">[السعر]</span><span style="font-size: 15px; color: #CBD5E1">/ شهرياً</span></div>
-<div style="display: flex; flex-direction: column; gap: 12px; flex: 1">
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #FFC247"><path d="M5 12l5 5 9-10"></path></svg><span>كل مزايا الخطة الأساسية</span></div>
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #FFC247"><path d="M5 12l5 5 9-10"></path></svg><span>شعارك وألوانك الخاصة</span></div>
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #FFC247"><path d="M5 12l5 5 9-10"></path></svg><span>عمولة المبيعات: [النسبة]</span></div>
-</div>
-<a href="#start" class="btn" style="text-align: center; background: #2740E8; color: #FFFFFF; padding: 14px 20px; border-radius: 12px; font-size: 16px; font-weight: 800">أنشئ منصتي</a>
-</div>
+        <!-- End Side Badges -->
+        <div class="absolute top-10 end-6 xl:end-14 hidden lg:flex items-center gap-3 p-2.5 xl:p-3 rounded-2xl bg-white/95 backdrop-blur-md border border-amber-100 shadow-xl shadow-amber-500/10 animate-float-slow anim-delay-700 hover:scale-105 transition-all duration-300 group cursor-default select-none z-10">
+          <div class="w-11 h-11 xl:w-12 xl:h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 shadow-xs">
+            <UIcon name="i-lucide-star" class="w-6 h-6 xl:w-7 xl:h-7 fill-amber-400 group-hover:scale-110 transition-transform duration-300" />
+          </div>
+          <div class="hidden xl:flex flex-col pe-2">
+            <span class="text-xs font-black text-slate-800">تقييم 4.9 / 5</span>
+            <span class="text-[10px] font-medium text-slate-500">رضا الطلاب والمعلمين</span>
+          </div>
+        </div>
 
-<div style="border: 1px solid #E2E8F0; border-radius: 18px; padding: 32px; display: flex; flex-direction: column; gap: 20px">
-<h3 style="margin: 0; font-size: 22px; font-weight: 800">أكاديمية</h3>
-<div style="font-size: 15px; line-height: 1.6; color: #475569">للمؤسسات التعليمية وفرق التدريس.</div>
-<div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 40px; font-weight: 800">[السعر]</span><span style="font-size: 15px; color: #475569">/ شهرياً</span></div>
-<div style="display: flex; flex-direction: column; gap: 12px; flex: 1">
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #2740E8"><path d="M5 12l5 5 9-10"></path></svg><span>كل مزايا الخطة الاحترافية</span></div>
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #2740E8"><path d="M5 12l5 5 9-10"></path></svg><span>عدة معلمين على منصة واحدة</span></div>
-<div style="display: flex; align-items: center; gap: 10px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; color: #2740E8"><path d="M5 12l5 5 9-10"></path></svg><span>دعم ذو أولوية</span></div>
-</div>
-<a href="#start" class="btn" style="text-align: center; background: #2740E8; color: #FFFFFF; padding: 14px 20px; border-radius: 12px; font-size: 16px; font-weight: 800">أنشئ منصتي</a>
-</div>
+        <div class="absolute top-44 end-4 xl:end-8 hidden lg:flex items-center justify-center w-14 h-14 rounded-2xl bg-white/95 backdrop-blur-md border border-blue-100 shadow-xl shadow-blue-500/10 text-blue-600 animate-float-fast anim-delay-300 hover:scale-110 transition-all duration-300 group cursor-default select-none z-10">
+          <UIcon name="i-lucide-book-open" class="w-7 h-7 group-hover:scale-110 transition-transform duration-300" />
+        </div>
 
-</div>
-</div>
-</div>
+        <div class="absolute top-2/3 end-8 xl:end-16 hidden lg:flex items-center justify-center w-14 h-14 rounded-2xl bg-white/95 backdrop-blur-md border border-purple-100 shadow-xl shadow-purple-500/10 text-purple-600 animate-float-reverse anim-delay-1200 hover:scale-110 transition-all duration-300 group cursor-default select-none z-10">
+          <UIcon name="i-lucide-banknote" class="w-7 h-7 group-hover:-rotate-12 transition-transform duration-300" />
+        </div>
 
-<div id="faq" style="background: #F3F6FF">
-<div style="max-width: 860px; margin: 0 auto; padding: 96px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px">
-<div style="text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center">
-<div style="font-size: 14px; font-weight: 700; color: #2740E8">الأسئلة الشائعة</div>
-<h2 style="margin: 0; font-size: 40px; line-height: 1.35; font-weight: 800; max-width: 640px">أسئلة يطرحها المعلمون قبل البدء</h2>
-</div>
-<div style="display: flex; flex-direction: column; gap: 14px">
+        <div class="absolute bottom-12 end-6 xl:end-12 hidden lg:flex items-center justify-center w-13 h-13 rounded-2xl bg-white/95 backdrop-blur-md border border-indigo-100 shadow-xl shadow-indigo-500/10 text-indigo-600 animate-float-medium anim-delay-2000 hover:scale-110 transition-all duration-300 group cursor-default select-none z-10">
+          <UIcon name="i-lucide-sparkles" class="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
+        </div>
 
-<details class="fq" open="" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
-<summary style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 20px 26px; font-size: 18px; font-weight: 800"><span>كيف أنشئ منصتي؟</span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="color: #2740E8"><path d="M12 5v14M5 12h14"></path></svg></summary>
-<div style="padding: 0 26px 24px; font-size: 16px; line-height: 1.8; color: #475569">سجّل حسابك واختر اسم منصتك، وستكون منصتك جاهزة لتبدأ برفع دوراتك فوراً.</div>
-</details>
+        <UContainer class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+          <div class="max-w-3xl mx-auto flex flex-col items-center text-center gap-7">
+            <!-- Hero Pill / Announcement Badge -->
+            <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/70 shadow-xs text-xs sm:text-sm font-bold text-slate-800 hover:border-blue-300 hover:shadow-sm transition-all select-none">
+              <span class="flex h-2 w-2 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
+              </span>
+              <UIcon name="i-lucide-sparkles" class="w-4 h-4 text-amber-500 animate-pulse" />
+              <span>المنصة الأسهل لإنشاء وإدارة أكاديميتك الخاصة</span>
+            </div>
 
-<details class="fq" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
-<summary style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 20px 26px; font-size: 18px; font-weight: 800"><span>هل أحتاج إلى خبرة تقنية؟</span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="color: #2740E8"><path d="M12 5v14M5 12h14"></path></svg></summary>
-<div style="padding: 0 26px 24px; font-size: 16px; line-height: 1.8; color: #475569">لا. كل شيء يتم من لوحة تحكم بسيطة: ارفع الفيديوهات والملفات ونظّمها في دورات دون كتابة أي كود.</div>
-</details>
+            <!-- Headline -->
+            <h1 class="m-0 text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.25] tracking-tight">
+              <span class="block">أنشئ منصتك التعليمية لبيع</span>
+              <span class="block my-2">
+                <span class="relative inline-flex items-center justify-center px-4 py-1 text-blue-600 font-extrabold min-w-[160px]">
+                  <span class="absolute inset-x-0 bottom-1.5 h-3.5 bg-amber-200/80 rounded-lg -z-0" />
+                  <Transition 
+                    mode="out-in" 
+                    enter-active-class="transition duration-200 ease-out transform" 
+                    enter-from-class="opacity-0 -translate-y-2" 
+                    enter-to-class="opacity-100 translate-y-0" 
+                    leave-active-class="transition duration-150 ease-in transform" 
+                    leave-from-class="opacity-100 translate-y-0" 
+                    leave-to-class="opacity-0 translate-y-2"
+                  >
+                    <span :key="currentWordIndex" class="relative z-10">
+                      {{ rotatingWords[currentWordIndex] }}
+                    </span>
+                  </Transition>
+                </span>
+              </span>
+              <span class="block">في دقائق</span>
+            </h1>
 
-<details class="fq" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
-<summary style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 20px 26px; font-size: 18px; font-weight: 800"><span>ما أنواع المحتوى التي يمكنني رفعها؟</span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="color: #2740E8"><path d="M12 5v14M5 12h14"></path></svg></summary>
-<div style="padding: 0 26px 24px; font-size: 16px; line-height: 1.8; color: #475569">يمكنك رفع الفيديوهات والملفات والدروس وتنظيمها في دورات. [الصيغ والأحجام المدعومة]</div>
-</details>
+            <!-- Subtitle -->
+            <p class="m-0 text-lg sm:text-xl text-slate-600 leading-relaxed max-w-2xl font-normal">
+              ارفع دوراتك، وحدّد أسعارك، وابدأ البيع لطلابك بهويتك وعلامتك التجارية الخاصة.
+            </p>
 
-<details class="fq" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
-<summary style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 20px 26px; font-size: 18px; font-weight: 800"><span>كيف أستلم أرباح مبيعاتي؟</span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="color: #2740E8"><path d="M12 5v14M5 12h14"></path></svg></summary>
-<div style="padding: 0 26px 24px; font-size: 16px; line-height: 1.8; color: #475569">يدفع الطلاب مباشرة على منصتك، وتتابع مبيعاتك من لوحة التحكم. [طرق وشروط تحويل الأرباح]</div>
-</details>
+            <!-- CTA Buttons -->
+            <div id="start" class="flex flex-wrap items-center justify-center gap-4 pt-1">
+              <UButton 
+                to="/register" 
+                size="xl" 
+                color="primary" 
+                class="font-black px-8 py-4 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 hover:-translate-y-0.5 transition-all text-base cursor-pointer group"
+              >
+                <template #leading>
+                  <UIcon name="i-lucide-rocket" class="w-5 h-5 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:rotate-12 transition-transform duration-300" />
+                </template>
+                أنشئ منصتي
+              </UButton>
+              <UButton 
+                to="#video" 
+                size="xl" 
+                variant="outline" 
+                color="neutral" 
+                class="font-bold px-7 py-4 rounded-xl bg-white text-slate-800 border-slate-300 hover:bg-slate-50 hover:border-slate-400 hover:-translate-y-0.5 transition-all text-base cursor-pointer group"
+              >
+                <template #leading>
+                  <UIcon name="i-lucide-play-circle" class="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
+                </template>
+                شاهد كيف تعمل
+              </UButton>
+            </div>
 
-<details class="fq" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
-<summary style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 20px 26px; font-size: 18px; font-weight: 800"><span>هل يمكنني تخصيص شكل منصتي؟</span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="color: #2740E8"><path d="M12 5v14M5 12h14"></path></svg></summary>
-<div style="padding: 0 26px 24px; font-size: 16px; line-height: 1.8; color: #475569">نعم، أضف شعارك وألوانك ورسالة الترحيب لتبدو المنصة ملكاً لك.</div>
-</details>
+            <!-- Trust / Guarantee Badge -->
+            <div class="flex items-center justify-center gap-2 text-sm text-slate-500 font-medium">
+              <UIcon name="i-lucide-shield-check" class="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>اسمك وعلامتك وطلابك. [شروط التجربة المجانية]</span>
+            </div>
 
-<details class="fq" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px">
-<summary style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 20px 26px; font-size: 18px; font-weight: 800"><span>هل يمكنني تجربة المنصة قبل الاشتراك؟</span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="color: #2740E8"><path d="M12 5v14M5 12h14"></path></svg></summary>
-<div style="padding: 0 26px 24px; font-size: 16px; line-height: 1.8; color: #475569">[تفاصيل التجربة المجانية]. يمكنك الاطلاع على الخطط والأسعار في قسم الأسعار.</div>
-</details>
+            <!-- Value Props Highlights Bar -->
+            <div class="pt-4 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm font-semibold text-slate-700">
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-slate-200/80 shadow-xs hover:border-blue-200 transition-colors">
+                <UIcon name="i-lucide-zap" class="w-4 h-4 text-amber-500 shrink-0" />
+                <span>إطلاق فوري في دقيقتين</span>
+              </div>
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-slate-200/80 shadow-xs hover:border-blue-200 transition-colors">
+                <UIcon name="i-lucide-credit-card" class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>مدفوعات مباشرة لطلابك</span>
+              </div>
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-slate-200/80 shadow-xs hover:border-blue-200 transition-colors">
+                <UIcon name="i-lucide-palette" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>تخصيص الهوية والشعار</span>
+              </div>
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-slate-200/80 shadow-xs hover:border-blue-200 transition-colors">
+                <UIcon name="i-lucide-smartphone" class="w-4 h-4 text-purple-600 shrink-0" />
+                <span>متوافق مع كل الأجهزة</span>
+              </div>
+            </div>
+          </div>
+        </UContainer>
+      </section>
 
-</div>
-</div>
-</div>
+      <!-- Video / Explainer Section -->
+      <section id="video" class="bg-slate-900 text-white py-24 border-y border-slate-800">
+        <UContainer class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-12">
+          <!-- Section Header -->
+          <div class="text-center flex flex-col items-center gap-3">
+            <UBadge color="warning" variant="subtle" size="md" class="font-bold px-3 py-1">
+              شاهد الشرح
+            </UBadge>
+            <h2 class="m-0 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+              تعرّف على المنصة في دقيقتين
+            </h2>
+            <p class="m-0 text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
+              فيديو قصير يشرح كيف تنشئ منصتك وترفع دوراتك وتبدأ البيع.
+            </p>
+          </div>
 
-<div style="background: #0F172A">
-<div style="max-width: 1200px; margin: 0 auto; padding: 88px 32px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center">
-<h2 style="margin: 0; font-size: 40px; line-height: 1.35; font-weight: 800; color: #FFFFFF; max-width: 640px">جاهز لتبدأ؟</h2>
-<p style="margin: 0; font-size: 18px; line-height: 1.6; color: #CBD5E1; max-width: 520px">أنشئ منصتك في دقائق، وابدأ رحلتك مع طلابك.</p>
-<NuxtLink to="/register" class="btn" style="background: #2740E8; color: #FFFFFF; font-size: 17px; font-weight: 800; padding: 16px 32px; border-radius: 12px">أنشئ منصتي</NuxtLink>
-</div>
-</div>
+          <!-- Video Mockup Card -->
+          <div class="w-full max-w-4xl mx-auto aspect-video rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl relative overflow-hidden flex items-center justify-center group">
+            <!-- Badge -->
+            <UBadge color="neutral" variant="subtle" class="absolute top-5 end-5 font-bold z-10">
+              شرح المنصة
+            </UBadge>
 
-<div style="background: #FFFFFF; border-top: 1px solid #E2E8F0">
-<div style="max-width: 1200px; margin: 0 auto; padding: 32px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; font-size: 14px; color: #475569">
-<div style="font-weight: 800; color: #0F172A">[اسم علامتك]</div>
-<div style="display: flex; flex-wrap: wrap; gap: 24px"><a href="#start">من نحن</a><a href="#start">الدعم</a><a href="#start">الشروط</a><a href="#start">الخصوصية</a></div>
-<div>© [السنة] [اسم علامتك]</div>
-</div>
-</div>
+            <!-- Big Play Action Button -->
+            <UButton 
+              color="primary" 
+              size="xl" 
+              aria-label="تشغيل الفيديو"
+              class="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-white/20 group-hover:scale-110 transition-transform cursor-pointer p-0"
+            >
+              <UIcon name="i-lucide-play" class="w-10 h-10 ms-1 text-white shrink-0" />
+            </UButton>
 
-</div>
+            <!-- Video Player Controls Bar Mockup -->
+            <div class="absolute inset-x-0 bottom-0 px-6 py-4 bg-slate-950/90 backdrop-blur border-t border-slate-800 flex items-center gap-4 text-slate-300 text-sm">
+              <UIcon name="i-lucide-play" class="w-5 h-5 text-white shrink-0" />
+              <div class="flex-1 h-1.5 rounded-full bg-slate-700 relative overflow-hidden">
+                <div class="h-full w-1/4 bg-amber-400 rounded-full" />
+              </div>
+              <span class="font-mono text-xs text-slate-400">0:00 / [المدة]</span>
+              <UIcon name="i-lucide-volume-2" class="w-5 h-5 text-slate-300 shrink-0" />
+              <UIcon name="i-lucide-maximize" class="w-5 h-5 text-slate-300 shrink-0" />
+            </div>
+          </div>
+
+          <!-- Helper Note -->
+          <p class="m-0 text-center text-xs sm:text-sm text-slate-400">
+            [رابط فيديو الشرح] استبدل هذا العنصر بفيديو الشرح الخاص بك.
+          </p>
+        </UContainer>
+      </section>
+
+      <!-- How It Works Section -->
+      <section id="how" class="bg-white py-24">
+        <UContainer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-14">
+          <!-- Section Header -->
+          <div class="text-center flex flex-col items-center gap-3">
+            <UBadge color="primary" variant="subtle" size="md" class="font-bold px-3 py-1">
+              كيف تعمل المنصة
+            </UBadge>
+            <h2 class="m-0 text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
+              من التسجيل إلى أول عملية بيع في ثلاث خطوات
+            </h2>
+          </div>
+
+          <!-- 3 Steps Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+            <UCard 
+              v-for="step in steps" 
+              :key="step.number"
+              class="rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:shadow-lg transition-all flex flex-col justify-between"
+            >
+              <div class="flex flex-col gap-5">
+                <div class="flex items-center justify-between">
+                  <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-xl flex items-center justify-center shadow-md shadow-blue-500/20">
+                    {{ step.number }}
+                  </div>
+                  <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <UIcon :name="step.icon" class="w-5 h-5" />
+                  </div>
+                </div>
+                <h3 class="m-0 text-xl font-bold text-slate-900">
+                  {{ step.title }}
+                </h3>
+                <p class="m-0 text-sm sm:text-base text-slate-600 leading-relaxed">
+                  {{ step.description }}
+                </p>
+              </div>
+            </UCard>
+          </div>
+        </UContainer>
+      </section>
+
+      <!-- Features Section -->
+      <section id="features" class="bg-slate-50/70 py-24 border-y border-slate-100">
+        <UContainer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-14">
+          <!-- Section Header -->
+          <div class="text-center flex flex-col items-center gap-3">
+            <UBadge color="primary" variant="subtle" size="md" class="font-bold px-3 py-1">
+              المميزات
+            </UBadge>
+            <h2 class="m-0 text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight max-w-2xl">
+              كل ما يحتاجه المعلم لإدارة مدرسته على الإنترنت
+            </h2>
+          </div>
+
+          <!-- Features Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+            <UCard 
+              v-for="(feature, fIndex) in features" 
+              :key="fIndex"
+              class="rounded-2xl border border-slate-200/90 bg-white hover:border-blue-400 hover:shadow-md transition-all group"
+            >
+              <div class="flex flex-col gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
+                  <UIcon :name="feature.icon" class="w-6 h-6 shrink-0" />
+                </div>
+                <h3 class="m-0 text-xl font-bold text-slate-900">
+                  {{ feature.title }}
+                </h3>
+                <p class="m-0 text-sm sm:text-base text-slate-600 leading-relaxed">
+                  {{ feature.description }}
+                </p>
+              </div>
+            </UCard>
+          </div>
+        </UContainer>
+      </section>
+
+      <!-- Pricing Section -->
+      <section id="pricing" class="bg-white py-24">
+        <UContainer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-14">
+          <!-- Section Header -->
+          <div class="text-center flex flex-col items-center gap-3">
+            <UBadge color="primary" variant="subtle" size="md" class="font-bold px-3 py-1">
+              الأسعار
+            </UBadge>
+            <h2 class="m-0 text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
+              اختر الخطة التي تناسب منصتك
+            </h2>
+            <p class="m-0 text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed">
+              ابدأ بخطة بسيطة وارتقِ بها كلما كبرت منصتك وزاد عدد طلابك.
+            </p>
+          </div>
+
+          <!-- Pricing Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            <UCard 
+              v-for="plan in pricingPlans" 
+              :key="plan.id"
+              class="rounded-2xl transition-all flex flex-col justify-between overflow-hidden"
+              :class="plan.popular ? 'border-2 border-blue-600 bg-slate-900 text-white shadow-xl ring-2 ring-blue-500/20' : 'border border-slate-200 bg-white text-slate-900'"
+            >
+              <div class="flex flex-col gap-6">
+                <!-- Card Header -->
+                <div class="flex items-center justify-between">
+                  <h3 class="m-0 text-2xl font-black" :class="plan.popular ? 'text-white' : 'text-slate-900'">
+                    {{ plan.name }}
+                  </h3>
+                  <UBadge 
+                    v-if="plan.badge" 
+                    color="warning" 
+                    variant="solid" 
+                    size="sm" 
+                    class="font-black"
+                  >
+                    {{ plan.badge }}
+                  </UBadge>
+                </div>
+
+                <p class="m-0 text-sm leading-relaxed" :class="plan.popular ? 'text-slate-300' : 'text-slate-600'">
+                  {{ plan.description }}
+                </p>
+
+                <!-- Price -->
+                <div class="flex items-baseline gap-2 pt-2 border-t" :class="plan.popular ? 'border-slate-800' : 'border-slate-100'">
+                  <span class="text-4xl font-black" :class="plan.popular ? 'text-white' : 'text-slate-900'">
+                    {{ plan.price }}
+                  </span>
+                  <span class="text-sm font-semibold" :class="plan.popular ? 'text-slate-400' : 'text-slate-500'">
+                    {{ plan.period }}
+                  </span>
+                </div>
+
+                <!-- Features List -->
+                <ul class="flex flex-col gap-3.5 p-0 m-0 list-none my-2">
+                  <li 
+                    v-for="(feat, fIdx) in plan.features" 
+                    :key="fIdx"
+                    class="flex items-center gap-3 text-sm font-medium"
+                    :class="plan.popular ? 'text-slate-200' : 'text-slate-700'"
+                  >
+                    <UIcon 
+                      name="i-lucide-check" 
+                      class="w-5 h-5 shrink-0" 
+                      :class="plan.popular ? 'text-amber-400' : 'text-blue-600'" 
+                    />
+                    <span>{{ feat }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Button Action -->
+              <div class="pt-6">
+                <UButton 
+                  to="/register" 
+                  :color="plan.popular ? 'primary' : 'neutral'"
+                  :variant="plan.popular ? 'solid' : 'outline'"
+                  block 
+                  size="lg"
+                  class="font-extrabold rounded-xl py-3.5 cursor-pointer justify-center"
+                >
+                  أنشئ منصتي
+                </UButton>
+              </div>
+            </UCard>
+          </div>
+        </UContainer>
+      </section>
+
+      <!-- FAQ Section -->
+      <section id="faq" class="bg-slate-50/70 py-24 border-y border-slate-100">
+        <UContainer class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-12">
+          <!-- Section Header -->
+          <div class="text-center flex flex-col items-center gap-3">
+            <UBadge color="primary" variant="subtle" size="md" class="font-bold px-3 py-1">
+              الأسئلة الشائعة
+            </UBadge>
+            <h2 class="m-0 text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
+              أسئلة يطرحها المعلمون قبل البدء
+            </h2>
+          </div>
+
+          <!-- Nuxt UI Accordion Component -->
+          <UAccordion 
+            :items="faqItems" 
+            type="single"
+            collapsible
+            class="w-full space-y-4"
+            :ui="{
+              item: 'bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden px-6 py-2 transition-colors hover:border-slate-300',
+              trigger: 'text-slate-900 font-extrabold text-base sm:text-lg py-4 cursor-pointer hover:no-underline gap-4 justify-between',
+              body: 'text-slate-600 text-sm sm:text-base leading-relaxed pb-5 pt-1'
+            }"
+          />
+        </UContainer>
+      </section>
+
+      <!-- Final CTA Section -->
+      <section class="bg-slate-900 text-white py-24 border-t border-slate-800 relative overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none" />
+        <UContainer class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center flex flex-col items-center gap-6">
+          <h2 class="m-0 text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight">
+            جاهز لتبدأ؟
+          </h2>
+          <p class="m-0 text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
+            أنشئ منصتك في دقائق، وابدأ رحلتك مع طلابك.
+          </p>
+          <UButton 
+            to="/register" 
+            size="xl" 
+            color="primary" 
+            icon="i-lucide-rocket"
+            class="font-black px-10 py-4 rounded-xl shadow-xl shadow-blue-500/30 hover:scale-105 transition-transform text-lg cursor-pointer"
+          >
+            أنشئ منصتي
+          </UButton>
+        </UContainer>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-8">
+      <UContainer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-wrap items-center justify-between gap-6 text-sm text-slate-600">
+          <!-- Logo / Brand -->
+          <div class="flex items-center gap-2 font-black text-slate-900 text-base">
+            <UIcon name="i-lucide-graduation-cap" class="w-5 h-5 text-blue-600 shrink-0" />
+            <span>[اسم علامتك]</span>
+          </div>
+
+          <!-- Links -->
+          <div class="flex flex-wrap items-center gap-6 font-medium">
+            <a href="#start" class="hover:text-blue-600 transition-colors">من نحن</a>
+            <a href="#start" class="hover:text-blue-600 transition-colors">الدعم</a>
+            <a href="#start" class="hover:text-blue-600 transition-colors">الشروط</a>
+            <a href="#start" class="hover:text-blue-600 transition-colors">الخصوصية</a>
+          </div>
+
+          <!-- Copyright -->
+          <div class="text-xs sm:text-sm text-slate-500">
+            © [السنة] [اسم علامتك]
+          </div>
+        </div>
+      </UContainer>
+    </footer>
+  </div>
 </template>
-
-<style scoped>
-
-body{margin:0}
-a{color:#0F172A;text-decoration:none}a:hover{color:#2740E8}
-.ic{position:absolute;width:64px;height:64px;border-radius:18px;background:#FFFFFF;border:1px solid #DDE4FF;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:scale .2s;animation:fl 6s ease-in-out infinite}
-.ic:hover{scale:1.2}
-@keyframes fl{0%,100%{transform:translateY(0) rotate(var(--r))}50%{transform:translateY(-14px) rotate(var(--r))}}
-@media (max-width:900px){.ic{display:none}}
-.u{animation:up .7s ease-out both}
-@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-.rw{display:flex;flex-direction:column;animation:rw 10s cubic-bezier(.7,0,.2,1) infinite}
-.rw span{display:block;height:1.3em;white-space:nowrap}
-@keyframes rw{0%,20%{transform:translateY(0)}25%,45%{transform:translateY(-1.3em)}50%,70%{transform:translateY(-2.6em)}75%,95%{transform:translateY(-3.9em)}100%{transform:translateY(-5.2em)}}
-.rnw{display:block;height:1.5em;overflow:hidden}
-.rn{display:flex;flex-direction:column;animation:rn 7.5s cubic-bezier(.7,0,.2,1) infinite}
-.rn span{display:block;height:1.5em;line-height:1.5em}
-@keyframes rn{0%,28%{transform:translateY(0)}33%,61%{transform:translateY(-1.5em)}66%,94%{transform:translateY(-3em)}100%{transform:translateY(-4.5em)}}
-.pulse{animation:pr 2s ease-out infinite}
-@keyframes pr{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ring) 45%,transparent)}70%,100%{box-shadow:0 0 0 16px color-mix(in srgb,var(--ring) 0%,transparent)}}
-.dot{width:8px;height:8px;border-radius:50%;background:#0F172A;animation:bl 1.6s ease-in-out infinite}
-@keyframes bl{50%{opacity:.25}}
-.btn:hover{color:#FFFFFF;opacity:.92}
-.fq summary{list-style:none;cursor:pointer}
-.fq summary::-webkit-details-marker{display:none}
-.fq .chev{transition:transform .2s;flex:none}
-.fq[open] .chev{transform:rotate(45deg)}
-.a1{animation:toss 5s ease-in-out infinite}
-@keyframes toss{0%,100%{transform:translateY(0) rotate(var(--r))}40%{transform:translateY(-24px) rotate(calc(var(--r) + 28deg))}60%{transform:translateY(-24px) rotate(calc(var(--r) - 16deg))}}
-.a2{animation:pls 2.4s ease-in-out infinite}
-@keyframes pls{0%,100%{transform:rotate(var(--r)) scale(1);box-shadow:0 0 0 0 rgba(232,155,0,.45)}50%{transform:rotate(var(--r)) scale(1.1);box-shadow:0 0 0 14px rgba(232,155,0,0)}}
-.a3{animation:glow 3s ease-in-out infinite}
-@keyframes glow{0%,100%{transform:rotate(var(--r));box-shadow:0 0 0 0 rgba(255,194,71,0)}50%{transform:rotate(var(--r));box-shadow:0 0 28px 6px rgba(255,194,71,.7);background:#FFF8E1}}
-.a5{animation:swing 4s ease-in-out infinite}
-@keyframes swing{0%,100%{transform:rotate(calc(var(--r) - 12deg))}50%{transform:rotate(calc(var(--r) + 12deg))}}
-.a6{animation:wr 3.5s ease-in-out infinite}
-@keyframes wr{0%,100%{transform:translate(0,0) rotate(var(--r))}25%{transform:translate(-14px,6px) rotate(calc(var(--r) - 12deg))}50%{transform:translate(0,12px) rotate(calc(var(--r) + 6deg))}75%{transform:translate(14px,4px) rotate(calc(var(--r) - 8deg))}}
-.a7{animation:bob 3.2s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0) rotate(var(--r)) scale(1)}50%{transform:translateY(-12px) rotate(calc(var(--r) * -1)) scale(1.1)}}
-.a4 svg,.a8 svg{animation:spin 10s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.sp{position:absolute;width:10px;height:10px;border-radius:50%;opacity:0;animation:rise 6s ease-in infinite}
-@keyframes rise{0%{transform:translateY(0) scale(.6);opacity:0}20%{opacity:.9}100%{transform:translateY(-150px) scale(1.2);opacity:0}}
-@media (prefers-reduced-motion:reduce){.ic,.ic svg,.sp,.u,.rw,.rn,.pulse,.dot{animation:none}.ic{transform:rotate(var(--r))}.sp{opacity:.5}}
-
-</style>

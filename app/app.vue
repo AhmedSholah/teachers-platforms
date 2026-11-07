@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ar } from '@nuxt/ui/locale'
+
 useHead({
   htmlAttrs: {
     lang: 'ar',
@@ -13,10 +15,12 @@ useHead({
 </script>
 
 <template>
-  <div dir="rtl" class="app-root">
-    <NuxtRouteAnnouncer />
-    <NuxtPage />
-  </div>
+  <UApp :locale="ar">
+    <div class="app-root">
+      <NuxtRouteAnnouncer />
+      <NuxtPage />
+    </div>
+  </UApp>
 </template>
 
 <style>

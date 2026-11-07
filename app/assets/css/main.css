@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@utility text-inverted {
+  color: var(--ui-text-inverted, #ffffff);
+}
+
+.text-inverted {
+  color: var(--ui-text-inverted, #ffffff);
+}
+
+@theme {
+  --font-sans: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Inverted text/background token for Nuxt UI */
+  --color-inverted: #ffffff;
+
+  /* Main Website Brand Blue (#2740E8) */
+  --color-brand-50: #EEF1FF;
+  --color-brand-100: #DDE4FF;
+  --color-brand-200: #C9D3FF;
+  --color-brand-300: #A1B2FD;
+  --color-brand-400: #647BFA;
+  --color-brand-500: #2740E8;
+  --color-brand-600: #1F34C7;
+  --color-brand-700: #18279D;
+  --color-brand-800: #131E7B;
+  --color-brand-900: #10185F;
+  --color-brand-950: #0A0F3D;
+
+  /* Align Tailwind blue palette with the website's brand blue */
+  --color-blue-50: #EEF1FF;
+  --color-blue-100: #DDE4FF;
+  --color-blue-200: #C9D3FF;
+  --color-blue-300: #A1B2FD;
+  --color-blue-400: #647BFA;
+  --color-blue-500: #2740E8;
+  --color-blue-600: #2740E8;
+  --color-blue-700: #1F34C7;
+  --color-blue-800: #18279D;
+  --color-blue-900: #10185F;
+  --color-blue-950: #0A0F3D;
+
+  --animate-float-slow: float-slow 6s ease-in-out infinite;
+  --animate-float-medium: float-medium 4.5s ease-in-out infinite;
+  --animate-float-fast: float-fast 3.5s ease-in-out infinite;
+  --animate-float-reverse: float-reverse 5.5s ease-in-out infinite;
+  --animate-pulse-subtle: pulse-subtle 3s ease-in-out infinite;
+  --animate-bounce-subtle: bounce-subtle 2s ease-in-out infinite;
+
+  @keyframes float-slow {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-12px) rotate(3deg);
+    }
+  }
+
+  @keyframes float-medium {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-9px) rotate(-3deg);
+    }
+  }
+
+  @keyframes float-fast {
+    0%, 100% {
+      transform: translateY(0px) scale(1);
+    }
+    50% {
+      transform: translateY(-7px) scale(1.04);
+    }
+  }
+
+  @keyframes float-reverse {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(11px) rotate(-2deg);
+    }
+  }
+
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 0.95;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.75;
+      transform: scale(1.06);
+    }
+  }
+
+  @keyframes bounce-subtle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+}
+
+@utility anim-delay-200 {
+  animation-delay: 200ms;
+}
+@utility anim-delay-300 {
+  animation-delay: 300ms;
+}
+@utility anim-delay-500 {
+  animation-delay: 500ms;
+}
+@utility anim-delay-700 {
+  animation-delay: 700ms;
+}
+@utility anim-delay-1000 {
+  animation-delay: 1000ms;
+}
+@utility anim-delay-1200 {
+  animation-delay: 1200ms;
+}
+@utility anim-delay-1500 {
+  animation-delay: 1500ms;
+}
+@utility anim-delay-2000 {
+  animation-delay: 2000ms;
+}
+
+:root {
+  /* Global accent variable for legacy compatibility */
+  --ac: #2740E8;
+
+  /* Nuxt UI primary color palette mapped to brand blue */
+  --ui-primary: #2740E8;
+  --ui-color-primary-50: #EEF1FF;
+  --ui-color-primary-100: #DDE4FF;
+  --ui-color-primary-200: #C9D3FF;
+  --ui-color-primary-300: #A1B2FD;
+  --ui-color-primary-400: #647BFA;
+  --ui-color-primary-500: #2740E8;
+  --ui-color-primary-600: #1F34C7;
+  --ui-color-primary-700: #18279D;
+  --ui-color-primary-800: #131E7B;
+  --ui-color-primary-900: #10185F;
+  --ui-color-primary-950: #0A0F3D;
+}
