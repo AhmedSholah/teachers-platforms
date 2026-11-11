@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 useHead({
   title: 'لوحة التحكم - المعلم'
 })
@@ -145,7 +145,7 @@ const recentActivities = [
         <div class="flex items-start justify-between gap-4">
           <div class="flex flex-col gap-1">
             <span class="text-xs font-bold text-slate-500">{{ stat.title }}</span>
-            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">{{ stat.value }}</span>
+            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">{{ stat.value }}</span>
             <span
               class="text-xs font-bold mt-1 flex items-center gap-1"
               :class="stat.changeType === 'positive' ? 'text-emerald-600' : 'text-slate-400'"
@@ -230,7 +230,7 @@ const recentActivities = [
 
                 <div class="flex flex-col text-start sm:text-end">
                   <span class="text-xs text-slate-400 font-medium">الأرباح</span>
-                  <span class="text-sm font-extrabold text-emerald-600 font-mono">{{ course.revenue }}</span>
+                  <span class="text-sm font-extrabold text-emerald-600">{{ course.revenue }}</span>
                 </div>
 
                 <UButton
@@ -301,7 +301,7 @@ const recentActivities = [
               </div>
               <div class="flex flex-col">
                 <span class="text-xs font-bold text-emerald-900">الرصيد المتاح للسحب</span>
-                <span class="text-lg font-extrabold text-emerald-700 font-mono">3,850 ر.س</span>
+                <span class="text-lg font-extrabold text-emerald-700">3,850 ر.س</span>
               </div>
             </div>
 

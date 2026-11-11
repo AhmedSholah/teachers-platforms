@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 const route = useRoute()
 
 definePageMeta({
@@ -93,10 +93,10 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
         { label: 'تعديل الدورة' }
       ]
     }
-    if (path.endsWith('/categories')) {
+    // Classrooms
+    if (path.includes('/classrooms') || path.includes('/classes')) {
       return [
-        { label: 'دوراتي', to: '/teacher-dashboard/courses' },
-        { label: 'إدارة التصنيفات' }
+        { label: 'الفصول الدراسية' }
       ]
     }
     return [
@@ -144,14 +144,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
     ]
   }
 
-  // 8. Support
-  if (path.includes('/support')) {
-    return [
-      { label: 'المساعدة والدعم' }
-    ]
-  }
-
-  // 9. Default / Home
+  // 8. Default / Home
   return [
     { label: 'الرئيسية' }
   ]
@@ -294,7 +287,20 @@ const userMenuItems = [
             دوراتي
           </UButton>
 
-          <!-- 3. الطلاب -->
+          <!-- 3. الفصول الدراسية -->
+          <UButton
+            to="/teacher-dashboard/classrooms"
+            icon="i-lucide-school"
+            :variant="route.path.includes('/classrooms') || route.path.includes('/classes') ? 'subtle' : 'ghost'"
+            :color="route.path.includes('/classrooms') || route.path.includes('/classes') ? 'primary' : 'neutral'"
+            size="lg"
+            class="w-full justify-start gap-3 rounded-xl px-4 py-3 font-bold text-sm transition-all"
+            @click="closeMobileSidebar"
+          >
+            الفصول الدراسية
+          </UButton>
+
+          <!-- 4. الطلاب -->
           <UButton
             to="/teacher-dashboard/students"
             icon="i-lucide-users"
@@ -333,49 +339,9 @@ const userMenuItems = [
             المدفوعات
           </UButton>
 
-          <!-- 6. تصميم المنصة -->
-          <UButton
-            to="/teacher-dashboard/design"
-            icon="i-lucide-palette"
-            :variant="route.path === '/teacher-dashboard/design' ? 'subtle' : 'ghost'"
-            :color="route.path === '/teacher-dashboard/design' ? 'primary' : 'neutral'"
-            size="lg"
-            class="w-full justify-start gap-3 rounded-xl px-4 py-3 font-bold text-sm transition-all"
-            @click="closeMobileSidebar"
-          >
-            تصميم المنصة
-          </UButton>
-
-          <!-- 7. الإشعارات -->
-          <UButton
-            to="/teacher-dashboard/notifications"
-            icon="i-lucide-bell"
-            :variant="route.path.includes('/notifications') ? 'subtle' : 'ghost'"
-            :color="route.path.includes('/notifications') ? 'primary' : 'neutral'"
-            size="lg"
-            class="w-full justify-start gap-3 rounded-xl px-4 py-3 font-bold text-sm transition-all"
-            @click="closeMobileSidebar"
-          >
-            الإشعارات
-          </UButton>
-
-          <!-- 8. المساعدة والدعم -->
-          <UButton
-            to="/teacher-dashboard/support"
-            icon="i-lucide-life-buoy"
-            :variant="route.path.includes('/support') ? 'subtle' : 'ghost'"
-            :color="route.path.includes('/support') ? 'primary' : 'neutral'"
-            size="lg"
-            class="w-full justify-start gap-3 rounded-xl px-4 py-3 font-bold text-sm transition-all"
-            @click="closeMobileSidebar"
-          >
-            المساعدة والدعم
-          </UButton>
-
-          <!-- 9. الإعدادات (Accordion / Submenu) -->
+          <!-- 6. الإعدادات (Accordion / Submenu) -->
           <div class="flex flex-col gap-1 mt-1">
             <UButton
-              icon="i-lucide-settings"
               :variant="isSettingsRoute ? 'subtle' : 'ghost'"
               :color="isSettingsRoute ? 'primary' : 'neutral'"
               size="lg"
@@ -401,12 +367,22 @@ const userMenuItems = [
               <UButton
                 to="/teacher-dashboard/settings"
                 variant="ghost"
-                :color="route.path === '/teacher-dashboard/settings' ? 'primary' : 'neutral'"
+                :color="route.path === '/teacher-dashboard/settings' && route.query.tab !== 'design' ? 'primary' : 'neutral'"
                 size="sm"
                 class="w-full justify-start rounded-lg font-medium text-xs py-2"
                 @click="closeMobileSidebar"
               >
                 إعدادات المنصة
+              </UButton>
+              <UButton
+                to="/teacher-dashboard/settings?tab=design"
+                variant="ghost"
+                :color="(route.path === '/teacher-dashboard/settings' && route.query.tab === 'design') || route.path.includes('/design') ? 'primary' : 'neutral'"
+                size="sm"
+                class="w-full justify-start rounded-lg font-medium text-xs py-2"
+                @click="closeMobileSidebar"
+              >
+                تصميم المنصة
               </UButton>
               <UButton
                 to="/teacher-dashboard/settings/subscription"

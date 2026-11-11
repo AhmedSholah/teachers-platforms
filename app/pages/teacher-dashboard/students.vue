@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 useHead({
   title: 'إدارة الطلاب - لوحة المعلم'
 })
@@ -267,7 +267,7 @@ function getStudentActions(student: Student) {
 
               <!-- Total Spent -->
               <td class="p-4">
-                <span class="font-bold text-emerald-600 font-mono">{{ student.totalSpent }}</span>
+                <span class="font-bold text-emerald-600">{{ student.totalSpent }}</span>
               </td>
 
               <!-- Join Date -->

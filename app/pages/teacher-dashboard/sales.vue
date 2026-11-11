@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 useHead({
   title: 'المبيعات والأرباح - لوحة المعلم'
 })
@@ -129,7 +129,7 @@ const filteredTransactions = computed(() => {
         <div class="flex items-start justify-between gap-4">
           <div class="flex flex-col gap-1">
             <span class="text-xs font-bold text-slate-500">إجمالي الأرباح</span>
-            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">18,450 ر.س</span>
+            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">18,450 ر.س</span>
             <span class="text-xs font-bold text-emerald-600 mt-1 flex items-center gap-1">
               <UIcon name="i-lucide-trending-up" class="w-3.5 h-3.5" />
               +14% مقارنة بالشهر السابق
@@ -145,7 +145,7 @@ const filteredTransactions = computed(() => {
         <div class="flex items-start justify-between gap-4">
           <div class="flex flex-col gap-1">
             <span class="text-xs font-bold text-slate-500">مبيعات هذا الشهر</span>
-            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">4,250 ر.س</span>
+            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">4,250 ر.س</span>
             <span class="text-xs font-bold text-blue-600 mt-1">28 عملية بيع مكتملة</span>
           </div>
           <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
@@ -158,7 +158,7 @@ const filteredTransactions = computed(() => {
         <div class="flex items-start justify-between gap-4">
           <div class="flex flex-col gap-1">
             <span class="text-xs font-bold text-slate-500">الرصيد القابل للسحب</span>
-            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">3,850 ر.س</span>
+            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">3,850 ر.س</span>
             <span class="text-xs text-slate-400 mt-1">متاح للتحويل فوراً</span>
           </div>
           <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
@@ -171,7 +171,7 @@ const filteredTransactions = computed(() => {
         <div class="flex items-start justify-between gap-4">
           <div class="flex flex-col gap-1">
             <span class="text-xs font-bold text-slate-500">متوسط قيمة الطلب</span>
-            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">180 ر.س</span>
+            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">180 ر.س</span>
             <span class="text-xs text-slate-400 mt-1">لكل دورة مباعة</span>
           </div>
           <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
@@ -273,7 +273,7 @@ const filteredTransactions = computed(() => {
               <!-- Amount & Net -->
               <td class="p-4">
                 <div class="flex flex-col">
-                  <span class="font-bold text-emerald-600 font-mono">{{ txn.amount }}</span>
+                  <span class="font-bold text-emerald-600">{{ txn.amount }}</span>
                   <span class="text-[11px] text-slate-400">صافي: {{ txn.netAmount }}</span>
                 </div>
               </td>
