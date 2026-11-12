@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 useHead({
   title: 'الإشعارات - لوحة المعلم'
 })
@@ -103,43 +103,30 @@ function deleteNotification(id: number) {
 </script>
 
 <template>
-  <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-5xl mx-auto w-full">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            الإشعارات
-          </h1>
-          <UBadge
-            v-if="unreadCount > 0"
-            color="primary"
-            variant="solid"
-            size="sm"
-            class="font-extrabold rounded-full px-2.5"
-          >
-            {{ unreadCount }} جديدة
-          </UBadge>
-        </div>
-        <p class="text-sm sm:text-base text-slate-500 font-medium">
-          متابعة أنشطة الطلاب والمبيعات وتحديثات منصتك التعليمية.
-        </p>
-      </div>
+  <div class="flex flex-col min-h-full">
+    <DashboardActionBar v-if="unreadCount > 0" max-width="max-w-5xl" container-class="px-6 sm:px-8 lg:px-10">
+      <UButton
+        icon="i-lucide-check-check"
+        color="neutral"
+        variant="outline"
+        size="md"
+        class="font-bold rounded-xl"
+        @click="markAllAsRead"
+      >
+        تحديد الكل كمقروء
+      </UButton>
 
-      <div class="flex items-center gap-2">
-        <UButton
-          v-if="unreadCount > 0"
-          icon="i-lucide-check-check"
-          color="neutral"
-          variant="outline"
-          size="sm"
-          class="font-bold rounded-xl"
-          @click="markAllAsRead"
-        >
-          تحديد الكل كمقروء
-        </UButton>
-      </div>
-    </div>
+      <UBadge
+        color="primary"
+        variant="subtle"
+        size="md"
+        class="font-extrabold rounded-full px-3 py-1"
+      >
+        {{ unreadCount }} جديدة
+      </UBadge>
+    </DashboardActionBar>
+
+    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-5xl mx-auto w-full">
 
     <!-- Filter Pills -->
     <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
@@ -250,5 +237,6 @@ function deleteNotification(id: number) {
         <p class="text-xs text-slate-400">ستظهر هنا أي تنبيهات أو أنشطة جديدة في منصتك.</p>
       </div>
     </UCard>
+    </div>
   </div>
 </template>

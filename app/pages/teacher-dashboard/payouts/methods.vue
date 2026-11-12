@@ -68,27 +68,21 @@ function saveMethod() {
 </script>
 
 <template>
-  <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-3xl mx-auto w-full">
-    <!-- Header -->
-    <div class="flex items-center gap-3">
+  <div class="flex flex-col min-h-full">
+    <DashboardActionBar max-width="max-w-3xl" container-class="px-6 sm:px-8 lg:px-10">
       <UButton
         to="/teacher-dashboard/payouts"
         color="neutral"
         variant="outline"
-        size="sm"
+        size="md"
         icon="i-lucide-arrow-right"
-        class="rounded-xl cursor-pointer"
-        aria-label="رجوع إلى المدفوعات"
-      />
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          طريقة استلام الأرباح
-        </h1>
-        <p class="text-sm text-slate-500 font-medium">
-          اختر وحدد بيانات الطريقة المفضلة لتحويل أرباحك ومستحقاتك المالية.
-        </p>
-      </div>
-    </div>
+        class="font-medium rounded-xl cursor-pointer"
+      >
+        رجوع إلى المدفوعات
+      </UButton>
+    </DashboardActionBar>
+
+    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-3xl mx-auto w-full">
 
     <!-- Main Card -->
     <UCard class="border border-slate-200 shadow-sm rounded-2xl bg-white">
@@ -284,5 +278,6 @@ function saveMethod() {
         </div>
       </form>
     </UCard>
+    </div>
   </div>
 </template>

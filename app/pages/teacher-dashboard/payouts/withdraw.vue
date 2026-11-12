@@ -27,25 +27,21 @@ function handleConfirm() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 md:gap-8 p-6 md:p-10 w-full max-w-4xl mx-auto box-border">
-    <!-- Page Header & Back Navigation -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex flex-col gap-1.5">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">سحب الأرباح</h1>
-        <p class="text-sm text-slate-500 font-medium">حوّل أرباحك إلى حسابك بخطوات بسيطة.</p>
-      </div>
-
+  <div class="flex flex-col min-h-full">
+    <DashboardActionBar max-width="max-w-4xl" container-class="px-6 md:px-10">
       <UButton
         to="/teacher-dashboard/payouts"
         color="neutral"
         variant="outline"
         size="md"
         icon="i-lucide-arrow-right"
-        class="self-start sm:self-auto font-medium"
+        class="font-medium rounded-xl cursor-pointer"
       >
         رجوع إلى المدفوعات
       </UButton>
-    </div>
+    </DashboardActionBar>
+
+    <div class="flex flex-col gap-6 md:gap-8 p-6 md:p-10 w-full max-w-4xl mx-auto box-border">
 
     <!-- Main Withdrawal Card -->
     <UCard class="w-full max-w-2xl rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
@@ -145,5 +141,6 @@ function handleConfirm() {
         </div>
       </div>
     </UCard>
+    </div>
   </div>
 </template>

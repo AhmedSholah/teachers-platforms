@@ -164,39 +164,32 @@ const payoutCount = computed(() => transactions.value.filter(t => t.type === 'pa
 </script>
 
 <template>
-  <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-7xl mx-auto w-full box-border">
-    <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="flex flex-col gap-1.5">
-        <h1 class="m-0 text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">المدفوعات والمعاملات</h1>
-        <p class="m-0 text-sm sm:text-base text-slate-500">
-          متابعة إجمالي أرباح الأكاديمية هذا الشهر، مستحقات الاستخدام والخدمات، واستعراض جدول المعاملات المالية بالكامل.
-        </p>
-      </div>
+  <div class="flex flex-col min-h-full">
+    <!-- Sub-navbar Action Bar -->
+    <DashboardActionBar>
+      <UButton
+        to="/teacher-dashboard/payouts/withdraw"
+        color="primary"
+        variant="solid"
+        size="md"
+        icon="i-lucide-arrow-up-right"
+        class="font-bold cursor-pointer"
+      >
+        سحب الأرباح
+      </UButton>
+      <UButton
+        to="/teacher-dashboard/payouts/methods"
+        variant="outline"
+        color="neutral"
+        size="md"
+        icon="i-lucide-credit-card"
+        class="font-bold cursor-pointer"
+      >
+        طرق الاستلام
+      </UButton>
+    </DashboardActionBar>
 
-      <div class="flex items-center gap-3">
-        <UButton
-          to="/teacher-dashboard/payouts/methods"
-          variant="outline"
-          color="neutral"
-          size="md"
-          icon="i-lucide-credit-card"
-          class="font-bold cursor-pointer"
-        >
-          طرق الاستلام
-        </UButton>
-        <UButton
-          to="/teacher-dashboard/payouts/withdraw"
-          color="primary"
-          variant="solid"
-          size="md"
-          icon="i-lucide-arrow-up-right"
-          class="font-bold cursor-pointer"
-        >
-          سحب الأرباح
-        </UButton>
-      </div>
-    </div>
+    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-7xl mx-auto w-full box-border">
 
     <!-- Top 2 Cards: Total Academy Earnings & End of Month Usage Cost -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
@@ -550,5 +543,6 @@ const payoutCount = computed(() => transactions.value.filter(t => t.type === 'pa
         </UButton>
       </div>
     </UCard>
+    </div>
   </div>
 </template>
