@@ -59,26 +59,6 @@ const perPageItems = [
   { label: '20 دورة بالصفحة', value: 20 }
 ]
 
-// Summary KPIs
-const totalStudents = computed(() => {
-  return courses.value.reduce((acc, c) => acc + (c.studentsCount || 0), 0)
-})
-
-const totalRevenue = computed(() => {
-  return courses.value.reduce((acc, c) => acc + (c.revenueNumeric || 0), 0)
-})
-
-const publishedCount = computed(() => {
-  return courses.value.filter(c => c.status === 'published').length
-})
-
-const averageCompletionRate = computed(() => {
-  const publishedCourses = courses.value.filter(c => c.status === 'published' && c.completionRate)
-  if (!publishedCourses.length) return 0
-  const sum = publishedCourses.reduce((acc, c) => acc + (c.completionRate || 0), 0)
-  return Math.round(sum / publishedCourses.length)
-})
-
 // Filtered and Sorted Courses
 const filteredCourses = computed(() => {
   const list = courses.value.filter(course => {
@@ -307,102 +287,33 @@ const hasActiveFilters = computed(() => {
 </script>
 
 <template>
-  <div class="p-4 sm:p-6 lg:p-8 flex flex-col gap-6 max-w-7xl mx-auto w-full box-border">
-    <!-- Top Header and Main Action Buttons -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
-      <div class="flex flex-col gap-1">
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            دوراتي التعليمية
-          </h1>
-          <UBadge color="primary" variant="subtle" size="md" class="font-extrabold rounded-full px-2.5">
-            {{ courses.length }} دورات
-          </UBadge>
-        </div>
-        <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">
-          إدارة وتنظيم كافة الدورات والمناهج التعليمية، مع إمكانية الفرز والتصفية وتنفيذ العمليات الجماعية.
-        </p>
-      </div>
+  <div class="flex flex-col min-h-full">
+    <!-- Sub-navbar Action Bar -->
+    <DashboardActionBar container-class="px-4 sm:px-6 lg:px-8">
+      <UButton
+        to="/teacher-dashboard/courses/new"
+        color="primary"
+        variant="solid"
+        icon="i-lucide-plus"
+        size="md"
+        class="font-bold rounded-xl shadow-xs"
+      >
+        دورة جديدة
+      </UButton>
 
-      <div class="flex items-center gap-2.5">
-        <UButton
-          to="/teacher-dashboard/classrooms"
-          color="neutral"
-          variant="outline"
-          icon="i-lucide-school"
-          size="md"
-          class="font-bold rounded-xl"
-        >
-          الفصول الدراسية
-        </UButton>
+      <UButton
+        to="/teacher-dashboard/classrooms"
+        color="neutral"
+        variant="outline"
+        icon="i-lucide-school"
+        size="md"
+        class="font-bold rounded-xl"
+      >
+        الفصول الدراسية
+      </UButton>
+    </DashboardActionBar>
 
-        <UButton
-          to="/teacher-dashboard/courses/new"
-          color="primary"
-          variant="solid"
-          icon="i-lucide-plus"
-          size="md"
-          class="font-bold rounded-xl shadow-sm"
-        >
-          دورة جديدة
-        </UButton>
-      </div>
-    </div>
-
-    <!-- Quick Analytics KPI Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
-        <div>
-          <span class="text-xs font-bold text-slate-400 block mb-1">إجمالي الدورات</span>
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-black text-slate-900 dark:text-white">{{ courses.length }}</span>
-            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ publishedCount }} منشورة</span>
-          </div>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-          <UIcon name="i-lucide-book-open" class="w-5 h-5" />
-        </div>
-      </div>
-
-      <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
-        <div>
-          <span class="text-xs font-bold text-slate-400 block mb-1">الطلاب المسجلين</span>
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-black text-slate-900 dark:text-white">{{ totalStudents }}</span>
-            <span class="text-xs font-bold text-slate-400">طالب</span>
-          </div>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-          <UIcon name="i-lucide-users" class="w-5 h-5" />
-        </div>
-      </div>
-
-      <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
-        <div>
-          <span class="text-xs font-bold text-slate-400 block mb-1">إجمالي المبيعات</span>
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400">{{ totalRevenue.toLocaleString('ar-EG') }}</span>
-            <span class="text-xs font-bold text-slate-400">ج.م</span>
-          </div>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-          <UIcon name="i-lucide-wallet" class="w-5 h-5" />
-        </div>
-      </div>
-
-      <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
-        <div>
-          <span class="text-xs font-bold text-slate-400 block mb-1">متوسط إنجاز الطلاب</span>
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-black text-purple-600 dark:text-purple-400">{{ averageCompletionRate }}%</span>
-            <span class="text-xs font-bold text-slate-400">للمنشورة</span>
-          </div>
-        </div>
-        <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-          <UIcon name="i-lucide-trending-up" class="w-5 h-5" />
-        </div>
-      </div>
-    </div>
+    <div class="p-4 sm:p-6 lg:p-8 flex flex-col gap-6 max-w-7xl mx-auto w-full box-border">
 
     <!-- Table Toolbar with Nuxt UI Components -->
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 shadow-xs">
@@ -800,5 +711,6 @@ const hasActiveFilters = computed(() => {
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>

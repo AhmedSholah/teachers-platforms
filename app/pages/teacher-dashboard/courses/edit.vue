@@ -333,86 +333,73 @@ function togglePublishStatus() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full max-w-5xl mx-auto">
-    <!-- Success Toast Alert -->
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0 -translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 -translate-y-2"
-    >
-      <div
-        v-if="showSuccessNotification"
-        class="fixed top-20 start-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm"
+  <div class="flex flex-col min-h-full">
+    <!-- Sub-navbar Action Bar -->
+    <DashboardActionBar max-width="max-w-5xl" container-class="px-6 md:px-10">
+      <UButton
+        to="/teacher-dashboard/courses"
+        color="neutral"
+        variant="outline"
+        size="md"
+        icon="i-lucide-arrow-right"
+        class="font-bold rounded-xl cursor-pointer shrink-0"
       >
-        <UIcon name="i-lucide-check-circle" class="w-5 h-5 shrink-0" />
-        <span>{{ notificationMessage }}</span>
-      </div>
-    </Transition>
+        رجوع إلى دوراتي
+      </UButton>
 
-    <!-- Header with Back Button, Title, and Preview Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <UButton
-          to="/teacher-dashboard/courses"
-          color="neutral"
-          variant="outline"
-          size="md"
-          icon="i-lucide-arrow-right"
-          class="font-bold rounded-xl cursor-pointer shrink-0"
+      <UButton
+        color="primary"
+        variant="solid"
+        size="md"
+        icon="i-lucide-save"
+        :loading="isSaving"
+        class="font-bold rounded-xl cursor-pointer"
+        @click="saveChanges"
+      >
+        حفظ التعديلات
+      </UButton>
+
+      <UButton
+        href="https://ahmed.mydomain.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        color="neutral"
+        variant="outline"
+        size="md"
+        icon="i-lucide-external-link"
+        class="font-bold rounded-xl cursor-pointer"
+      >
+        معاينة الدورة
+      </UButton>
+
+      <UBadge
+        :color="form.isPublished ? 'success' : 'warning'"
+        variant="subtle"
+        size="sm"
+        class="font-bold rounded-lg"
+      >
+        {{ form.isPublished ? 'منشورة' : 'مسودة' }}
+      </UBadge>
+    </DashboardActionBar>
+
+    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full max-w-5xl mx-auto">
+      <!-- Success Toast Alert -->
+      <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0 -translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-2"
+      >
+        <div
+          v-if="showSuccessNotification"
+          class="fixed top-20 start-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm"
         >
-          رجوع إلى دوراتي
-        </UButton>
-
-        <div class="flex flex-col gap-1">
-          <div class="flex items-center gap-2.5 flex-wrap">
-            <h1 class="m-0 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              تعديل الدورة: {{ form.title }}
-            </h1>
-            <UBadge
-              :color="form.isPublished ? 'success' : 'warning'"
-              variant="subtle"
-              size="sm"
-              class="font-bold rounded-lg"
-            >
-              {{ form.isPublished ? 'منشورة' : 'مسودة' }}
-            </UBadge>
-          </div>
-          <p class="text-sm text-slate-500 dark:text-slate-400 font-medium m-0">
-            تعديل بيانات الدورة، دروسها، وإعدادات التسعير والنشر في ۳ خطوات.
-          </p>
+          <UIcon name="i-lucide-check-circle" class="w-5 h-5 shrink-0" />
+          <span>{{ notificationMessage }}</span>
         </div>
-      </div>
-
-      <div class="flex items-center gap-2 shrink-0">
-        <UButton
-          href="https://ahmed.mydomain.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          color="neutral"
-          variant="outline"
-          size="md"
-          icon="i-lucide-external-link"
-          class="font-bold rounded-xl cursor-pointer"
-        >
-          معاينة الدورة
-        </UButton>
-
-        <UButton
-          color="primary"
-          variant="solid"
-          size="md"
-          icon="i-lucide-save"
-          :loading="isSaving"
-          class="font-bold rounded-xl cursor-pointer"
-          @click="saveChanges"
-        >
-          حفظ التعديلات
-        </UButton>
-      </div>
-    </div>
+      </Transition>
 
     <!-- Stepper Navigation using Nuxt UI UStepper with numbers -->
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xs">
@@ -1336,5 +1323,6 @@ function togglePublishStatus() {
         </div>
       </template>
     </UModal>
+    </div>
   </div>
 </template>

@@ -83,12 +83,6 @@ const invoices = [
 
 <template>
   <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
-    <!-- Page Header -->
-    <div class="flex flex-col gap-1.5">
-      <h1 class="m-0 text-3xl font-extrabold text-slate-900 leading-tight">اشتراك المنصة</h1>
-      <span class="text-sm md:text-base text-slate-500">إدارة خطة اشتراكك الحالية، استعراض مزايا الباقة وسجل الفواتير والدفع.</span>
-    </div>
-
     <!-- Current Subscription Card -->
     <UCard class="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
       <template #header>

@@ -39,18 +39,8 @@ function saveProfile() {
 </script>
 
 <template>
-  <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-4xl mx-auto w-full">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          الملف الشخصي للمعلم
-        </h1>
-        <p class="text-sm sm:text-base text-slate-500 font-medium">
-          إدارة سيرتك الذاتية وتخصصاتك والروابط التي تظهر للطلاب في صفحة منصتك.
-        </p>
-      </div>
-
+  <div class="flex flex-col min-h-full">
+    <DashboardActionBar max-width="max-w-4xl" container-class="px-6 sm:px-8 lg:px-10">
       <UButton
         to="/teacher-dashboard"
         color="neutral"
@@ -60,7 +50,9 @@ function saveProfile() {
       >
         معاينة الصفحة العامة
       </UButton>
-    </div>
+    </DashboardActionBar>
+
+    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-4xl mx-auto w-full">
 
     <!-- Main Profile Form Card -->
     <UCard class="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
@@ -252,5 +244,6 @@ function saveProfile() {
         </div>
       </form>
     </UCard>
+    </div>
   </div>
 </template>

@@ -93,14 +93,21 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
         { label: 'تعديل الدورة' }
       ]
     }
-    // Classrooms
-    if (path.includes('/classrooms') || path.includes('/classes')) {
+    return [
+      { label: 'دوراتي' }
+    ]
+  }
+
+  // 3b. Classrooms
+  if (path.includes('/classrooms') || path.includes('/classes')) {
+    if (path.endsWith('/new')) {
       return [
-        { label: 'الفصول الدراسية' }
+        { label: 'الفصول الدراسية', to: '/teacher-dashboard/classrooms' },
+        { label: 'إضافة فصل دراسي جديد' }
       ]
     }
     return [
-      { label: 'دوراتي' }
+      { label: 'الفصول الدراسية' }
     ]
   }
 

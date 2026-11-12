@@ -88,40 +88,31 @@ const filteredTransactions = computed(() => {
 </script>
 
 <template>
-  <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          سجل المبيعات والأرباح
-        </h1>
-        <p class="text-sm sm:text-base text-slate-500 font-medium">
-          تحليل مبيعات الدورات وصافي الإيرادات المحققة في منصتك.
-        </p>
-      </div>
+  <div class="flex flex-col min-h-full">
+    <!-- Sub-navbar Action Bar -->
+    <DashboardActionBar>
+      <UButton
+        to="/teacher-dashboard/payouts/withdraw"
+        icon="i-lucide-wallet"
+        color="primary"
+        variant="solid"
+        size="md"
+        class="font-bold rounded-xl"
+      >
+        طلب سحب أرباح
+      </UButton>
+      <UButton
+        icon="i-lucide-download"
+        color="neutral"
+        variant="outline"
+        size="md"
+        class="font-bold rounded-xl"
+      >
+        تصدير التقرير
+      </UButton>
+    </DashboardActionBar>
 
-      <div class="flex items-center gap-2">
-        <UButton
-          icon="i-lucide-download"
-          color="neutral"
-          variant="outline"
-          size="md"
-          class="font-bold rounded-xl"
-        >
-          تصدير التقرير
-        </UButton>
-        <UButton
-          to="/teacher-dashboard/payouts/withdraw"
-          icon="i-lucide-wallet"
-          color="primary"
-          variant="solid"
-          size="md"
-          class="font-bold rounded-xl"
-        >
-          طلب سحب أرباح
-        </UButton>
-      </div>
-    </div>
+    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
 
     <!-- Revenue Stats Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -314,5 +305,6 @@ const filteredTransactions = computed(() => {
         <p class="text-xs text-slate-400">لا توجد عمليات بيع تطابق البحث في هذه الفترة.</p>
       </div>
     </UCard>
+    </div>
   </div>
 </template>

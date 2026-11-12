@@ -37,6 +37,19 @@ This document establishes the architectural and styling standards for all AI age
 - Use Iconify collection identifiers (e.g., `i-lucide-*`, `i-heroicons-*`).
 - Control icon sizing and coloring using Tailwind CSS utility classes (e.g., `class="w-5 h-5 text-blue-600"`) or component props (`size`, `color`).
 
+### 1.4 Dashboard Header & Page Titles (Breadcrumbs Replacement)
+
+- **No redundant page title (`<h1>`) or description headers on inner dashboard pages:**
+  - The top navbar already renders breadcrumbs (`UBreadcrumb`) indicating the active section and page hierarchy.
+  - Do not add `<h1>` title headers or explanatory `<p>` subtitle banners at the top of inner dashboard pages.
+  - **Exception:** The dashboard home / overview page (`/teacher-dashboard/index.vue`), which retains the welcome hero card.
+- **Sub-navbar Action Bar (`DashboardActionBar`):**
+  - If a page contains primary actions (e.g. "إنشاء دورة جديدة", "إضافة طالب", "تصدير CSV", back navigation buttons, or status badges), place them inside `<DashboardActionBar>` directly beneath the sticky top navbar.
+  - **Alignment & Margins:**
+    - Action buttons must be placed on the **right** (start side in RTL) by default.
+    - `DashboardActionBar` must mirror the exact max-width and horizontal margins/padding of the page content (`maxWidth` like `max-w-7xl` or `max-w-5xl`, and `containerClass` like `px-6 sm:px-8 lg:px-10`), ensuring that action buttons align pixel-perfect with the page's cards, tables, and content grid.
+    - Do not allow action buttons to overflow to the screen edges or drift away from the content boundaries.
+
 ---
 
 ## 2. Component & Code Conventions

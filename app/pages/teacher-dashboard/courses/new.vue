@@ -301,47 +301,39 @@ function saveAsDraftQuick() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full max-w-5xl mx-auto">
-    <!-- Success Toast Alert -->
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0 -translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 -translate-y-2"
-    >
-      <div
-        v-if="showSuccessNotification"
-        class="fixed top-20 start-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm"
-      >
-        <UIcon name="i-lucide-check-circle" class="w-5 h-5 shrink-0" />
-        <span>{{ notificationMessage }}</span>
-      </div>
-    </Transition>
-
-    <!-- Header with Back Button and Title -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <h1 class="m-0 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          إنشاء دورة جديدة
-        </h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">
-          أنشئ دورتك التعليمية في ۳ خطوات سهلة ومنظمة.
-        </p>
-      </div>
-
+  <div class="flex flex-col min-h-full">
+    <!-- Sub-navbar Action Bar -->
+    <DashboardActionBar max-width="max-w-5xl" container-class="px-6 md:px-10">
       <UButton
         to="/teacher-dashboard/courses"
         color="neutral"
         variant="outline"
         size="md"
         icon="i-lucide-arrow-right"
-        class="font-bold rounded-xl cursor-pointer self-start sm:self-auto shrink-0"
+        class="font-bold rounded-xl cursor-pointer"
       >
         رجوع إلى دوراتي
       </UButton>
-    </div>
+    </DashboardActionBar>
+
+    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full max-w-5xl mx-auto">
+      <!-- Success Toast Alert -->
+      <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0 -translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-2"
+      >
+        <div
+          v-if="showSuccessNotification"
+          class="fixed top-20 start-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm"
+        >
+          <UIcon name="i-lucide-check-circle" class="w-5 h-5 shrink-0" />
+          <span>{{ notificationMessage }}</span>
+        </div>
+      </Transition>
 
     <!-- Stepper Navigation using Nuxt UI UStepper with numbers -->
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xs">
@@ -1249,5 +1241,6 @@ function saveAsDraftQuick() {
         </div>
       </template>
     </UModal>
+    </div>
   </div>
 </template>

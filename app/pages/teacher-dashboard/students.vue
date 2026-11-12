@@ -108,39 +108,30 @@ function getStudentActions(student: Student) {
 </script>
 
 <template>
-  <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          الطلاب المسجلون
-        </h1>
-        <p class="text-sm sm:text-base text-slate-500 font-medium">
-          إدارة ومتابعة الطلاب الملتحقين بدوراتك ومتابعة تقدمهم.
-        </p>
-      </div>
+  <div class="flex flex-col min-h-full">
+    <!-- Sub-navbar Action Bar -->
+    <DashboardActionBar>
+      <UButton
+        icon="i-lucide-user-plus"
+        color="primary"
+        variant="solid"
+        size="md"
+        class="font-bold rounded-xl"
+      >
+        إضافة طالب
+      </UButton>
+      <UButton
+        icon="i-lucide-download"
+        color="neutral"
+        variant="outline"
+        size="md"
+        class="font-bold rounded-xl"
+      >
+        تصدير CSV
+      </UButton>
+    </DashboardActionBar>
 
-      <div class="flex items-center gap-2">
-        <UButton
-          icon="i-lucide-download"
-          color="neutral"
-          variant="outline"
-          size="md"
-          class="font-bold rounded-xl"
-        >
-          تصدير CSV
-        </UButton>
-        <UButton
-          icon="i-lucide-user-plus"
-          color="primary"
-          variant="solid"
-          size="md"
-          class="font-bold rounded-xl"
-        >
-          إضافة طالب
-        </UButton>
-      </div>
-    </div>
+    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
 
     <!-- Quick Stats Summary -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -314,5 +305,6 @@ function getStudentActions(student: Student) {
         <p class="text-xs text-slate-400">جرّب البحث بكلمة أخرى أو تغيير الفلتر.</p>
       </div>
     </UCard>
+    </div>
   </div>
 </template>
