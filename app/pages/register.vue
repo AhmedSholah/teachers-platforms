@@ -100,113 +100,119 @@ async function handleRegister() {
 
 <template>
   <div
-    class="w-full min-h-screen flex flex-col lg:flex-row bg-white text-slate-900 font-sans"
+    class="w-full min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans"
   >
-    <!-- Brand Showcase Section (Side Banner) -->
-    <div
-      class="lg:w-[460px] xl:w-[520px] shrink-0 bg-blue-600 text-white relative overflow-hidden p-8 sm:p-12 lg:p-14 flex flex-col justify-between gap-10"
-    >
-      <!-- Decorative Background Glows -->
-      <div
-        class="absolute -bottom-24 -start-24 w-80 h-80 rounded-full bg-white/10 blur-2xl pointer-events-none"
-      />
-      <div
-        class="absolute -top-24 -end-24 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl pointer-events-none"
-      />
-      <div
-        class="absolute top-1/2 -end-16 w-60 h-60 rounded-full bg-amber-400/20 blur-2xl pointer-events-none"
-      />
+    <PublicNavbar />
 
-      <!-- Floating Feature Badges -->
+    <div class="flex-1 flex flex-col lg:flex-row">
+      <!-- Brand Showcase Section (Side Banner) -->
       <div
-        class="hidden sm:flex absolute top-12 end-10 w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center text-white -rotate-6 shadow-lg shadow-blue-950/20"
+        class="hidden lg:flex lg:w-[460px] xl:w-[520px] shrink-0 bg-blue-600 text-white relative overflow-hidden p-8 sm:p-12 lg:p-14 flex-col justify-between gap-10"
       >
-        <UIcon name="i-lucide-graduation-cap" class="w-7 h-7" />
-      </div>
-      <div
-        class="hidden sm:flex absolute top-1/3 start-8 w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center text-white rotate-12 shadow-lg shadow-blue-950/20"
-      >
-        <UIcon name="i-lucide-book-open" class="w-7 h-7" />
-      </div>
-      <div
-        class="hidden sm:flex absolute bottom-44 start-10 w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center text-white -rotate-12 shadow-lg shadow-blue-950/20"
-      >
-        <UIcon name="i-lucide-lightbulb" class="w-7 h-7" />
-      </div>
-      <div
-        class="hidden sm:flex absolute bottom-16 end-8 w-14 h-14 rounded-2xl bg-amber-400/20 backdrop-blur-md border border-amber-300/40 items-center justify-center text-amber-300 rotate-6 shadow-lg shadow-amber-950/20"
-      >
-        <UIcon name="i-lucide-sparkles" class="w-7 h-7" />
-      </div>
-
-      <!-- Top Brand Header -->
-      <div class="relative z-10 flex items-center gap-3">
+        <!-- Decorative Background Glows -->
         <div
-          class="w-10 h-10 rounded-xl bg-white text-blue-600 flex items-center justify-center shadow-md"
+          class="absolute -bottom-24 -start-24 w-80 h-80 rounded-full bg-white/10 blur-2xl pointer-events-none"
+        />
+        <div
+          class="absolute -top-24 -end-24 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl pointer-events-none"
+        />
+        <div
+          class="absolute top-1/2 -end-16 w-60 h-60 rounded-full bg-amber-400/20 blur-2xl pointer-events-none"
+        />
+
+        <!-- Floating Feature Badges -->
+        <div
+          class="hidden sm:flex absolute top-12 end-10 w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center text-white -rotate-6 shadow-lg shadow-blue-950/20"
         >
-          <UIcon name="i-lucide-graduation-cap" class="w-6 h-6" />
+          <UIcon name="i-lucide-graduation-cap" class="w-7 h-7" />
         </div>
-        <NuxtLink
-          to="/"
-          class="text-xl font-extrabold tracking-tight text-white hover:opacity-90 transition-opacity"
+        <div
+          class="hidden sm:flex absolute top-1/3 start-8 w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center text-white rotate-12 shadow-lg shadow-blue-950/20"
         >
-          [اسم علامتك]
-        </NuxtLink>
+          <UIcon name="i-lucide-book-open" class="w-7 h-7" />
+        </div>
+        <div
+          class="hidden sm:flex absolute bottom-44 start-10 w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center text-white -rotate-12 shadow-lg shadow-blue-950/20"
+        >
+          <UIcon name="i-lucide-lightbulb" class="w-7 h-7" />
+        </div>
+        <div
+          class="hidden sm:flex absolute bottom-16 end-8 w-14 h-14 rounded-2xl bg-amber-400/20 backdrop-blur-md border border-amber-300/40 items-center justify-center text-amber-300 rotate-6 shadow-lg shadow-amber-950/20"
+        >
+          <UIcon name="i-lucide-sparkles" class="w-7 h-7" />
+        </div>
+
+        <!-- Top Brand Header -->
+        <div class="relative z-10 flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-white text-blue-600 flex items-center justify-center shadow-md"
+          >
+            <UIcon name="i-lucide-graduation-cap" class="w-6 h-6" />
+          </div>
+          <NuxtLink
+            to="/"
+            class="text-xl font-extrabold tracking-tight text-white hover:opacity-90 transition-opacity"
+          >
+            [اسم علامتك]
+          </NuxtLink>
+        </div>
+
+        <!-- Main Showcase Content -->
+        <div class="relative z-10 flex flex-col gap-4">
+          <h1
+            class="text-3xl sm:text-4xl xl:text-5xl font-extrabold leading-tight tracking-tight text-white m-0"
+          >
+            ابدأ مدرستك على الإنترنت في دقائق
+          </h1>
+          <p
+            class="text-base sm:text-lg text-blue-100/90 leading-relaxed max-w-md m-0"
+          >
+            أنشئ حسابك واختر اسم منصتك، ثم ابدأ برفع دوراتك واستقبال طلابك.
+          </p>
+        </div>
+
+        <!-- Value Proposition List -->
+        <div
+          class="relative z-10 flex flex-col gap-3.5 text-sm sm:text-base font-bold"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/30"
+            >
+              <UIcon name="i-lucide-check" class="w-4 h-4" />
+            </div>
+            <span>ارفع دوراتك ونظِّمها بسهولة</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/30"
+            >
+              <UIcon name="i-lucide-check" class="w-4 h-4" />
+            </div>
+            <span>استقبل مدفوعات طلابك مباشرة</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/30"
+            >
+              <UIcon name="i-lucide-check" class="w-4 h-4" />
+            </div>
+            <span>تحكّم كامل بهويتك ومنصتك</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Main Showcase Content -->
-      <div class="relative z-10 flex flex-col gap-4">
-        <h1
-          class="text-3xl sm:text-4xl xl:text-5xl font-extrabold leading-tight tracking-tight text-white m-0"
-        >
-          ابدأ مدرستك على الإنترنت في دقائق
-        </h1>
-        <p
-          class="text-base sm:text-lg text-blue-100/90 leading-relaxed max-w-md m-0"
-        >
-          أنشئ حسابك واختر اسم منصتك، ثم ابدأ برفع دوراتك واستقبال طلابك.
-        </p>
-      </div>
+      <!-- Registration Form Section -->
+      <div class="flex-1 flex items-center justify-center p-4 sm:p-10 lg:p-14 bg-slate-50">
+        <div class="w-full max-w-lg">
+          <UCard class="rounded-2xl border border-slate-200 shadow-sm bg-white p-2 sm:p-4">
+            <div class="flex flex-col gap-6">
 
-      <!-- Value Proposition List -->
-      <div
-        class="relative z-10 flex flex-col gap-3.5 text-sm sm:text-base font-bold"
-      >
-        <div class="flex items-center gap-3">
-          <div
-            class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/30"
-          >
-            <UIcon name="i-lucide-check" class="w-4 h-4" />
-          </div>
-          <span>ارفع دوراتك ونظِّمها بسهولة</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <div
-            class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/30"
-          >
-            <UIcon name="i-lucide-check" class="w-4 h-4" />
-          </div>
-          <span>استقبل مدفوعات طلابك مباشرة</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <div
-            class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/30"
-          >
-            <UIcon name="i-lucide-check" class="w-4 h-4" />
-          </div>
-          <span>تحكّم كامل بهويتك ومنصتك</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Registration Form Section -->
-    <div class="flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-14">
-      <div class="w-full max-w-lg flex flex-col gap-6">
         <!-- Step Progress Indicator -->
         <div class="flex items-center gap-3">
           <!-- Step 1 item -->
           <div
-            class="flex items-center gap-2.5 cursor-pointer select-none"
+            class="flex items-center gap-2.5 cursor-pointer select-none shrink-0"
             @click="prevStep"
           >
             <div
@@ -225,7 +231,7 @@ async function handleRegister() {
               <span v-else>1</span>
             </div>
             <span
-              class="text-sm font-bold transition-colors"
+              class="text-sm font-bold whitespace-nowrap transition-colors"
               :class="
                 currentStep === 1
                   ? 'text-slate-900 font-extrabold'
@@ -246,7 +252,7 @@ async function handleRegister() {
 
           <!-- Step 2 item -->
           <div
-            class="flex items-center gap-2.5 select-none cursor-pointer"
+            class="flex items-center gap-2.5 select-none cursor-pointer shrink-0"
             :class="currentStep >= 2 ? '' : 'opacity-70'"
             @click="nextStep"
           >
@@ -261,7 +267,7 @@ async function handleRegister() {
               <span>2</span>
             </div>
             <span
-              class="text-sm font-bold transition-colors"
+              class="text-sm font-bold whitespace-nowrap transition-colors"
               :class="
                 currentStep === 2
                   ? 'text-slate-900 font-extrabold'
@@ -590,6 +596,9 @@ async function handleRegister() {
           <NuxtLink to="/login" class="text-blue-600 font-bold hover:underline">
             تسجيل الدخول
           </NuxtLink>
+        </div>
+            </div>
+          </UCard>
         </div>
       </div>
     </div>

@@ -18,14 +18,6 @@ onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
 
-// Navigation links
-const navLinks = [
-  { label: 'كيف تعمل', href: '#how' },
-  { label: 'المميزات', href: '#features' },
-  { label: 'الأسعار', href: '#pricing' },
-  { label: 'الأسئلة الشائعة', href: '#faq' }
-]
-
 // How it works steps
 const steps = [
   {
@@ -158,52 +150,7 @@ const faqItems = [
 <template>
   <div class="w-full min-h-screen bg-white text-slate-900 flex flex-col font-sans">
     <!-- Navigation Header -->
-    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
-      <UContainer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-20 gap-4">
-          <!-- Brand Logo -->
-          <NuxtLink to="/" class="flex items-center gap-3 group focus:outline-none">
-            <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <UIcon name="i-lucide-graduation-cap" class="w-6 h-6 shrink-0" />
-            </div>
-            <span class="text-xl font-extrabold text-slate-900 tracking-tight">[اسم علامتك]</span>
-          </NuxtLink>
-
-          <!-- Nav Items -->
-          <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-            <a 
-              v-for="link in navLinks" 
-              :key="link.href" 
-              :href="link.href" 
-              class="hover:text-blue-600 transition-colors"
-            >
-              {{ link.label }}
-            </a>
-          </nav>
-
-          <!-- Auth Actions -->
-          <div class="flex items-center gap-3">
-            <UButton 
-              to="/login" 
-              variant="ghost" 
-              color="neutral" 
-              size="md"
-              class="font-bold text-slate-700 hover:text-blue-600 cursor-pointer"
-            >
-              تسجيل الدخول
-            </UButton>
-            <UButton 
-              to="/register" 
-              color="primary" 
-              size="md"
-              class="font-extrabold rounded-xl shadow-md shadow-blue-500/20 px-5 py-2.5 cursor-pointer"
-            >
-              أنشئ منصتي
-            </UButton>
-          </div>
-        </div>
-      </UContainer>
-    </header>
+    <PublicNavbar />
 
     <main class="flex-1 flex flex-col">
       <!-- Hero Section -->
