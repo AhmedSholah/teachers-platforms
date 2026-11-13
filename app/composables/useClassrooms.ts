@@ -1,9 +1,45 @@
-export interface Classroom {
+export interface AcademicStage {
   id: string
   name: string
   description?: string
   colorClass: string
+  sortOrder?: number
+}
+
+export interface Classroom {
+  id: string
+  stageId: string
+  name: string
+  description?: string
+  colorClass: string
+  sortOrder?: number
   courses: number[]
+}
+
+export interface LessonItem {
+  id: number
+  sectionId: number
+  title: string
+  type: 'video' | 'text' | 'pdf' | 'quiz'
+  typeLabel: string
+  duration?: string
+  videoFile?: File | null
+  videoFileName?: string
+  videoFileSize?: string
+  videoUrl?: string
+  videoDescription?: string
+  content?: string
+  pdfFileName?: string
+  pagesCount?: string
+  questionsCount?: string
+}
+
+export interface SectionItem {
+  id: number
+  title: string
+  order: number
+  isCollapsed?: boolean
+  lessons: LessonItem[]
 }
 
 export interface CourseItem {
@@ -26,335 +62,314 @@ export interface CourseItem {
   isFeatured?: boolean
   category?: string
   description?: string
+  sections?: SectionItem[]
 }
 
-const defaultClassrooms: Classroom[] = [
-  {
-    id: 'class-1',
-    name: 'الصف الأول الثانوي',
-    colorClass: 'bg-blue-600',
-    courses: [1, 2, 6]
-  },
-  {
-    id: 'class-2',
-    name: 'الصف الثاني الثانوي',
-    colorClass: 'bg-amber-500',
-    courses: [3]
-  },
-  {
-    id: 'class-3',
-    name: 'الصف الثالث الثانوي',
-    colorClass: 'bg-emerald-600',
-    courses: [4, 5]
-  }
-]
-
-const defaultCourses: CourseItem[] = [
-  {
-    id: 1,
-    title: 'أساسيات الجبر والمعادلات الخطية',
-    lessonsCount: 12,
-    studentsCount: 124,
-    classroom: 'الصف الأول الثانوي',
-    price: '250 ج.م',
-    status: 'published',
-    headerBg: 'bg-blue-100/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400',
-    iconColor: 'text-blue-700 dark:text-blue-400',
-    rating: 4.9,
-    revenue: '31,000 ج.م',
-    revenueNumeric: 31000,
-    completionRate: 74,
-    durationHours: 14,
-    quizzesCount: 6,
-    updatedAt: 'منذ ساعتين',
-    isFeatured: true,
-    category: 'رياضيات عامة',
-    description: 'كورس شامل يغطي أساسيات الجبر وحل المعادلات والمتطابقات مع تدريبات تطبيقية واختبارات قياسية.'
-  },
-  {
-    id: 2,
-    title: 'دورة مكثفة في الهندسة التحليلية',
-    lessonsCount: 20,
-    studentsCount: 86,
-    classroom: 'الصف الأول الثانوي',
-    price: '300 ج.م',
-    status: 'published',
-    headerBg: 'bg-amber-100/80 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400',
-    iconColor: 'text-amber-800 dark:text-amber-400',
-    rating: 4.8,
-    revenue: '25,800 ج.م',
-    revenueNumeric: 25800,
-    completionRate: 62,
-    durationHours: 22,
-    quizzesCount: 8,
-    updatedAt: 'منذ يومين',
-    isFeatured: false,
-    category: 'هندسة',
-    description: 'شرح متعمق لجميع نظريات ومسائل الهندسة التحليلية والإحداثيات مع حل نماذج الامتحانات الوزارية.'
-  },
-  {
-    id: 3,
-    title: 'الإحصاء والاحتمالات المتقدمة',
-    lessonsCount: 10,
-    studentsCount: 42,
-    classroom: 'الصف الثاني الثانوي',
-    price: '350 ج.م',
-    status: 'published',
-    headerBg: 'bg-purple-100/80 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400',
-    iconColor: 'text-purple-800 dark:text-purple-400',
-    rating: 4.7,
-    revenue: '14,700 ج.م',
-    revenueNumeric: 14700,
-    completionRate: 85,
-    durationHours: 12,
-    quizzesCount: 4,
-    updatedAt: 'منذ 4 أيام',
-    isFeatured: false,
-    category: 'إحصاء تطبيقي',
-    description: 'تغطية تفصيلية لمفاهيم التوزيعات الاحتمالية والانحراف المعياري مع أمثلة عملية من واقع الحياة.'
-  },
-  {
-    id: 4,
-    title: 'التفاضل والتكامل للثانوية العامة',
-    lessonsCount: 16,
-    studentsCount: 0,
-    classroom: 'الصف الثالث الثانوي',
-    price: '400 ج.م',
-    status: 'draft',
-    headerBg: 'bg-slate-100 text-slate-600 dark:bg-slate-800/80 dark:text-slate-400',
-    iconColor: 'text-slate-600 dark:text-slate-400',
-    rating: 0,
-    revenue: '0 ج.م',
-    revenueNumeric: 0,
-    completionRate: 0,
-    durationHours: 18,
-    quizzesCount: 5,
-    updatedAt: 'منذ أسبوع',
-    isFeatured: false,
-    category: 'رياضيات بحتة',
-    description: 'المحتوى قيد المراجعة والإعداد النهائي - يشمل النهايات والاشتقاق وتطبيقات القيم العظمى والصغرى.'
-  },
-  {
-    id: 5,
-    title: 'المراجعة النهائية وليلة الامتحان - ميكانيكا',
-    lessonsCount: 8,
-    studentsCount: 215,
-    classroom: 'الصف الثالث الثانوي',
-    price: '220 ج.م',
-    status: 'published',
-    headerBg: 'bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400',
-    iconColor: 'text-emerald-800 dark:text-emerald-400',
-    rating: 5.0,
-    revenue: '47,300 ج.م',
-    revenueNumeric: 47300,
-    completionRate: 94,
-    durationHours: 10,
-    quizzesCount: 10,
-    updatedAt: 'منذ 3 ساعات',
-    isFeatured: true,
-    category: 'ميكانيكا وفيزياء',
-    description: 'الكورس الأكثر مبيعاً: ملخصات ذهبية مركزة وحل أكثر من 500 فكرة امتحانية متكررة مع إجابات نموذجية.'
-  },
-  {
-    id: 6,
-    title: 'بنك الأسئلة الشامل والاختبارات التفاعلية',
-    lessonsCount: 14,
-    studentsCount: 98,
-    classroom: 'الصف الأول الثانوي',
-    price: '180 ج.م',
-    status: 'published',
-    headerBg: 'bg-cyan-100/80 text-cyan-800 dark:bg-cyan-950/50 dark:text-cyan-400',
-    iconColor: 'text-cyan-800 dark:text-cyan-400',
-    rating: 4.9,
-    revenue: '17,640 ج.م',
-    revenueNumeric: 17640,
-    completionRate: 68,
-    durationHours: 11,
-    quizzesCount: 14,
-    updatedAt: 'أمس',
-    isFeatured: false,
-    category: 'اختبارات وبنوك أسئلة',
-    description: 'مجموعة متكاملة من الاختبارات الذاتية المصححة آلياً مع تفسيرات بالفيديو لكل خطوة.'
-  }
-]
+let inFlightLoad: Promise<void> | null = null
 
 export const useClassrooms = () => {
-  const classrooms = useState<Classroom[]>('teacher-classrooms', () => defaultClassrooms)
-  const courses = useState<CourseItem[]>('teacher-courses', () => defaultCourses)
+  const requestFetch = useRequestFetch()
+  const stages = useState<AcademicStage[]>('teacher-academic-stages', () => [])
+  const classrooms = useState<Classroom[]>('teacher-classrooms', () => [])
+  const courses = useState<CourseItem[]>('teacher-courses', () => [])
+  const hasLoaded = useState<boolean>('teacher-platform-loaded', () => false)
+  const isLoading = useState<boolean>('teacher-platform-loading', () => false)
+
+  async function fetchAll(force = false): Promise<void> {
+    if (hasLoaded.value && !force) return
+    if (inFlightLoad && !force) return inFlightLoad
+
+    isLoading.value = true
+    const run = async () => {
+      try {
+        const data = await requestFetch<{
+          stages: AcademicStage[]
+          classrooms: Classroom[]
+          courses: CourseItem[]
+        }>('/api/bootstrap')
+        stages.value = data.stages
+        classrooms.value = data.classrooms
+        courses.value = data.courses
+        hasLoaded.value = true
+      } finally {
+        isLoading.value = false
+        inFlightLoad = null
+      }
+    }
+
+    inFlightLoad = run()
+    return inFlightLoad
+  }
+
+  async function ensureLoaded(): Promise<void> {
+    await fetchAll(false)
+  }
+
+  if (import.meta.client && !hasLoaded.value && !isLoading.value) {
+    void fetchAll(false)
+  }
 
   const classroomOptions = computed(() => {
     const list = classrooms.value.map(c => c.name)
     return [...list, 'بدون فصل دراسي']
   })
 
-  function addClassroom(name: string, colorClass?: string): Classroom {
-    const trimmed = name.trim()
-    const colorPalette = [
-      'bg-blue-600',
-      'bg-amber-500',
-      'bg-emerald-600',
-      'bg-purple-600',
-      'bg-rose-500',
-      'bg-cyan-600',
-      'bg-indigo-600'
-    ]
-    const chosenColor = colorClass || colorPalette[classrooms.value.length % colorPalette.length]
-    const newClass: Classroom = {
-      id: `class-${Date.now()}`,
-      name: trimmed,
-      colorClass: chosenColor,
-      courses: []
-    }
-    classrooms.value.push(newClass)
-    return newClass
+  async function seedEgyptDefaults(includeCourses = false): Promise<void> {
+    const data = await $fetch<{
+      stages: AcademicStage[]
+      classrooms: Classroom[]
+      courses: CourseItem[]
+    }>('/api/seed/egypt', {
+      method: 'POST',
+      body: { includeCourses }
+    })
+    stages.value = data.stages
+    classrooms.value = data.classrooms
+    courses.value = data.courses
+    hasLoaded.value = true
   }
 
-  function updateClassroom(id: string, newName: string) {
-    const trimmed = newName.trim()
-    const found = classrooms.value.find(c => c.id === id)
-    if (found && trimmed) {
-      const oldName = found.name
-      found.name = trimmed
-      courses.value.forEach(c => {
+  async function addStage(
+    name: string,
+    colorClass?: string,
+    description?: string,
+    grades?: string[]
+  ): Promise<AcademicStage> {
+    const res = await $fetch<{
+      stage: AcademicStage
+      classrooms: Classroom[]
+    }>('/api/stages', {
+      method: 'POST',
+      body: { name, colorClass, description, grades }
+    })
+
+    if (res.stage) {
+      stages.value.push(res.stage)
+    }
+    if (res.classrooms?.length) {
+      classrooms.value.push(...res.classrooms)
+    }
+    return res.stage
+  }
+
+  async function updateStage(
+    id: string,
+    data: { name?: string; colorClass?: string; description?: string }
+  ): Promise<void> {
+    const res = await $fetch<{ stage: AcademicStage }>(`/api/stages/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: data
+    })
+    const idx = stages.value.findIndex(s => s.id === id)
+    if (idx > -1 && res.stage) {
+      stages.value[idx] = res.stage
+    }
+  }
+
+  async function deleteStage(id: string): Promise<void> {
+    await $fetch(`/api/stages/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    })
+
+    const removedNames = new Set(
+      classrooms.value.filter(c => c.stageId === id).map(c => c.name)
+    )
+    stages.value = stages.value.filter(s => s.id !== id)
+    classrooms.value = classrooms.value.filter(c => c.stageId !== id)
+    courses.value.forEach((c) => {
+      if (removedNames.has(c.classroom)) {
+        c.classroom = 'بدون فصل دراسي'
+      }
+    })
+  }
+
+  async function addClassroom(
+    name: string,
+    colorClass?: string,
+    stageId?: string,
+    description?: string
+  ): Promise<Classroom> {
+    const res = await $fetch<{ classroom: Classroom }>('/api/classrooms', {
+      method: 'POST',
+      body: { name, colorClass, stageId, description }
+    })
+    if (res.classroom) {
+      classrooms.value.push(res.classroom)
+    }
+    return res.classroom
+  }
+
+  async function updateClassroom(
+    id: string,
+    newName: string,
+    updates?: { colorClass?: string; stageId?: string; description?: string }
+  ): Promise<void> {
+    const prev = classrooms.value.find(c => c.id === id)
+    const oldName = prev?.name
+
+    const res = await $fetch<{ classroom: Classroom }>(`/api/classrooms/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: {
+        name: newName,
+        colorClass: updates?.colorClass,
+        stageId: updates?.stageId,
+        description: updates?.description
+      }
+    })
+
+    const idx = classrooms.value.findIndex(c => c.id === id)
+    if (idx > -1 && res.classroom) {
+      classrooms.value[idx] = res.classroom
+    }
+
+    if (oldName && res.classroom && oldName !== res.classroom.name) {
+      courses.value.forEach((c) => {
         if (c.classroom === oldName) {
-          c.classroom = trimmed
+          c.classroom = res.classroom.name
         }
       })
     }
   }
 
-  function deleteClassroom(id: string) {
-    const index = classrooms.value.findIndex(c => c.id === id)
-    if (index > -1) {
-      const removedName = classrooms.value[index].name
-      classrooms.value.splice(index, 1)
-      courses.value.forEach(c => {
-        if (c.classroom === removedName) {
+  async function deleteClassroom(id: string): Promise<void> {
+    const target = classrooms.value.find(c => c.id === id)
+    await $fetch(`/api/classrooms/${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    })
+
+    classrooms.value = classrooms.value.filter(c => c.id !== id)
+    if (target) {
+      courses.value.forEach((c) => {
+        if (c.classroom === target.name) {
           c.classroom = 'بدون فصل دراسي'
         }
       })
     }
   }
 
-  function toggleCourseInClassroom(classroomId: string, courseId: number) {
+  async function toggleCourseInClassroom(classroomId: string, courseId: number): Promise<void> {
     const classroom = classrooms.value.find(c => c.id === classroomId)
     if (!classroom) return
 
-    const idx = classroom.courses.indexOf(courseId)
-    const targetCourse = courses.value.find(c => c.id === courseId)
+    const isInClass = classroom.courses.includes(courseId)
+    const nextClassroomName = isInClass ? 'بدون فصل دراسي' : classroom.name
+    await updateCourseClassroom(courseId, nextClassroomName)
+  }
 
-    if (idx > -1) {
-      classroom.courses.splice(idx, 1)
-      if (targetCourse && targetCourse.classroom === classroom.name) {
-        targetCourse.classroom = 'بدون فصل دراسي'
+  async function updateCourseClassroom(courseId: number, newClassroomName: string): Promise<void> {
+    const res = await $fetch<{ course: CourseItem }>(`/api/courses/${courseId}`, {
+      method: 'PATCH',
+      body: { classroom: newClassroomName }
+    })
+
+    const targetCourse = courses.value.find(c => c.id === courseId)
+    if (targetCourse) {
+      const oldClassroom = classrooms.value.find(c => c.name === targetCourse.classroom)
+      if (oldClassroom) {
+        const idx = oldClassroom.courses.indexOf(courseId)
+        if (idx > -1) oldClassroom.courses.splice(idx, 1)
       }
-    } else {
-      classroom.courses.push(courseId)
-      if (targetCourse) {
-        targetCourse.classroom = classroom.name
+
+      targetCourse.classroom = res.course?.classroom || newClassroomName
+
+      const newClassroom = classrooms.value.find(c => c.name === targetCourse.classroom)
+      if (newClassroom && !newClassroom.courses.includes(courseId)) {
+        newClassroom.courses.push(courseId)
       }
     }
   }
 
-  function updateCourseClassroom(courseId: number, newClassroomName: string) {
-    const targetCourse = courses.value.find(c => c.id === courseId)
-    if (!targetCourse) return
-
-    const oldClassroom = classrooms.value.find(c => c.name === targetCourse.classroom)
-    if (oldClassroom) {
-      const idx = oldClassroom.courses.indexOf(courseId)
-      if (idx > -1) oldClassroom.courses.splice(idx, 1)
-    }
-
-    targetCourse.classroom = newClassroomName
-
-    const newClassroom = classrooms.value.find(c => c.name === newClassroomName)
-    if (newClassroom && !newClassroom.courses.includes(courseId)) {
-      newClassroom.courses.push(courseId)
-    }
-  }
-
-  function addCourse(data: {
+  async function addCourse(data: {
     title: string
     classroom: string
     price: string | number
     status?: 'published' | 'draft'
     lessonsCount?: number
-  }): CourseItem {
-    const newId = Date.now()
-    const colorThemes = [
-      { headerBg: 'bg-blue-100/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400', iconColor: 'text-blue-700 dark:text-blue-400' },
-      { headerBg: 'bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400', iconColor: 'text-emerald-800 dark:text-emerald-400' },
-      { headerBg: 'bg-purple-100/80 text-purple-700 dark:bg-purple-950/50 dark:text-purple-400', iconColor: 'text-purple-700 dark:text-purple-400' },
-      { headerBg: 'bg-amber-100/80 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400', iconColor: 'text-amber-800 dark:text-amber-400' }
-    ]
-    const theme = colorThemes[courses.value.length % colorThemes.length]
+    description?: string
+    category?: string
+    sections?: SectionItem[]
+  }): Promise<CourseItem> {
+    const res = await $fetch<{ course: CourseItem }>('/api/courses', {
+      method: 'POST',
+      body: data
+    })
 
-    let formattedPrice = 'مجانية'
-    if (typeof data.price === 'number') {
-      formattedPrice = data.price > 0 ? `${data.price} ج.م` : 'مجانية'
-    } else if (typeof data.price === 'string') {
-      const num = parseFloat(data.price)
-      if (!isNaN(num) && num > 0) {
-        formattedPrice = `${num} ج.م`
-      } else if (data.price.includes('ج.م') || data.price.includes('مجانية')) {
-        formattedPrice = data.price
-      } else {
-        formattedPrice = 'مجانية'
+    if (res.course) {
+      courses.value.unshift(res.course)
+      if (res.course.classroom && res.course.classroom !== 'بدون فصل دراسي') {
+        const cls = classrooms.value.find(c => c.name === res.course.classroom)
+        if (cls && !cls.courses.includes(res.course.id)) {
+          cls.courses.push(res.course.id)
+        }
       }
     }
-
-    const newCourse: CourseItem = {
-      id: newId,
-      title: data.title,
-      lessonsCount: data.lessonsCount ?? 0,
-      studentsCount: 0,
-      classroom: data.classroom || 'بدون فصل دراسي',
-      price: formattedPrice,
-      status: data.status || 'published',
-      headerBg: theme.headerBg,
-      iconColor: theme.iconColor
-    }
-
-    courses.value.unshift(newCourse)
-
-    if (data.classroom && data.classroom !== 'بدون فصل دراسي') {
-      const cls = classrooms.value.find(c => c.name === data.classroom)
-      if (cls && !cls.courses.includes(newId)) {
-        cls.courses.push(newId)
-      }
-    }
-
-    return newCourse
+    return res.course
   }
 
-  function deleteCourse(courseId: number) {
+  async function updateCourse(courseId: number, data: Partial<CourseItem>): Promise<void> {
     const idx = courses.value.findIndex(c => c.id === courseId)
-    if (idx > -1) {
-      const removedCourse = courses.value[idx]
-      courses.value.splice(idx, 1)
+    const oldClassroomName = idx > -1 ? courses.value[idx]?.classroom : undefined
 
-      // Also remove from classroom's courses list
-      classrooms.value.forEach(cls => {
-        const cIdx = cls.courses.indexOf(courseId)
-        if (cIdx > -1) {
-          cls.courses.splice(cIdx, 1)
+    const res = await $fetch<{ course: CourseItem }>(`/api/courses/${courseId}`, {
+      method: 'PATCH',
+      body: data
+    })
+
+    if (idx > -1 && res.course) {
+      courses.value[idx] = res.course
+      const newClassroomName = res.course.classroom
+      if (oldClassroomName !== newClassroomName) {
+        if (oldClassroomName) {
+          const oldCls = classrooms.value.find(c => c.name === oldClassroomName)
+          if (oldCls) {
+            const cIdx = oldCls.courses.indexOf(courseId)
+            if (cIdx > -1) oldCls.courses.splice(cIdx, 1)
+          }
         }
-      })
+        if (newClassroomName && newClassroomName !== 'بدون فصل دراسي') {
+          const newCls = classrooms.value.find(c => c.name === newClassroomName)
+          if (newCls && !newCls.courses.includes(courseId)) {
+            newCls.courses.push(courseId)
+          }
+        }
+      }
     }
+  }
+
+  async function deleteCourse(courseId: number): Promise<void> {
+    await $fetch(`/api/courses/${courseId}`, {
+      method: 'DELETE'
+    })
+
+    courses.value = courses.value.filter(c => c.id !== courseId)
+    classrooms.value.forEach((cls) => {
+      const cIdx = cls.courses.indexOf(courseId)
+      if (cIdx > -1) {
+        cls.courses.splice(cIdx, 1)
+      }
+    })
   }
 
   return {
+    stages,
     classrooms,
     courses,
+    isLoading,
+    hasLoaded,
     classroomOptions,
+    ensureLoaded,
+    fetchAll,
+    seedEgyptDefaults,
+    addStage,
+    updateStage,
+    deleteStage,
     addClassroom,
     updateClassroom,
     deleteClassroom,
     toggleCourseInClassroom,
     updateCourseClassroom,
     addCourse,
+    updateCourse,
     deleteCourse
   }
 }
-

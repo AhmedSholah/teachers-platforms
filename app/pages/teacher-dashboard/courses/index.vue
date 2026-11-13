@@ -3,29 +3,90 @@ useHead({
   title: 'دوراتي - لوحة تحكم المعلم'
 })
 
+const route = useRoute()
 const toast = useToast()
 
 const {
   classrooms,
   courses,
+  ensureLoaded,
+  updateCourse,
   deleteCourse
 } = useClassrooms()
 
+await ensureLoaded()
+
 // Filters state
 const searchQuery = ref('')
-const selectedClassroom = ref<string>('all')
+const selectedClassroom = ref<string>((route.query.classroom as string) || 'all')
 const selectedStatus = ref<'all' | 'published' | 'draft'>('all')
 const sortBy = ref<'newest' | 'revenue' | 'students' | 'alphabetical'>('newest')
 
-// Pagination state
+// Pagination state - defaults to 4 items so multi-page pagination controls are clearly visible
 const currentPage = ref(1)
-const itemsPerPage = ref(5)
+const itemsPerPage = ref(4)
 
-// Selection state for bulk operations
-const selectedIds = ref<number[]>([])
+const totalPages = computed(() => Math.ceil(filteredCourses.value.length / itemsPerPage.value) || 1)
 
-// Notification banner message (if toast or inline)
-const bannerMessage = ref('')
+type PaginationItem = number | '...'
+
+const visiblePages = computed<PaginationItem[]>(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, '...', total]
+  }
+
+  if (current >= total - 3) {
+    return [1, '...', total - 4, total - 3, total - 2, total - 1, total]
+  }
+
+  return [1, '...', current - 1, current, current + 1, '...', total]
+})
+
+function goToPage(page: PaginationItem) {
+  if (typeof page === 'number' && page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+function prevPage() {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
+}
+
+// Items per page dropdown options
+const perPageOptions = [4, 8, 12, 24]
+const perPageDropdownItems = computed(() => [
+  perPageOptions.map(num => ({
+    label: `${num}`,
+    active: itemsPerPage.value === num,
+    onSelect: () => {
+      itemsPerPage.value = num
+      currentPage.value = 1
+    }
+  }))
+])
+
+// Counts for quick status tabs
+const statusCounts = computed(() => {
+  const all = courses.value.length
+  const published = courses.value.filter(c => c.status === 'published').length
+  const draft = courses.value.filter(c => c.status === 'draft').length
+  return { all, published, draft }
+})
 
 // Classroom options for USelect
 const classroomFilterItems = computed(() => {
@@ -37,13 +98,6 @@ const classroomFilterItems = computed(() => {
   return [...base, ...list, { label: 'بدون فصل دراسي', value: 'بدون فصل دراسي' }]
 })
 
-// Status options for USelect
-const statusFilterItems = [
-  { label: 'كافة الحالات', value: 'all' },
-  { label: 'المنشورة فقط', value: 'published' },
-  { label: 'المسودات فقط', value: 'draft' }
-]
-
 // Sort options for USelect
 const sortItems = [
   { label: 'الأحدث أولاً', value: 'newest' },
@@ -52,12 +106,6 @@ const sortItems = [
   { label: 'الترتيب الأبجدي', value: 'alphabetical' }
 ]
 
-// Items per page options for USelect
-const perPageItems = [
-  { label: '5 دورات بالصفحة', value: 5 },
-  { label: '10 دورات بالصفحة', value: 10 },
-  { label: '20 دورة بالصفحة', value: 20 }
-]
 
 // Filtered and Sorted Courses
 const filteredCourses = computed(() => {
@@ -98,123 +146,34 @@ const paginatedCourses = computed(() => {
   return filteredCourses.value.slice(start, start + itemsPerPage.value)
 })
 
-// Checkbox selection state
-const isAllPageSelected = computed(() => {
-  if (paginatedCourses.value.length === 0) return false
-  return paginatedCourses.value.every(c => selectedIds.value.includes(c.id))
-})
-
-const isPartiallySelected = computed(() => {
-  const count = paginatedCourses.value.filter(c => selectedIds.value.includes(c.id)).length
-  return count > 0 && count < paginatedCourses.value.length
-})
-
-function toggleSelectAllPage() {
-  if (isAllPageSelected.value) {
-    const pageIds = paginatedCourses.value.map(c => c.id)
-    selectedIds.value = selectedIds.value.filter(id => !pageIds.includes(id))
-  } else {
-    paginatedCourses.value.forEach(c => {
-      if (!selectedIds.value.includes(c.id)) {
-        selectedIds.value.push(c.id)
-      }
-    })
-  }
-}
-
-function toggleSelectRow(id: number) {
-  const index = selectedIds.value.indexOf(id)
-  if (index > -1) {
-    selectedIds.value.splice(index, 1)
-  } else {
-    selectedIds.value.push(id)
-  }
-}
-
-function toggleCourseStatus(courseId: number) {
+async function toggleCourseStatus(courseId: number) {
   const c = courses.value.find(item => item.id === courseId)
-  if (c) {
-    const newStatus = c.status === 'published' ? 'draft' : 'published'
-    c.status = newStatus
+  if (!c) return
+
+  const newStatus = c.status === 'published' ? 'draft' : 'published'
+  try {
+    await updateCourse(courseId, { status: newStatus })
     toast.add({
       title: 'تم تحديث حالة الدورة',
       description: `أصبحت الدورة "${c.title}" في حالة: ${newStatus === 'published' ? 'منشورة' : 'مسودة'}`,
       color: newStatus === 'published' ? 'success' : 'neutral'
     })
-  }
-}
-
-// Bulk Actions
-function bulkSetStatus(status: 'published' | 'draft') {
-  courses.value.forEach(c => {
-    if (selectedIds.value.includes(c.id)) {
-      c.status = status
-    }
-  })
-  const label = status === 'published' ? 'منشورة' : 'مسودة'
-  toast.add({
-    title: 'تحديث جماعي للحالة',
-    description: `تم تحويل ${selectedIds.value.length} دورة إلى حالة "${label}" بنجاح.`,
-    color: 'success'
-  })
-}
-
-function bulkDelete() {
-  if (confirm(`هل أنت متأكد من رغبتك في حذف ${selectedIds.value.length} دورة محددة نهائياً؟`)) {
-    const count = selectedIds.value.length
-    selectedIds.value.forEach(id => deleteCourse(id))
-    selectedIds.value = []
+  } catch (err: unknown) {
+    const fetchErr = err as { data?: { statusMessage?: string }; statusMessage?: string }
     toast.add({
-      title: 'تم الحذف الجماعي',
-      description: `تم حذف ${count} دورات بنجاح.`,
+      title: 'تعذر تحديث حالة الدورة',
+      description: fetchErr?.data?.statusMessage || fetchErr?.statusMessage || 'حدث خطأ أثناء الحفظ.',
       color: 'error'
     })
   }
 }
-
-function bulkExport() {
-  toast.add({
-    title: 'تصدير البيانات',
-    description: `جاري تحميل ملف CSV يحتوي على ${selectedIds.value.length} دورة...`,
-    color: 'info'
-  })
-}
-
-// Bulk actions dropdown menu items
-const bulkMenuItems = computed(() => [
-  [
-    {
-      label: 'نشر الدورات المحددة',
-      icon: 'i-lucide-check-circle',
-      onSelect: () => bulkSetStatus('published')
-    },
-    {
-      label: 'تحويل المحدد لمسودة',
-      icon: 'i-lucide-pause-circle',
-      onSelect: () => bulkSetStatus('draft')
-    },
-    {
-      label: 'تصدير كملف CSV',
-      icon: 'i-lucide-download',
-      onSelect: bulkExport
-    }
-  ],
-  [
-    {
-      label: 'حذف الدورات المحددة',
-      icon: 'i-lucide-trash-2',
-      color: 'error' as const,
-      onSelect: bulkDelete
-    }
-  ]
-])
 
 // Single course action dropdown menu
 function getCourseActionItems(course: typeof courses.value[0]) {
   return [
     [
       {
-        label: 'تعديل محتوى الدورة',
+        label: 'تعديل المحتوى والدروس',
         icon: 'i-lucide-pencil',
         to: `/teacher-dashboard/courses/edit?id=${course.id}`
       },
@@ -232,7 +191,7 @@ function getCourseActionItems(course: typeof courses.value[0]) {
     ],
     [
       {
-        label: course.status === 'published' ? 'تحويل إلى مسودة' : 'نشر الدورة الآن',
+        label: course.status === 'published' ? 'تحويل إلى مسودة' : 'نشر الدورة للطلاب',
         icon: course.status === 'published' ? 'i-lucide-pause-circle' : 'i-lucide-check-circle-2',
         onSelect: () => toggleCourseStatus(course.id)
       }
@@ -242,13 +201,20 @@ function getCourseActionItems(course: typeof courses.value[0]) {
         label: 'حذف الدورة',
         icon: 'i-lucide-trash-2',
         color: 'error' as const,
-        onSelect: () => {
-          if (confirm(`هل أنت متأكد من حذف الدورة "${course.title}"؟`)) {
-            deleteCourse(course.id)
-            selectedIds.value = selectedIds.value.filter(id => id !== course.id)
+        onSelect: async () => {
+          if (!confirm(`هل أنت متأكد من حذف الدورة "${course.title}"؟`)) return
+          try {
+            await deleteCourse(course.id)
             toast.add({
               title: 'تم حذف الدورة',
               description: `تم إزالة دورة "${course.title}" بنجاح.`,
+              color: 'error'
+            })
+          } catch (err: unknown) {
+            const fetchErr = err as { data?: { statusMessage?: string }; statusMessage?: string }
+            toast.add({
+              title: 'تعذر حذف الدورة',
+              description: fetchErr?.data?.statusMessage || fetchErr?.statusMessage || 'حدث خطأ أثناء الحذف.',
               color: 'error'
             })
           }
@@ -289,428 +255,419 @@ const hasActiveFilters = computed(() => {
 <template>
   <div class="flex flex-col min-h-full">
     <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar container-class="px-4 sm:px-6 lg:px-8">
-      <UButton
-        to="/teacher-dashboard/courses/new"
-        color="primary"
-        variant="solid"
-        icon="i-lucide-plus"
-        size="md"
-        class="font-bold rounded-xl shadow-xs"
-      >
-        دورة جديدة
-      </UButton>
-
-      <UButton
-        to="/teacher-dashboard/classrooms"
-        color="neutral"
-        variant="outline"
-        icon="i-lucide-school"
-        size="md"
-        class="font-bold rounded-xl"
-      >
-        الفصول الدراسية
-      </UButton>
-    </DashboardActionBar>
-
-    <div class="p-4 sm:p-6 lg:p-8 flex flex-col gap-6 max-w-7xl mx-auto w-full box-border">
-
-    <!-- Table Toolbar with Nuxt UI Components -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 shadow-xs">
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
-        <!-- Search Input -->
-        <UInput
-          v-model="searchQuery"
-          icon="i-lucide-search"
-          placeholder="بحث بالاسم، الفصل، أو التصنيف..."
+    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
+      <div class="flex items-center gap-2.5">
+        <UButton
+          to="/teacher-dashboard/courses/new"
+          color="primary"
+          variant="solid"
+          icon="i-lucide-plus"
           size="md"
-          class="w-full sm:w-72"
-        />
+          class="font-extrabold rounded-xl shadow-xs px-4"
+        >
+          دورة جديدة
+        </UButton>
 
-        <!-- Classroom Filter -->
-        <USelect
-          v-model="selectedClassroom"
-          :items="classroomFilterItems"
+        <UButton
+          to="/teacher-dashboard/classrooms"
+          color="neutral"
+          variant="outline"
           icon="i-lucide-school"
           size="md"
-          class="w-full sm:w-48"
-        />
-
-        <!-- Status Filter -->
-        <USelect
-          v-model="selectedStatus"
-          :items="statusFilterItems"
-          icon="i-lucide-filter"
-          size="md"
-          class="w-full sm:w-36"
-        />
-
-        <!-- Sort Filter -->
-        <USelect
-          v-model="sortBy"
-          :items="sortItems"
-          icon="i-lucide-arrow-up-down"
-          size="md"
-          class="w-full sm:w-40"
-        />
-      </div>
-
-      <!-- Reset Filters & Active count -->
-      <div class="flex items-center gap-3 self-end md:self-auto">
-        <UButton
-          v-if="hasActiveFilters"
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-rotate-ccw"
-          size="sm"
-          class="text-xs font-bold"
-          @click="resetFilters"
+          class="font-bold rounded-xl"
         >
-          إعادة ضبط
-        </UButton>
-
-        <span class="text-xs text-slate-500 font-bold whitespace-nowrap">
-          {{ filteredCourses.length }} دورة مطابقة
-        </span>
-      </div>
-    </div>
-
-    <!-- Bulk Floating Actions Bar (Nuxt UI DropdownMenu & Buttons) -->
-    <div
-      v-if="selectedIds.length > 0"
-      class="bg-blue-900 text-white rounded-2xl p-3.5 px-5 flex flex-wrap items-center justify-between gap-3 shadow-lg border border-blue-800 animate-in fade-in slide-in-from-top-2 duration-200"
-    >
-      <div class="flex items-center gap-3">
-        <span class="w-6 h-6 rounded-full bg-white text-blue-900 text-xs font-black flex items-center justify-center">
-          {{ selectedIds.length }}
-        </span>
-        <span class="text-sm font-bold">دورات محددة</span>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <UButton
-          size="xs"
-          color="neutral"
-          variant="outline"
-          class="bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold rounded-xl"
-          icon="i-lucide-check-circle-2"
-          @click="bulkSetStatus('published')"
-        >
-          نشر المحدد
-        </UButton>
-
-        <UButton
-          size="xs"
-          color="neutral"
-          variant="outline"
-          class="bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold rounded-xl"
-          icon="i-lucide-pause-circle"
-          @click="bulkSetStatus('draft')"
-        >
-          تحويل لمسودة
-        </UButton>
-
-        <UButton
-          size="xs"
-          color="neutral"
-          variant="outline"
-          class="bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold rounded-xl"
-          icon="i-lucide-download"
-          @click="bulkExport"
-        >
-          تصدير CSV
-        </UButton>
-
-        <!-- Dropdown Menu for more bulk options -->
-        <UDropdownMenu :items="bulkMenuItems" :content="{ align: 'end' }">
-          <UButton
-            size="xs"
-            color="neutral"
-            variant="outline"
-            class="bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold rounded-xl"
-            icon="i-lucide-more-horizontal"
-          >
-            المزيد
-          </UButton>
-        </UDropdownMenu>
-
-        <UButton
-          size="xs"
-          color="neutral"
-          variant="ghost"
-          class="text-blue-200 hover:text-white font-bold"
-          @click="selectedIds = []"
-        >
-          إلغاء التحديد
+          الفصول الدراسية
         </UButton>
       </div>
-    </div>
 
-    <!-- Data Table Container -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-xs">
-      <div class="overflow-x-auto">
-        <table class="w-full text-start text-xs border-collapse">
-          <thead>
-            <tr class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-extrabold">
-              <!-- Select All Header Checkbox using UCheckbox -->
-              <th class="p-4 w-12 text-center">
-                <div class="flex items-center justify-center">
-                  <UCheckbox
-                    :model-value="isAllPageSelected"
-                    :indeterminate="isPartiallySelected"
-                    color="primary"
-                    aria-label="تحديد الصفحة الحالية"
-                    @update:model-value="toggleSelectAllPage"
-                  />
-                </div>
-              </th>
-              <th class="p-4 text-start">الدورة والتصنيف</th>
-              <th class="p-4 text-start">الفصل الدراسي</th>
-              <th class="p-4 text-start">السعر</th>
-              <th class="p-4 text-start">المحتوى</th>
-              <th class="p-4 text-start">الطلاب المسجلين</th>
-              <th class="p-4 text-start">نسبة الإكمال</th>
-              <th class="p-4 text-start">الإيرادات</th>
-              <th class="p-4 text-start">الحالة</th>
-              <th class="p-4 text-center">إجراءات</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-            <!-- Empty State -->
-            <tr v-if="paginatedCourses.length === 0">
-              <td colspan="10" class="p-12 text-center">
-                <div class="flex flex-col items-center justify-center gap-3">
-                  <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-                    <UIcon name="i-lucide-search-x" class="w-6 h-6" />
-                  </div>
-                  <h3 class="font-extrabold text-base text-slate-900 dark:text-white">لم يتم العثور على أي دورات</h3>
-                  <p class="text-xs text-slate-500 max-w-sm">
-                    لا توجد دورات تطابق معايير البحث أو الفلاتر المحددة. جرب تغيير الفلتر أو إضافة دورة جديدة.
-                  </p>
-                  <UButton
-                    v-if="hasActiveFilters"
-                    color="primary"
-                    variant="subtle"
-                    size="sm"
-                    icon="i-lucide-rotate-ccw"
-                    class="font-bold rounded-xl mt-1"
-                    @click="resetFilters"
-                  >
-                    إعادة ضبط الفلاتر
-                  </UButton>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Rows -->
-            <tr
-              v-for="course in paginatedCourses"
-              :key="course.id"
-              :class="[
-                'hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors',
-                selectedIds.includes(course.id) ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
-              ]"
-            >
-              <!-- Row Checkbox using UCheckbox -->
-              <td class="p-4 text-center">
-                <div class="flex items-center justify-center">
-                  <UCheckbox
-                    :model-value="selectedIds.includes(course.id)"
-                    color="primary"
-                    :aria-label="`تحديد ${course.title}`"
-                    @update:model-value="toggleSelectRow(course.id)"
-                  />
-                </div>
-              </td>
-
-              <!-- Course Title & Category -->
-              <td class="p-4 min-w-[240px]">
-                <div class="flex items-center gap-3">
-                  <div :class="['w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-xs', course.headerBg]">
-                    <UIcon name="i-lucide-book-open" class="w-4 h-4" />
-                  </div>
-                  <div class="flex flex-col min-w-0">
-                    <NuxtLink
-                      :to="`/teacher-dashboard/courses/edit?id=${course.id}`"
-                      class="font-black text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 line-clamp-1 text-sm"
-                    >
-                      {{ course.title }}
-                    </NuxtLink>
-                    <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-                      <span>{{ course.category || 'رياضيات عامة' }}</span>
-                      <span>·</span>
-                      <span class="flex items-center gap-0.5 text-amber-500 font-bold">
-                        <UIcon name="i-lucide-star" class="w-3 h-3 fill-amber-400" />
-                        {{ course.rating || '5.0' }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Classroom Badge -->
-              <td class="p-4 whitespace-nowrap">
-                <UBadge
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
-                  class="font-bold rounded-lg gap-1.5"
-                >
-                  <span :class="['w-2 h-2 rounded-full shrink-0', getClassroomColor(course.classroom)]" />
-                  <span>{{ course.classroom }}</span>
-                </UBadge>
-              </td>
-
-              <!-- Price -->
-              <td class="p-4 whitespace-nowrap">
-                <UBadge
-                  :color="course.price === 'مجانية' ? 'info' : 'neutral'"
-                  variant="outline"
-                  size="sm"
-                  class="font-black"
-                >
-                  {{ course.price }}
-                </UBadge>
-              </td>
-
-              <!-- Content (Lessons & Duration) -->
-              <td class="p-4 whitespace-nowrap">
-                <div class="flex flex-col">
-                  <span class="font-bold text-slate-800 dark:text-slate-200">{{ course.lessonsCount }} درساً</span>
-                  <span class="text-[10px] text-slate-400">{{ course.durationHours || 12 }} ساعة تدريبية</span>
-                </div>
-              </td>
-
-              <!-- Students Count with Mini Avatar stack -->
-              <td class="p-4 whitespace-nowrap">
-                <div class="flex items-center gap-2">
-                  <div class="flex -space-x-1.5 rtl:space-x-reverse overflow-hidden">
-                    <div class="w-5 h-5 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center ring-1 ring-white">أ</div>
-                    <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[9px] font-bold flex items-center justify-center ring-1 ring-white">م</div>
-                    <div class="w-5 h-5 rounded-full bg-purple-500 text-white text-[9px] font-bold flex items-center justify-center ring-1 ring-white">س</div>
-                  </div>
-                  <span class="font-black text-slate-900 dark:text-white">{{ course.studentsCount }}</span>
-                </div>
-              </td>
-
-              <!-- Completion Rate with UProgress -->
-              <td class="p-4 min-w-[130px]">
-                <div class="flex flex-col gap-1">
-                  <div class="flex items-center justify-between text-[11px] font-bold">
-                    <span class="text-slate-500">{{ course.completionRate || 0 }}%</span>
-                  </div>
-                  <UProgress
-                    :model-value="course.completionRate || 0"
-                    :color="course.completionRate && course.completionRate > 70 ? 'success' : 'primary'"
-                    size="xs"
-                  />
-                </div>
-              </td>
-
-              <!-- Revenue -->
-              <td class="p-4 whitespace-nowrap font-black text-emerald-600 dark:text-emerald-400 text-xs">
-                {{ course.revenue || '0 ج.م' }}
-              </td>
-
-              <!-- Status with Interactive Toggle Badge -->
-              <td class="p-4 whitespace-nowrap">
-                <button
-                  type="button"
-                  class="cursor-pointer"
-                  :title="'اضغط لتغيير الحالة إلى ' + (course.status === 'published' ? 'مسودة' : 'منشورة')"
-                  @click="toggleCourseStatus(course.id)"
-                >
-                  <UBadge
-                    :color="course.status === 'published' ? 'success' : 'warning'"
-                    variant="subtle"
-                    size="sm"
-                    class="font-bold cursor-pointer hover:opacity-80 transition-opacity gap-1"
-                  >
-                    <span :class="['w-1.5 h-1.5 rounded-full', course.status === 'published' ? 'bg-emerald-600' : 'bg-amber-500']" />
-                    <span>{{ course.status === 'published' ? 'منشورة' : 'مسودة' }}</span>
-                  </UBadge>
-                </button>
-              </td>
-
-              <!-- Actions DropdownMenu -->
-              <td class="p-4 text-center whitespace-nowrap">
-                <div class="flex items-center justify-center gap-1">
-                  <UButton
-                    :to="`/teacher-dashboard/courses/edit?id=${course.id}`"
-                    size="xs"
-                    color="primary"
-                    variant="ghost"
-                    icon="i-lucide-pencil"
-                    class="rounded-lg"
-                    title="تعديل سريع"
-                  />
-
-                  <!-- Nuxt UI UDropdownMenu for full row actions -->
-                  <UDropdownMenu
-                    :items="getCourseActionItems(course)"
-                    :content="{ align: 'end' }"
-                  >
-                    <UButton
-                      size="xs"
-                      color="neutral"
-                      variant="ghost"
-                      icon="i-lucide-ellipsis-vertical"
-                      class="rounded-lg"
-                      aria-label="قائمة الخيارات"
-                    />
-                  </UDropdownMenu>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Table Footer with UPagination and Per-Page Selector -->
-      <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-bold text-slate-500">
-        <!-- Records Counter & Page Size Selector -->
+      <!-- Left Side Badges / Counter -->
+      <template #end>
         <div class="flex items-center gap-3">
-          <span>
-            عرض
-            <span class="text-slate-900 dark:text-white font-black">
-              {{ filteredCourses.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0 }}
-            </span>
-            إلى
-            <span class="text-slate-900 dark:text-white font-black">
-              {{ Math.min(currentPage * itemsPerPage, filteredCourses.length) }}
-            </span>
-            من إجمالي
-            <span class="text-slate-900 dark:text-white font-black">{{ filteredCourses.length }}</span>
-            دورة
+          <span class="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+            {{ courses.length }} دورة مسجلة
           </span>
+        </div>
+      </template>
+    </DashboardActionBar>
 
-          <span class="text-slate-300 dark:text-slate-700">|</span>
+    <div class="p-6 md:p-10 flex flex-col gap-6 w-full box-border">
 
-          <div class="flex items-center gap-1.5">
-            <span class="text-slate-400">العرض:</span>
-            <USelect
-              v-model="itemsPerPage"
-              :items="perPageItems"
-              size="xs"
-              class="w-32"
+      <!-- Status Tabs + Search & Filters Bar -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-xs">
+        <!-- Top Row: Status Quick Tabs + Search Input -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <!-- Segmented Status Tabs -->
+          <div class="flex items-center gap-1 p-1 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl w-fit border border-slate-200/60 dark:border-slate-700/60">
+            <button
+              type="button"
+              class="px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+              :class="selectedStatus === 'all'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+              @click="selectedStatus = 'all'"
+            >
+              <span>كافة الدورات</span>
+              <span
+                class="px-1.5 py-0.5 rounded-full text-[10px] font-black"
+                :class="selectedStatus === 'all' ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300' : 'bg-slate-200/60 dark:bg-slate-700 text-slate-500'"
+              >
+                {{ statusCounts.all }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+              :class="selectedStatus === 'published'
+                ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+              @click="selectedStatus = 'published'"
+            >
+              <span class="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>المنشورة</span>
+              <span
+                class="px-1.5 py-0.5 rounded-full text-[10px] font-black"
+                :class="selectedStatus === 'published' ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200/60 dark:bg-slate-700 text-slate-500'"
+              >
+                {{ statusCounts.published }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="px-3.5 py-1.5 text-xs font-extrabold rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+              :class="selectedStatus === 'draft'
+                ? 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+              @click="selectedStatus = 'draft'"
+            >
+              <span class="w-2 h-2 rounded-full bg-amber-500" />
+              <span>المسودات</span>
+              <span
+                class="px-1.5 py-0.5 rounded-full text-[10px] font-black"
+                :class="selectedStatus === 'draft' ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300' : 'bg-slate-200/60 dark:bg-slate-700 text-slate-500'"
+              >
+                {{ statusCounts.draft }}
+              </span>
+            </button>
+          </div>
+
+          <!-- Search Input -->
+          <div class="relative w-full md:w-80">
+            <UInput
+              v-model="searchQuery"
+              icon="i-lucide-search"
+              placeholder="ابحث بالاسم، الفصل، أو التخصص..."
+              size="md"
+              class="w-full"
             />
           </div>
         </div>
 
-        <!-- Nuxt UI UPagination Component -->
-        <div class="flex items-center justify-center sm:justify-end">
-          <UPagination
-            v-if="filteredCourses.length > itemsPerPage"
-            v-model:page="currentPage"
-            :total="filteredCourses.length"
-            :items-per-page="itemsPerPage"
-            size="sm"
-            color="primary"
-            show-edges
-          />
+        <!-- Bottom Row: Classroom Filter + Sort + Results count -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Classroom Filter -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500 font-bold whitespace-nowrap">الفصل:</span>
+              <USelect
+                v-model="selectedClassroom"
+                :items="classroomFilterItems"
+                icon="i-lucide-school"
+                size="sm"
+                class="w-48"
+              />
+            </div>
+
+            <!-- Sort Filter -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500 font-bold whitespace-nowrap">الترتيب:</span>
+              <USelect
+                v-model="sortBy"
+                :items="sortItems"
+                icon="i-lucide-arrow-up-down"
+                size="sm"
+                class="w-44"
+              />
+            </div>
+
+            <!-- Reset Filters -->
+            <UButton
+              v-if="hasActiveFilters"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-rotate-ccw"
+              size="xs"
+              class="text-xs font-bold text-slate-500 hover:text-slate-800"
+              @click="resetFilters"
+            >
+              إلغاء التصفية
+            </UButton>
+          </div>
+
+          <!-- Matching Count -->
+          <div class="flex items-center gap-2 text-xs font-bold text-slate-500 self-end sm:self-auto">
+            <span>{{ filteredCourses.length }} دورة مطابقة</span>
+          </div>
         </div>
       </div>
+
+      <!-- Empty State -->
+      <div
+        v-if="paginatedCourses.length === 0"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center flex flex-col items-center justify-center gap-4 shadow-xs"
+      >
+        <div class="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+          <UIcon name="i-lucide-book-open-check" class="w-8 h-8" />
+        </div>
+        <div class="flex flex-col gap-1 max-w-md">
+          <h3 class="font-black text-lg text-slate-900 dark:text-white">لم يتم العثور على أي دورات مطابقة</h3>
+          <p class="text-sm text-slate-500 leading-relaxed">
+            لا توجد دورات تطابق معايير البحث أو التصنيف المحدد. يمكنك إلغاء التصفية للرجوع لكافة الدورات أو إنشاء دورة تعليمية جديدة الآن.
+          </p>
+        </div>
+        <div class="flex items-center gap-3 mt-2">
+          <UButton
+            v-if="hasActiveFilters"
+            color="neutral"
+            variant="outline"
+            size="md"
+            icon="i-lucide-rotate-ccw"
+            class="font-bold rounded-xl"
+            @click="resetFilters"
+          >
+            إعادة ضبط الفلاتر
+          </UButton>
+          <UButton
+            to="/teacher-dashboard/courses/new"
+            color="primary"
+            variant="solid"
+            size="md"
+            icon="i-lucide-plus"
+            class="font-bold rounded-xl"
+          >
+            إنشاء دورة جديدة
+          </UButton>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- CLEAN & COMFORTABLE TABLE VIEW                           -->
+      <!-- ======================================================== -->
+      <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-xs">
+        <div class="overflow-x-auto">
+          <table class="w-full text-start text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-50/90 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-extrabold text-xs">
+                <th class="p-4.5 ps-6 text-start">الدورة والتصنيف</th>
+                <th class="p-4.5 text-start">الفصل الدراسي</th>
+                <th class="p-4.5 text-start">المحتوى والمدة</th>
+                <th class="p-4.5 text-start">الحالة</th>
+                <th class="p-4.5 pe-6 text-center">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <tr
+                v-for="course in paginatedCourses"
+                :key="course.id"
+                class="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors"
+              >
+                <!-- Course Title & Category -->
+                <td class="p-4.5 ps-6 min-w-[280px]">
+                  <div class="flex items-center gap-3.5">
+                    <div :class="['w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs text-lg', course.headerBg]">
+                      <UIcon name="i-lucide-book-open" class="w-5 h-5" />
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <NuxtLink
+                        :to="`/teacher-dashboard/courses/edit?id=${course.id}`"
+                        class="font-black text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 line-clamp-1 text-sm leading-snug"
+                      >
+                        {{ course.title }}
+                      </NuxtLink>
+                      <div class="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                        <span>{{ course.category || 'عام' }}</span>
+                        <span>·</span>
+                        <span class="flex items-center gap-0.5 text-amber-500 font-bold">
+                          <UIcon name="i-lucide-star" class="w-3.5 h-3.5 fill-amber-400" />
+                          {{ course.rating && course.rating > 0 ? course.rating : 'جديد' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Classroom Badge -->
+                <td class="p-4.5 whitespace-nowrap">
+                  <UBadge
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                    class="font-bold rounded-lg gap-1.5"
+                  >
+                    <span :class="['w-2 h-2 rounded-full shrink-0', getClassroomColor(course.classroom)]" />
+                    <span>{{ course.classroom }}</span>
+                  </UBadge>
+                </td>
+
+                <!-- Content & Duration -->
+                <td class="p-4.5 whitespace-nowrap">
+                  <div class="flex flex-col">
+                    <span class="font-extrabold text-slate-900 dark:text-white">{{ course.lessonsCount }} درساً</span>
+                    <span class="text-xs text-slate-400 mt-0.5">{{ course.durationHours || 12 }} ساعة تدريبية</span>
+                  </div>
+                </td>
+
+                <!-- Status with Interactive Toggle Badge -->
+                <td class="p-4.5 whitespace-nowrap">
+                  <button
+                    type="button"
+                    class="cursor-pointer"
+                    :title="'اضغط لتغيير الحالة إلى ' + (course.status === 'published' ? 'مسودة' : 'منشورة')"
+                    @click="toggleCourseStatus(course.id)"
+                  >
+                    <UBadge
+                      :color="course.status === 'published' ? 'success' : 'warning'"
+                      variant="subtle"
+                      size="sm"
+                      class="font-black cursor-pointer hover:opacity-80 transition-opacity gap-1.5"
+                    >
+                      <span :class="['w-1.5 h-1.5 rounded-full', course.status === 'published' ? 'bg-emerald-600' : 'bg-amber-500']" />
+                      <span>{{ course.status === 'published' ? 'منشورة' : 'مسودة' }}</span>
+                    </UBadge>
+                  </button>
+                </td>
+
+                <!-- Actions -->
+                <td class="p-4.5 pe-6 text-center whitespace-nowrap">
+                  <div class="flex items-center justify-center gap-1.5">
+                    <UButton
+                      :to="`/teacher-dashboard/courses/edit?id=${course.id}`"
+                      size="xs"
+                      color="primary"
+                      variant="subtle"
+                      icon="i-lucide-pencil"
+                      class="rounded-xl font-bold px-2.5"
+                    >
+                      تعديل
+                    </UButton>
+
+                    <UDropdownMenu
+                      :items="getCourseActionItems(course)"
+                      :content="{ align: 'end' }"
+                    >
+                      <UButton
+                        size="xs"
+                        color="neutral"
+                        variant="ghost"
+                        icon="i-lucide-ellipsis-vertical"
+                        class="rounded-xl text-slate-400 hover:text-slate-700"
+                        aria-label="قائمة الخيارات"
+                      />
+                    </UDropdownMenu>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer / Pagination Bar matching design mockup -->
+        <div
+          v-if="filteredCourses.length > 0"
+          class="p-4 px-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-sm font-normal text-slate-500 dark:text-slate-400"
+        >
+          <!-- Total Count (Start side) -->
+          <div class="flex items-center">
+            <span>
+              عرض
+              {{ (currentPage - 1) * itemsPerPage + 1 }}
+              إلى
+              {{ Math.min(currentPage * itemsPerPage, filteredCourses.length) }}
+              من
+              {{ filteredCourses.length }}
+              نتيجة
+            </span>
+          </div>
+
+          <!-- Pagination Controls & Rows Per Page (End side) -->
+          <div class="flex flex-wrap items-center gap-3 sm:gap-4 justify-between lg:justify-end">
+            <!-- Rows Per Page -->
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-slate-500 dark:text-slate-400 font-normal whitespace-nowrap">
+                الصفوف في الصفحة:
+              </span>
+
+              <UDropdownMenu
+                :items="perPageDropdownItems"
+                :content="{ align: 'center' }"
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-between gap-2 px-3 py-1.5 h-9 min-w-[58px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <span>{{ itemsPerPage }}</span>
+                  <UIcon name="i-lucide-chevron-down" class="w-4 h-4 text-slate-400 shrink-0" />
+                </button>
+              </UDropdownMenu>
+            </div>
+
+            <!-- Faint vertical divider line -->
+            <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
+
+            <!-- Page Navigation Controls -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <!-- Previous Button -->
+              <button
+                type="button"
+                :disabled="currentPage === 1"
+                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-800 disabled:hover:border-slate-200 dark:disabled:hover:border-slate-700 transition-all shadow-2xs cursor-pointer"
+                aria-label="الصفحة السابقة"
+                @click="prevPage"
+              >
+                <UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
+                <span>السابق</span>
+              </button>
+
+              <!-- Page Number Buttons -->
+              <template v-for="(item, idx) in visiblePages" :key="idx">
+                <span
+                  v-if="item === '...'"
+                  class="min-w-9 h-9 px-1 text-slate-400 font-bold text-sm flex items-center justify-center select-none"
+                >
+                  ...
+                </span>
+                <button
+                  v-else
+                  type="button"
+                  class="min-w-9 h-9 px-3 rounded-lg text-sm transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+                  :class="item === currentPage
+                    ? 'bg-blue-600 text-white font-semibold border border-blue-600 shadow-xs'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600'"
+                  :aria-label="`صفحة ${item}`"
+                  :aria-current="item === currentPage ? 'page' : undefined"
+                  @click="goToPage(item)"
+                >
+                  {{ item }}
+                </button>
+              </template>
+
+              <!-- Next Button -->
+              <button
+                type="button"
+                :disabled="currentPage === totalPages"
+                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-800 disabled:hover:border-slate-200 dark:disabled:hover:border-slate-700 transition-all shadow-2xs cursor-pointer"
+                aria-label="الصفحة التالية"
+                @click="nextPage"
+              >
+                <span>التالي</span>
+                <UIcon name="i-lucide-chevron-left" class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
   </div>
 </template>

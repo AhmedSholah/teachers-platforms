@@ -5,7 +5,16 @@ useHead({
   title: 'تعديل الدورة - لوحة التحكم'
 })
 
-const { classroomOptions, addClassroom, courses, updateCourseClassroom } = useClassrooms()
+const {
+  stages,
+  classroomOptions,
+  ensureLoaded,
+  addClassroom,
+  courses,
+  updateCourse
+} = useClassrooms()
+
+await ensureLoaded()
 
 // Stepper items for Nuxt UI UStepper
 const stepperItems = [
@@ -45,7 +54,6 @@ interface CourseForm {
   title: string
   description: string
   classroom: string
-  level: string
   coverImage: File | null
   isFree: boolean
   price: string | number
@@ -64,9 +72,8 @@ function extractPrice(raw: string | number | undefined): string {
 
 const form = ref<CourseForm>({
   title: matchedCourse.value?.title || 'أساسيات الجبر',
-  description: 'دورة شاملة ومكثفة تغطي أساسيات الجبر وحل المعادلات الخطية وتطبيقاتها لطلاب المرحلة الثانوية مع تمارين واختبارات قياسية.',
+  description: matchedCourse.value?.description || 'دورة شاملة ومكثفة تغطي أساسيات الجبر وحل المعادلات الخطية وتطبيقاتها لطلاب المرحلة الثانوية مع تمارين واختبارات قياسية.',
   classroom: matchedCourse.value?.classroom || classroomOptions.value[0] || 'الصف الأول الثانوي',
-  level: 'مبتدئ',
   coverImage: null,
   isFree: matchedCourse.value?.price === 'مجانية' || false,
   price: extractPrice(matchedCourse.value?.price),
@@ -75,125 +82,46 @@ const form = ref<CourseForm>({
   isPublished: matchedCourse.value ? matchedCourse.value.status === 'published' : true
 })
 
+import type { SectionItem } from '~/composables/useClassrooms'
+
+// Step 2: Course Sections & Lessons
+const sections = ref<SectionItem[]>([])
+
+const totalLessonsCount = computed(() => {
+  return sections.value.reduce((acc, s) => acc + (s.lessons?.length || 0), 0)
+})
+
 // Watch matched course changes if route changes
 watch(matchedCourse, (newVal) => {
   if (newVal) {
     form.value.title = newVal.title
+    if (newVal.description) {
+      form.value.description = newVal.description
+    }
     form.value.classroom = newVal.classroom
     form.value.price = extractPrice(newVal.price)
     form.value.isFree = newVal.price === 'مجانية'
     form.value.isPublished = newVal.status === 'published'
-  }
-}, { immediate: true })
-
-const levels = [
-  { label: 'مبتدئ', value: 'مبتدئ' },
-  { label: 'متوسط', value: 'متوسط' },
-  { label: 'متقدم', value: 'متقدم' }
-]
-
-// Step 2: Course Lessons
-export interface LessonItem {
-  id: number
-  title: string
-  type: 'video' | 'pdf' | 'quiz'
-  typeLabel: string
-  duration: string
-}
-
-// Pre-filled lessons list
-const lessons = ref<LessonItem[]>([
-  { id: 1, title: 'مقدمة في الجبر', type: 'video', typeLabel: 'فيديو', duration: '12:30 دقيقة' },
-  { id: 2, title: 'المتغيرات والثوابت', type: 'video', typeLabel: 'فيديو', duration: '18:05 دقيقة' },
-  { id: 3, title: 'ملف تمارين الوحدة الأولى', type: 'pdf', typeLabel: 'ملف PDF', duration: '8 صفحات' },
-  { id: 4, title: 'حل المعادلات من الدرجة الأولى', type: 'video', typeLabel: 'فيديو', duration: '22:40 دقيقة' },
-  { id: 5, title: 'اختبار الوحدة الأولى', type: 'quiz', typeLabel: 'اختبار', duration: '10 أسئلة' }
-])
-
-// Lesson Modal State
-const isLessonModalOpen = ref(false)
-const lessonModalMode = ref<'add' | 'edit'>('add')
-const lessonForm = reactive({
-  id: 0,
-  title: '',
-  type: 'video' as 'video' | 'pdf' | 'quiz',
-  typeLabel: 'فيديو',
-  duration: ''
-})
-
-function openAddLesson(type: 'video' | 'pdf' | 'quiz' = 'video') {
-  lessonModalMode.value = 'add'
-  lessonForm.id = Date.now()
-  lessonForm.type = type
-  if (type === 'video') {
-    lessonForm.typeLabel = 'فيديو'
-    lessonForm.title = ''
-    lessonForm.duration = '15:00 دقيقة'
-  } else if (type === 'pdf') {
-    lessonForm.typeLabel = 'ملف PDF'
-    lessonForm.title = ''
-    lessonForm.duration = '6 صفحات'
-  } else {
-    lessonForm.typeLabel = 'اختبار'
-    lessonForm.title = ''
-    lessonForm.duration = '10 أسئلة'
-  }
-  isLessonModalOpen.value = true
-}
-
-function openEditLesson(lesson: LessonItem) {
-  lessonModalMode.value = 'edit'
-  lessonForm.id = lesson.id
-  lessonForm.title = lesson.title
-  lessonForm.type = lesson.type
-  lessonForm.typeLabel = lesson.typeLabel
-  lessonForm.duration = lesson.duration
-  isLessonModalOpen.value = true
-}
-
-function saveLesson() {
-  if (!lessonForm.title.trim()) return
-
-  if (lessonModalMode.value === 'add') {
-    lessons.value.push({
-      id: lessonForm.id,
-      title: lessonForm.title.trim(),
-      type: lessonForm.type,
-      typeLabel: lessonForm.typeLabel,
-      duration: lessonForm.duration.trim() || (lessonForm.type === 'video' ? '10:00 دقيقة' : lessonForm.type === 'pdf' ? '5 صفحات' : '5 أسئلة')
-    })
-    triggerSuccess('تمت إضافة الدرس بنجاح!')
-  } else {
-    const idx = lessons.value.findIndex(l => l.id === lessonForm.id)
-    if (idx !== -1) {
-      lessons.value[idx] = {
-        ...lessons.value[idx],
-        title: lessonForm.title.trim(),
-        duration: lessonForm.duration.trim()
-      }
-      triggerSuccess('تم تحديث بيانات الدرس بنجاح!')
+    if (newVal.sections && Array.isArray(newVal.sections)) {
+      sections.value = JSON.parse(JSON.stringify(newVal.sections))
+    } else {
+      sections.value = []
     }
   }
-  isLessonModalOpen.value = false
-}
-
-function deleteLesson(id: number) {
-  lessons.value = lessons.value.filter(l => l.id !== id)
-  triggerSuccess('تم حذف الدرس بنجاح')
-}
-
-function moveLesson(index: number, direction: 'up' | 'down') {
-  const targetIndex = direction === 'up' ? index - 1 : index + 1
-  if (targetIndex < 0 || targetIndex >= lessons.value.length) return
-  const temp = lessons.value[index]
-  lessons.value[index] = lessons.value[targetIndex]
-  lessons.value[targetIndex] = temp
-}
+}, { immediate: true })
 
 // Classroom On-The-Fly Creation
 const isCreateClassModalOpen = ref(false)
 const newClassName = ref('')
+const newClassStageId = ref(stages.value[0]?.id || '')
+watch(stages, (list) => {
+  if (!newClassStageId.value && list[0]?.id) {
+    newClassStageId.value = list[0].id
+  }
+}, { immediate: true })
 const selectedClassColor = ref('bg-blue-600')
+const isCreatingClass = ref(false)
+const toast = useToast()
 const colorPalette = [
   { name: 'أزرق', class: 'bg-blue-600' },
   { name: 'كهرماني', class: 'bg-amber-500' },
@@ -203,15 +131,27 @@ const colorPalette = [
   { name: 'سماوي', class: 'bg-cyan-600' }
 ]
 
-function handleCreateClassroomOnTheFly() {
+async function handleCreateClassroomOnTheFly() {
   const name = newClassName.value.trim()
-  if (!name) return
+  if (!name || isCreatingClass.value) return
 
-  addClassroom(name, selectedClassColor.value)
-  form.value.classroom = name
-  newClassName.value = ''
-  isCreateClassModalOpen.value = false
-  triggerSuccess(`تم إنشاء «${name}» وتعيينه لهذه الدورة بنجاح!`)
+  isCreatingClass.value = true
+  try {
+    await addClassroom(name, selectedClassColor.value, newClassStageId.value || undefined)
+    form.value.classroom = name
+    newClassName.value = ''
+    isCreateClassModalOpen.value = false
+    triggerSuccess(`تم إنشاء «${name}» وتعيينه لهذه الدورة بنجاح!`)
+  } catch (err: unknown) {
+    const fetchErr = err as { data?: { statusMessage?: string }; statusMessage?: string }
+    toast.add({
+      title: 'تعذر إنشاء الصف الدراسي',
+      description: fetchErr?.data?.statusMessage || fetchErr?.statusMessage || 'حدث خطأ غير متوقع.',
+      color: 'error'
+    })
+  } finally {
+    isCreatingClass.value = false
+  }
 }
 
 // File Upload
@@ -296,39 +236,44 @@ function triggerSuccess(msg: string) {
   }, 3500)
 }
 
-function saveChanges() {
+async function saveChanges() {
   if (!form.value.title.trim()) {
     currentStep.value = 0
     titleError.value = 'يرجى إدخال عنوان الدورة أولاً'
     return
   }
 
+  if (!matchedCourse.value) {
+    toast.add({
+      title: 'الدورة غير موجودة',
+      description: 'تعذر العثور على الدورة المطلوب تعديلها.',
+      color: 'error'
+    })
+    return
+  }
+
   isSaving.value = true
-
-  // If matched course in store, update its values
-  if (matchedCourse.value) {
-    matchedCourse.value.title = form.value.title.trim()
-    matchedCourse.value.price = form.value.isFree ? 'مجانية' : `${form.value.price || 0} ج.م`
-    matchedCourse.value.status = form.value.isPublished ? 'published' : 'draft'
-    matchedCourse.value.lessonsCount = lessons.value.length
-
-    if (matchedCourse.value.classroom !== form.value.classroom) {
-      updateCourseClassroom(matchedCourse.value.id, form.value.classroom)
-    }
-  }
-
-  setTimeout(() => {
-    isSaving.value = false
+  try {
+    await updateCourse(matchedCourse.value.id, {
+      title: form.value.title.trim(),
+      classroom: form.value.classroom,
+      price: form.value.isFree ? 'مجانية' : `${form.value.price || 0} ج.م`,
+      status: form.value.isPublished ? 'published' : 'draft',
+      lessonsCount: totalLessonsCount.value,
+      description: form.value.description.trim() || undefined,
+      sections: JSON.parse(JSON.stringify(sections.value))
+    })
     triggerSuccess('تم حفظ كافة تعديلات الدورة بنجاح!')
-  }, 400)
-}
-
-function togglePublishStatus() {
-  form.value.isPublished = !form.value.isPublished
-  if (matchedCourse.value) {
-    matchedCourse.value.status = form.value.isPublished ? 'published' : 'draft'
+  } catch (err: unknown) {
+    const fetchErr = err as { data?: { statusMessage?: string }; statusMessage?: string }
+    toast.add({
+      title: 'تعذر حفظ التعديلات',
+      description: fetchErr?.data?.statusMessage || fetchErr?.statusMessage || 'حدث خطأ أثناء حفظ التعديلات.',
+      color: 'error'
+    })
+  } finally {
+    isSaving.value = false
   }
-  triggerSuccess(form.value.isPublished ? 'تم نشر الدورة للطلاب بنجاح!' : 'تم تحويل حالة الدورة إلى مسودة!')
 }
 </script>
 
@@ -418,9 +363,6 @@ function togglePublishStatus() {
     <!-- STEP 1: Course Info                            -->
     <!-- ============================================== -->
     <div v-if="currentStep === 0" class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <!-- Main Form (2 cols) -->
-        <div class="lg:col-span-2 flex flex-col gap-6">
           <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-5">
             <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center shrink-0">
@@ -488,27 +430,9 @@ function togglePublishStatus() {
                 </div>
               </div>
             </UFormField>
-
-            <!-- Course Level -->
-            <UFormField label="مستوى الدورة" class="font-bold text-slate-700 dark:text-slate-300">
-              <URadioGroup
-                v-model="form.level"
-                :items="levels"
-                orientation="horizontal"
-                variant="card"
-                size="md"
-                class="w-full"
-                :ui="{
-                  fieldset: 'grid grid-cols-3 gap-3 w-full',
-                  item: 'justify-center cursor-pointer py-2.5 font-bold text-sm text-center'
-                }"
-              />
-            </UFormField>
           </div>
-        </div>
 
-        <!-- Cover Image (1 col) -->
-        <div class="flex flex-col gap-6">
+          <!-- Cover Image Card -->
           <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-4">
             <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 flex items-center justify-center shrink-0">
@@ -535,7 +459,7 @@ function togglePublishStatus() {
               <img
                 :src="previewImage"
                 alt="غلاف الدورة"
-                class="w-full h-48 object-cover"
+                class="w-full h-48 sm:h-64 object-cover"
               />
               <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 <UButton
@@ -586,8 +510,6 @@ function togglePublishStatus() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
       <!-- Step 1 Footer Actions -->
       <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200 dark:border-slate-800">
@@ -634,189 +556,7 @@ function togglePublishStatus() {
     <!-- STEP 2: Course Lessons                         -->
     <!-- ============================================== -->
     <div v-if="currentStep === 1" class="flex flex-col gap-6">
-      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-5">
-        <!-- Step 2 Header Toolbar -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center shrink-0">
-              <UIcon name="i-lucide-layers" class="w-5 h-5 shrink-0" />
-            </div>
-            <div>
-              <h2 class="m-0 text-lg font-bold text-slate-900 dark:text-white">
-                محتوى ودروس الدورة
-              </h2>
-              <span class="text-xs text-slate-500 dark:text-slate-400">
-                إجمالي الدروس المضافة: {{ lessons.length }} دروس
-              </span>
-            </div>
-          </div>
-
-          <!-- Quick Add Buttons -->
-          <div class="flex flex-wrap items-center gap-2">
-            <UButton
-              color="primary"
-              variant="subtle"
-              size="sm"
-              icon="i-lucide-video"
-              class="font-bold rounded-xl"
-              @click="openAddLesson('video')"
-            >
-              + فيديو
-            </UButton>
-
-            <UButton
-              color="neutral"
-              variant="subtle"
-              size="sm"
-              icon="i-lucide-file-text"
-              class="font-bold rounded-xl"
-              @click="openAddLesson('pdf')"
-            >
-              + ملف PDF
-            </UButton>
-
-            <UButton
-              color="neutral"
-              variant="subtle"
-              size="sm"
-              icon="i-lucide-help-circle"
-              class="font-bold rounded-xl"
-              @click="openAddLesson('quiz')"
-            >
-              + اختبار
-            </UButton>
-          </div>
-        </div>
-
-        <!-- Lessons List -->
-        <div v-if="lessons.length > 0" class="flex flex-col gap-3">
-          <div
-            v-for="(lesson, index) in lessons"
-            :key="lesson.id"
-            class="flex items-center justify-between gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 transition-all group"
-          >
-            <!-- Left: Order & Info -->
-            <div class="flex items-center gap-3 min-w-0">
-              <!-- Reorder Buttons -->
-              <div class="flex flex-col gap-0.5 opacity-60 group-hover:opacity-100">
-                <button
-                  type="button"
-                  :disabled="index === 0"
-                  class="p-0.5 hover:text-primary-600 disabled:opacity-30 disabled:hover:text-inherit cursor-pointer"
-                  title="تحريك لأعلى"
-                  @click="moveLesson(index, 'up')"
-                >
-                  <UIcon name="i-lucide-chevron-up" class="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  :disabled="index === lessons.length - 1"
-                  class="p-0.5 hover:text-primary-600 disabled:opacity-30 disabled:hover:text-inherit cursor-pointer"
-                  title="تحريك لأسفل"
-                  @click="moveLesson(index, 'down')"
-                >
-                  <UIcon name="i-lucide-chevron-down" class="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <!-- Index Badge -->
-              <span class="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center shrink-0">
-                {{ index + 1 }}
-              </span>
-
-              <!-- Type Icon -->
-              <div
-                :class="[
-                  'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
-                  lesson.type === 'video'
-                    ? 'bg-blue-100/80 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'
-                    : lesson.type === 'pdf'
-                      ? 'bg-amber-100/80 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
-                      : 'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                ]"
-              >
-                <UIcon
-                  :name="
-                    lesson.type === 'video'
-                      ? 'i-lucide-play-circle'
-                      : lesson.type === 'pdf'
-                        ? 'i-lucide-file-text'
-                        : 'i-lucide-help-circle'
-                  "
-                  class="w-5 h-5"
-                />
-              </div>
-
-              <!-- Title & Duration -->
-              <div class="flex flex-col min-w-0">
-                <span class="text-sm font-bold text-slate-900 dark:text-white truncate">
-                  {{ lesson.title }}
-                </span>
-                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                  <UBadge size="xs" variant="subtle" color="neutral" class="rounded-md">
-                    {{ lesson.typeLabel }}
-                  </UBadge>
-                  <span>{{ lesson.duration }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right: Actions -->
-            <div class="flex items-center gap-1.5 shrink-0">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                size="xs"
-                icon="i-lucide-pencil"
-                class="rounded-lg cursor-pointer font-bold"
-                @click="openEditLesson(lesson)"
-              >
-                تعديل
-              </UButton>
-
-              <UButton
-                color="error"
-                variant="ghost"
-                size="xs"
-                icon="i-lucide-trash-2"
-                class="rounded-lg cursor-pointer"
-                aria-label="حذف الدرس"
-                @click="deleteLesson(lesson.id)"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty State for Lessons -->
-        <div
-          v-else
-          class="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center flex flex-col items-center justify-center gap-3"
-        >
-          <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center">
-            <UIcon name="i-lucide-folder-plus" class="w-6 h-6" />
-          </div>
-          <div class="flex flex-col items-center gap-1 max-w-sm">
-            <h3 class="text-base font-bold text-slate-900 dark:text-white m-0">
-              لم تتم إضافة أي دروس حتى الآن
-            </h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 m-0">
-              يمكنك إضافة دروس فيديو أو ملفات PDF أو اختبارات الآن لإثراء محتوى الدورة.
-            </p>
-          </div>
-          <div class="flex items-center gap-2 mt-2">
-            <UButton
-              color="primary"
-              variant="solid"
-              size="sm"
-              icon="i-lucide-plus"
-              class="font-bold rounded-xl"
-              @click="openAddLesson('video')"
-            >
-              إضافة أول درس
-            </UButton>
-          </div>
-        </div>
-      </div>
+      <CourseCurriculumManager v-model="sections" />
 
       <!-- Step 2 Footer Actions -->
       <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200 dark:border-slate-800">
@@ -864,9 +604,6 @@ function togglePublishStatus() {
     <!-- STEP 3: Course Price and Options               -->
     <!-- ============================================== -->
     <div v-if="currentStep === 2" class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <!-- Settings Column (2 cols) -->
-        <div class="lg:col-span-2 flex flex-col gap-6">
           <!-- Pricing Card -->
           <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-5">
             <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -977,85 +714,6 @@ function togglePublishStatus() {
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Review Summary Sidebar (1 col) -->
-        <div class="flex flex-col gap-6">
-          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-4">
-            <h3 class="m-0 text-base font-bold text-slate-900 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
-              ملخص بيانات الدورة
-            </h3>
-
-            <!-- Cover Mini Preview -->
-            <div v-if="previewImage" class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 h-28">
-              <img :src="previewImage" alt="غلاف" class="w-full h-full object-cover" />
-            </div>
-
-            <div class="flex flex-col gap-3 text-xs sm:text-sm">
-              <div class="flex justify-between items-center py-1">
-                <span class="text-slate-500 dark:text-slate-400 font-medium">عنوان الدورة</span>
-                <span class="font-bold text-slate-900 dark:text-white max-w-[180px] truncate text-end">
-                  {{ form.title || 'بدون عنوان' }}
-                </span>
-              </div>
-
-              <div class="flex justify-between items-center py-1">
-                <span class="text-slate-500 dark:text-slate-400 font-medium">الفصل الدراسي</span>
-                <span class="font-bold text-slate-900 dark:text-white truncate">
-                  {{ form.classroom }}
-                </span>
-              </div>
-
-              <div class="flex justify-between items-center py-1">
-                <span class="text-slate-500 dark:text-slate-400 font-medium">المستوى</span>
-                <UBadge variant="subtle" color="neutral" size="sm" class="font-bold rounded-lg">
-                  {{ form.level }}
-                </UBadge>
-              </div>
-
-              <div class="flex justify-between items-center py-1">
-                <span class="text-slate-500 dark:text-slate-400 font-medium">عدد الدروس</span>
-                <span class="font-bold text-slate-900 dark:text-white">
-                  {{ lessons.length }} دروس
-                </span>
-              </div>
-
-              <div class="flex justify-between items-center py-1">
-                <span class="text-slate-500 dark:text-slate-400 font-medium">السعر</span>
-                <span class="font-black text-slate-900 dark:text-white text-base">
-                  {{ form.isFree ? 'مجانية' : `${form.price || 0} ج.م` }}
-                </span>
-              </div>
-
-              <div class="flex justify-between items-center py-1">
-                <span class="text-slate-500 dark:text-slate-400 font-medium">حالة النشر</span>
-                <UBadge
-                  :color="form.isPublished ? 'success' : 'warning'"
-                  variant="subtle"
-                  size="sm"
-                  class="font-bold rounded-lg"
-                >
-                  {{ form.isPublished ? 'منشورة' : 'مسودة' }}
-                </UBadge>
-              </div>
-            </div>
-
-            <!-- Quick Toggle Status Button -->
-            <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
-              <UButton
-                :color="form.isPublished ? 'warning' : 'success'"
-                variant="subtle"
-                size="sm"
-                :icon="form.isPublished ? 'i-lucide-eye-off' : 'i-lucide-send'"
-                class="w-full font-bold rounded-xl justify-center cursor-pointer"
-                @click="togglePublishStatus"
-              >
-                {{ form.isPublished ? 'إلغاء النشر وحفظ كمسودة' : 'نشر الدورة للطلاب الآن' }}
-              </UButton>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Step 3 Footer Actions -->
       <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200 dark:border-slate-800">
@@ -1098,147 +756,7 @@ function togglePublishStatus() {
       </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- Modal: Add / Edit Lesson                       -->
-    <!-- ============================================== -->
-    <UModal v-model:open="isLessonModalOpen">
-      <template #content>
-        <div class="p-6 flex flex-col gap-5">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-950/50 text-primary-600 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-book-open" class="w-5 h-5" />
-              </div>
-              <div class="flex flex-col">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white m-0">
-                  {{ lessonModalMode === 'add' ? 'إضافة درس جديد' : 'تعديل بيانات الدرس' }}
-                </h3>
-                <span class="text-xs text-slate-500 dark:text-slate-400">
-                  أدخل تفاصيل الدرس ومدته أو عدد صفحاته
-                </span>
-              </div>
-            </div>
-            <UButton
-              icon="i-lucide-x"
-              color="neutral"
-              variant="ghost"
-              size="xs"
-              class="cursor-pointer"
-              @click="isLessonModalOpen = false"
-            />
-          </div>
 
-          <form class="flex flex-col gap-4" @submit.prevent="saveLesson">
-            <!-- Lesson Type -->
-            <UFormField label="نوع المحتوى" class="font-bold text-slate-700 dark:text-slate-300">
-              <div class="grid grid-cols-3 gap-2.5">
-                <button
-                  type="button"
-                  :class="[
-                    'p-3 rounded-xl border flex flex-col items-center gap-1.5 cursor-pointer transition-all',
-                    lessonForm.type === 'video'
-                      ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 font-bold'
-                      : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-                  ]"
-                  @click="lessonForm.type = 'video'; lessonForm.typeLabel = 'فيديو'"
-                >
-                  <UIcon name="i-lucide-video" class="w-5 h-5" />
-                  <span class="text-xs">فيديو</span>
-                </button>
-
-                <button
-                  type="button"
-                  :class="[
-                    'p-3 rounded-xl border flex flex-col items-center gap-1.5 cursor-pointer transition-all',
-                    lessonForm.type === 'pdf'
-                      ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 font-bold'
-                      : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-                  ]"
-                  @click="lessonForm.type = 'pdf'; lessonForm.typeLabel = 'ملف PDF'"
-                >
-                  <UIcon name="i-lucide-file-text" class="w-5 h-5" />
-                  <span class="text-xs">ملف PDF</span>
-                </button>
-
-                <button
-                  type="button"
-                  :class="[
-                    'p-3 rounded-xl border flex flex-col items-center gap-1.5 cursor-pointer transition-all',
-                    lessonForm.type === 'quiz'
-                      ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 font-bold'
-                      : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-                  ]"
-                  @click="lessonForm.type = 'quiz'; lessonForm.typeLabel = 'اختبار'"
-                >
-                  <UIcon name="i-lucide-help-circle" class="w-5 h-5" />
-                  <span class="text-xs">اختبار</span>
-                </button>
-              </div>
-            </UFormField>
-
-            <!-- Lesson Title -->
-            <UFormField label="عنوان الدرس" required class="font-bold text-slate-700 dark:text-slate-300">
-              <UInput
-                v-model="lessonForm.title"
-                placeholder="مثال: مقدمة في حل المعادلات الخطية"
-                size="md"
-                class="w-full"
-                autofocus
-              />
-            </UFormField>
-
-            <!-- Duration / Pages / Questions -->
-            <UFormField
-              :label="
-                lessonForm.type === 'video'
-                  ? 'مدة الفيديو'
-                  : lessonForm.type === 'pdf'
-                    ? 'عدد الصفحات'
-                    : 'عدد الأسئلة'
-              "
-              class="font-bold text-slate-700 dark:text-slate-300"
-            >
-              <UInput
-                v-model="lessonForm.duration"
-                :placeholder="
-                  lessonForm.type === 'video'
-                    ? 'مثال: 15:30 دقيقة'
-                    : lessonForm.type === 'pdf'
-                      ? 'مثال: 8 صفحات'
-                      : 'مثال: 10 أسئلة'
-                "
-                size="md"
-                class="w-full"
-              />
-            </UFormField>
-
-            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 mt-2">
-              <UButton
-                color="neutral"
-                variant="outline"
-                size="md"
-                class="font-bold rounded-xl"
-                @click="isLessonModalOpen = false"
-              >
-                إلغاء
-              </UButton>
-
-              <UButton
-                color="primary"
-                variant="solid"
-                size="md"
-                icon="i-lucide-check"
-                class="font-bold rounded-xl"
-                :disabled="!lessonForm.title.trim()"
-                @click="saveLesson"
-              >
-                {{ lessonModalMode === 'add' ? 'إضافة الدرس' : 'حفظ التعديلات' }}
-              </UButton>
-            </div>
-          </form>
-        </div>
-      </template>
-    </UModal>
 
     <!-- ============================================== -->
     <!-- Modal: Create Classroom On-The-Fly            -->
@@ -1271,7 +789,16 @@ function togglePublishStatus() {
           </div>
 
           <form class="flex flex-col gap-4" @submit.prevent="handleCreateClassroomOnTheFly">
-            <UFormField label="اسم الفصل الدراسي" required class="font-bold text-slate-700 dark:text-slate-300">
+            <UFormField v-if="stages.length > 0" label="المرحلة الدراسية" class="font-bold text-slate-700 dark:text-slate-300">
+              <USelect
+                v-model="newClassStageId"
+                :items="stages.map(s => ({ label: s.name, value: s.id }))"
+                size="md"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField label="اسم الصف الدراسي" required class="font-bold text-slate-700 dark:text-slate-300">
               <UInput
                 v-model="newClassName"
                 placeholder="مثال: الصف الأول الثانوي، أو الترم الصيفي"
@@ -1283,7 +810,7 @@ function togglePublishStatus() {
 
             <!-- Color Selection -->
             <div class="flex flex-col gap-2">
-              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">لون التمييز للفصل:</span>
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">لون التمييز للصف:</span>
               <div class="flex items-center gap-2 flex-wrap">
                 <button
                   v-for="color in colorPalette"
@@ -1308,13 +835,14 @@ function togglePublishStatus() {
                 إلغاء
               </UButton>
               <UButton
+                type="submit"
                 color="primary"
                 variant="solid"
                 size="md"
                 icon="i-lucide-check"
                 class="font-bold rounded-xl"
-                :disabled="!newClassName.trim()"
-                @click="handleCreateClassroomOnTheFly"
+                :disabled="!newClassName.trim() || isCreatingClass"
+                :loading="isCreatingClass"
               >
                 إنشاء وربط بالدورة
               </UButton>

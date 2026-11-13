@@ -65,10 +65,11 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
       ]
     }
     const isDesignTab = query.tab === 'design' || path.endsWith('/design')
+    const isDomainTab = query.tab === 'domain' || path.endsWith('/domain')
     return [
       { label: 'الإعدادات', to: '/teacher-dashboard/settings' },
       { label: 'إعدادات المنصة', to: '/teacher-dashboard/settings' },
-      { label: isDesignTab ? 'تصميم المنصة' : 'معلومات عامة' }
+      { label: isDesignTab ? 'تصميم المنصة' : isDomainTab ? 'عنوان المنصة (النطاق)' : 'معلومات عامة' }
     ]
   }
 
@@ -98,16 +99,16 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
     ]
   }
 
-  // 3b. Classrooms
+  // 3b. Classrooms (Stages & Grades)
   if (path.includes('/classrooms') || path.includes('/classes')) {
     if (path.endsWith('/new')) {
       return [
-        { label: 'الفصول الدراسية', to: '/teacher-dashboard/classrooms' },
-        { label: 'إضافة فصل دراسي جديد' }
+        { label: 'المراحل والصفوف الدراسية', to: '/teacher-dashboard/classrooms' },
+        { label: 'إضافة صف دراسي جديد' }
       ]
     }
     return [
-      { label: 'الفصول الدراسية' }
+      { label: 'المراحل والصفوف الدراسية' }
     ]
   }
 
@@ -235,7 +236,7 @@ const userMenuItems = [
 
     <!-- Sidebar Navigation -->
     <aside
-      class="fixed inset-y-0 start-0 z-50 w-72 max-w-[85vw] bg-white border-e border-slate-200 p-6 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:w-68 lg:shrink-0 lg:max-w-none lg:overflow-y-visible lg:translate-x-0 shadow-xl lg:shadow-none min-h-screen"
+      class="fixed inset-y-0 start-0 z-50 w-72 max-w-[85vw] bg-white border-e border-slate-200 p-6 flex flex-col overflow-y-auto transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:w-68 lg:shrink-0 lg:max-w-none lg:translate-x-0 shadow-xl lg:shadow-none"
       :class="isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'"
     >
       <div class="flex flex-col gap-6">
@@ -294,7 +295,7 @@ const userMenuItems = [
             دوراتي
           </UButton>
 
-          <!-- 3. الفصول الدراسية -->
+          <!-- 3. المراحل والصفوف الدراسية -->
           <UButton
             to="/teacher-dashboard/classrooms"
             icon="i-lucide-school"
@@ -304,7 +305,7 @@ const userMenuItems = [
             class="w-full justify-start gap-3 rounded-xl px-4 py-3 font-bold text-sm transition-all"
             @click="closeMobileSidebar"
           >
-            الفصول الدراسية
+            المراحل والصفوف
           </UButton>
 
           <!-- 4. الطلاب -->
@@ -374,12 +375,22 @@ const userMenuItems = [
               <UButton
                 to="/teacher-dashboard/settings"
                 variant="ghost"
-                :color="route.path === '/teacher-dashboard/settings' && route.query.tab !== 'design' ? 'primary' : 'neutral'"
+                :color="route.path === '/teacher-dashboard/settings' && (!route.query.tab || route.query.tab === 'general') ? 'primary' : 'neutral'"
                 size="sm"
                 class="w-full justify-start rounded-lg font-medium text-xs py-2"
                 @click="closeMobileSidebar"
               >
                 إعدادات المنصة
+              </UButton>
+              <UButton
+                to="/teacher-dashboard/settings?tab=domain"
+                variant="ghost"
+                :color="(route.path === '/teacher-dashboard/settings' && route.query.tab === 'domain') || route.path.includes('/settings/domain') ? 'primary' : 'neutral'"
+                size="sm"
+                class="w-full justify-start rounded-lg font-medium text-xs py-2"
+                @click="closeMobileSidebar"
+              >
+                عنوان المنصة (النطاق)
               </UButton>
               <UButton
                 to="/teacher-dashboard/settings?tab=design"
@@ -414,21 +425,6 @@ const userMenuItems = [
             </div>
           </div>
         </nav>
-      </div>
-
-      <!-- Bottom Profile Card -->
-      <div class="pt-4 border-t border-slate-100">
-        <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-2xl bg-slate-50/60">
-          <UAvatar
-            text="أ"
-            size="md"
-            class="bg-blue-100 text-blue-600 font-extrabold shrink-0"
-          />
-          <div class="flex flex-col min-w-0">
-            <span class="text-sm font-bold text-slate-900 truncate">الأستاذ أحمد</span>
-            <span class="text-xs text-slate-500">معلم</span>
-          </div>
-        </div>
       </div>
     </aside>
 
