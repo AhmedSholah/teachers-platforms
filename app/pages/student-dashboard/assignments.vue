@@ -128,7 +128,7 @@ const filteredAssignments = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full box-border">
+  <div class="flex flex-col gap-6 p-6 md:p-10 w-full box-border">
     <!-- Page Header -->
     <div class="flex flex-col gap-1.5">
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">

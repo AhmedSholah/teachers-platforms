@@ -82,7 +82,9 @@ const invoices = [
 </script>
 
 <template>
-  <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
+  <div class="flex flex-col min-h-full">
+    <div class="h-14 shrink-0" aria-hidden="true" />
+    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
     <!-- Current Subscription Card -->
     <UCard class="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
       <template #header>
@@ -323,6 +325,7 @@ const invoices = [
           </table>
         </div>
       </UCard>
+    </div>
     </div>
   </div>
 </template>

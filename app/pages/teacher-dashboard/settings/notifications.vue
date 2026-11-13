@@ -27,7 +27,9 @@ function saveNotifications() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
+  <div class="flex flex-col min-h-full">
+    <div class="h-14 shrink-0" aria-hidden="true" />
+    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
     <!-- Success Notification Toast -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
@@ -182,6 +184,7 @@ function saveNotifications() {
       >
         إلغاء
       </UButton>
+    </div>
     </div>
   </div>
 </template>

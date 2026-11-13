@@ -159,7 +159,9 @@ function saveDesignSettings() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
+  <div class="flex flex-col min-h-full">
+    <div class="h-14 shrink-0" aria-hidden="true" />
+    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
     <!-- Success Notification Alert -->
     <Transition
       enter-active-class="transition-opacity duration-200 ease-out"
@@ -646,6 +648,7 @@ function saveDesignSettings() {
           </div>
         </template>
       </UCard>
+    </div>
     </div>
   </div>
 </template>

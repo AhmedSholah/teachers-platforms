@@ -166,7 +166,7 @@ const payoutCount = computed(() => transactions.value.filter(t => t.type === 'pa
 <template>
   <div class="flex flex-col min-h-full">
     <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar>
+    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
       <UButton
         to="/teacher-dashboard/payouts/withdraw"
         color="primary"
@@ -189,7 +189,7 @@ const payoutCount = computed(() => transactions.value.filter(t => t.type === 'pa
       </UButton>
     </DashboardActionBar>
 
-    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-7xl mx-auto w-full box-border">
+    <div class="p-6 md:p-10 flex flex-col gap-8 w-full box-border">
 
     <!-- Top 2 Cards: Total Academy Earnings & End of Month Usage Cost -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">

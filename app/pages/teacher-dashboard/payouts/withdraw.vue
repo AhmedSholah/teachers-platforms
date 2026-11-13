@@ -28,7 +28,7 @@ function handleConfirm() {
 
 <template>
   <div class="flex flex-col min-h-full">
-    <DashboardActionBar max-width="max-w-4xl" container-class="px-6 md:px-10">
+    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
       <UButton
         to="/teacher-dashboard/payouts"
         color="neutral"
@@ -41,10 +41,10 @@ function handleConfirm() {
       </UButton>
     </DashboardActionBar>
 
-    <div class="flex flex-col gap-6 md:gap-8 p-6 md:p-10 w-full max-w-4xl mx-auto box-border">
+    <div class="flex flex-col gap-6 md:gap-8 p-6 md:p-10 w-full box-border">
 
     <!-- Main Withdrawal Card -->
-    <UCard class="w-full max-w-2xl rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
+    <UCard class="w-full rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
       <div class="flex flex-col gap-6">
         <!-- Balance Info -->
         <div class="flex items-center justify-between p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-100">

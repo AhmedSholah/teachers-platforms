@@ -5,13 +5,13 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  maxWidth: 'max-w-7xl',
-  containerClass: 'px-6 sm:px-8 lg:px-10'
+  maxWidth: 'max-w-none',
+  containerClass: 'px-6 md:px-10'
 })
 </script>
 
 <template>
-  <div class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-[65px] z-20 shadow-2xs">
+  <div class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-[65px] z-20 shadow-2xs min-h-14 flex items-center box-border">
     <div
       class="mx-auto w-full py-2.5 flex items-center justify-between gap-3 box-border"
       :class="[maxWidth, containerClass]"

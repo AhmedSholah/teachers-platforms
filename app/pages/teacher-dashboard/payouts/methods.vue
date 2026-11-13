@@ -69,7 +69,7 @@ function saveMethod() {
 
 <template>
   <div class="flex flex-col min-h-full">
-    <DashboardActionBar max-width="max-w-3xl" container-class="px-6 sm:px-8 lg:px-10">
+    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
       <UButton
         to="/teacher-dashboard/payouts"
         color="neutral"
@@ -82,7 +82,7 @@ function saveMethod() {
       </UButton>
     </DashboardActionBar>
 
-    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-3xl mx-auto w-full">
+    <div class="p-6 md:p-10 flex flex-col gap-8 w-full box-border">
 
     <!-- Main Card -->
     <UCard class="border border-slate-200 shadow-sm rounded-2xl bg-white">

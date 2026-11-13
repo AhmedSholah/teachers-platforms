@@ -185,7 +185,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 w-full">
+  <div class="flex flex-col gap-6 p-6 md:p-10 w-full box-border">
     <!-- Header -->
     <div class="flex flex-col gap-1.5">
       <h1 class="m-0 text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">

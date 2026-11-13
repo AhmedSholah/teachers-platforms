@@ -101,7 +101,9 @@ const recentActivities = [
 </script>
 
 <template>
-  <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-8 max-w-7xl mx-auto w-full">
+  <div class="flex flex-col min-h-full">
+    <div class="h-14 shrink-0" aria-hidden="true" />
+    <div class="p-6 md:p-10 flex flex-col gap-8 w-full box-border">
     <!-- Welcome Banner Card -->
     <UCard
       :ui="{ body: 'p-6 sm:p-8 relative overflow-hidden bg-linear-to-r from-blue-700 via-blue-600 to-indigo-700 text-white rounded-2xl shadow-md border-0' }"
@@ -317,6 +319,7 @@ const recentActivities = [
           </div>
         </UCard>
       </div>
+    </div>
     </div>
   </div>
 </template>

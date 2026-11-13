@@ -90,7 +90,7 @@ const filteredTransactions = computed(() => {
 <template>
   <div class="flex flex-col min-h-full">
     <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar>
+    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
       <UButton
         to="/teacher-dashboard/payouts/withdraw"
         icon="i-lucide-wallet"
@@ -112,7 +112,7 @@ const filteredTransactions = computed(() => {
       </UButton>
     </DashboardActionBar>
 
-    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+    <div class="p-6 md:p-10 flex flex-col gap-6 w-full box-border">
 
     <!-- Revenue Stats Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

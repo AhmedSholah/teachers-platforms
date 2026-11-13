@@ -104,7 +104,7 @@ function deleteNotification(id: number) {
 
 <template>
   <div class="flex flex-col min-h-full">
-    <DashboardActionBar v-if="unreadCount > 0" max-width="max-w-5xl" container-class="px-6 sm:px-8 lg:px-10">
+    <DashboardActionBar v-if="unreadCount > 0" max-width="max-w-none" container-class="px-6 md:px-10">
       <UButton
         icon="i-lucide-check-check"
         color="neutral"
@@ -125,8 +125,9 @@ function deleteNotification(id: number) {
         {{ unreadCount }} جديدة
       </UBadge>
     </DashboardActionBar>
+    <div v-else class="h-14 shrink-0" aria-hidden="true" />
 
-    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-5xl mx-auto w-full">
+    <div class="p-6 md:p-10 flex flex-col gap-6 w-full box-border">
 
     <!-- Filter Pills -->
     <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">

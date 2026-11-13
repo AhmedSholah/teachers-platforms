@@ -6,10 +6,8 @@ useHead({
 })
 
 const {
-  stages,
   classroomOptions,
   ensureLoaded,
-  addClassroom,
   addCourse
 } = useClassrooms()
 
@@ -19,7 +17,7 @@ await ensureLoaded()
 const stepperItems = [
   {
     title: 'معلومات الدورة',
-    description: 'العنوان، الفصل والغلاف'
+    description: 'العنوان، المرحلة والفصل والغلاف'
   },
   {
     title: 'دروس الدورة',
@@ -69,49 +67,7 @@ const totalLessonsCount = computed(() => {
   return sections.value.reduce((acc, s) => acc + (s.lessons?.length || 0), 0)
 })
 
-// Classroom On-The-Fly Creation
-const isCreateClassModalOpen = ref(false)
-const newClassName = ref('')
-const newClassStageId = ref(stages.value[0]?.id || '')
-watch(stages, (list) => {
-  if (!newClassStageId.value && list[0]?.id) {
-    newClassStageId.value = list[0].id
-  }
-}, { immediate: true })
-const selectedClassColor = ref('bg-blue-600')
-const isCreatingClass = ref(false)
 const toast = useToast()
-const colorPalette = [
-  { name: 'أزرق', class: 'bg-blue-600' },
-  { name: 'كهرماني', class: 'bg-amber-500' },
-  { name: 'أخضر زمردي', class: 'bg-emerald-600' },
-  { name: 'بنفسجي', class: 'bg-purple-600' },
-  { name: 'وردي', class: 'bg-rose-500' },
-  { name: 'سماوي', class: 'bg-cyan-600' }
-]
-
-async function handleCreateClassroomOnTheFly() {
-  const name = newClassName.value.trim()
-  if (!name || isCreatingClass.value) return
-
-  isCreatingClass.value = true
-  try {
-    await addClassroom(name, selectedClassColor.value, newClassStageId.value || undefined)
-    form.value.classroom = name
-    newClassName.value = ''
-    isCreateClassModalOpen.value = false
-    triggerSuccess(`تم إنشاء «${name}» وتعيينه لهذه الدورة بنجاح!`)
-  } catch (err: unknown) {
-    const fetchErr = err as { data?: { statusMessage?: string }; statusMessage?: string }
-    toast.add({
-      title: 'تعذر إنشاء الصف الدراسي',
-      description: fetchErr?.data?.statusMessage || fetchErr?.statusMessage || 'حدث خطأ غير متوقع.',
-      color: 'error'
-    })
-  } finally {
-    isCreatingClass.value = false
-  }
-}
 
 // File Upload
 const fileInputRef = ref<any>(null)
@@ -238,7 +194,7 @@ function saveAsDraftQuick() {
 <template>
   <div class="flex flex-col min-h-full">
     <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar max-width="max-w-5xl" container-class="px-6 md:px-10">
+    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
       <UButton
         to="/teacher-dashboard/courses"
         color="neutral"
@@ -251,7 +207,7 @@ function saveAsDraftQuick() {
       </UButton>
     </DashboardActionBar>
 
-    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full max-w-5xl mx-auto">
+    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
       <!-- Success Toast Alert -->
       <Transition
         enter-active-class="transition duration-300 ease-out"
@@ -327,33 +283,8 @@ function saveAsDraftQuick() {
               />
             </UFormField>
 
-            <!-- Classroom Selector & Quick Add -->
-            <UFormField label="الفصل الدراسي" class="font-bold text-slate-700 dark:text-slate-300">
-              <div class="flex flex-col gap-2">
-                <USelect
-                  v-model="form.classroom"
-                  :items="classroomOptions"
-                  size="md"
-                  class="w-full"
-                />
-                <div class="flex items-center justify-between pt-1">
-                  <button
-                    type="button"
-                    class="inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer"
-                    @click="isCreateClassModalOpen = true"
-                  >
-                    <UIcon name="i-lucide-plus-circle" class="w-4 h-4 shrink-0" />
-                    <span>إنشاء فصل دراسي جديد وربطه بالدورة</span>
-                  </button>
-                  <NuxtLink
-                    to="/teacher-dashboard/classrooms"
-                    class="text-xs text-slate-400 hover:text-slate-600 transition-colors font-medium"
-                  >
-                    إدارة الفصول
-                  </NuxtLink>
-                </div>
-              </div>
-            </UFormField>
+            <!-- Educational Stage & Classroom Selectors -->
+            <CourseClassroomSelector v-model="form.classroom" />
           </div>
 
           <!-- Cover Image Card -->
@@ -680,99 +611,6 @@ function saveAsDraftQuick() {
 
 
 
-    <!-- ============================================== -->
-    <!-- Modal: Create Classroom On-The-Fly            -->
-    <!-- ============================================== -->
-    <UModal v-model:open="isCreateClassModalOpen">
-      <template #content>
-        <div class="p-6 flex flex-col gap-5">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-school" class="w-5 h-5" />
-              </div>
-              <div class="flex flex-col">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white m-0">
-                  إنشاء فصل دراسي جديد
-                </h3>
-                <span class="text-xs text-slate-500 dark:text-slate-400">
-                  سيتم ربط هذا الفصل الدراسي بالدورة الحالية تلقائياً
-                </span>
-              </div>
-            </div>
-            <UButton
-              icon="i-lucide-x"
-              color="neutral"
-              variant="ghost"
-              size="xs"
-              class="cursor-pointer"
-              @click="isCreateClassModalOpen = false"
-            />
-          </div>
-
-          <form class="flex flex-col gap-4" @submit.prevent="handleCreateClassroomOnTheFly">
-            <UFormField v-if="stages.length > 0" label="المرحلة الدراسية" class="font-bold text-slate-700 dark:text-slate-300">
-              <USelect
-                v-model="newClassStageId"
-                :items="stages.map(s => ({ label: s.name, value: s.id }))"
-                size="md"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UFormField label="اسم الصف الدراسي" required class="font-bold text-slate-700 dark:text-slate-300">
-              <UInput
-                v-model="newClassName"
-                placeholder="مثال: الصف الأول الثانوي، أو الترم الصيفي"
-                size="md"
-                class="w-full"
-                autofocus
-              />
-            </UFormField>
-
-            <!-- Color Selection -->
-            <div class="flex flex-col gap-2">
-              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">لون التمييز للصف:</span>
-              <div class="flex items-center gap-2 flex-wrap">
-                <button
-                  v-for="color in colorPalette"
-                  :key="color.class"
-                  type="button"
-                  class="w-7 h-7 rounded-full transition-transform cursor-pointer"
-                  :class="[color.class, selectedClassColor === color.class ? 'ring-2 ring-offset-2 ring-slate-800 scale-110' : 'opacity-80 hover:opacity-100']"
-                  :title="color.name"
-                  @click="selectedClassColor = color.class"
-                />
-              </div>
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 mt-2">
-              <UButton
-                color="neutral"
-                variant="outline"
-                size="md"
-                class="font-bold rounded-xl"
-                @click="isCreateClassModalOpen = false"
-              >
-                إلغاء
-              </UButton>
-              <UButton
-                type="submit"
-                color="primary"
-                variant="solid"
-                size="md"
-                icon="i-lucide-check"
-                class="font-bold rounded-xl"
-                :disabled="!newClassName.trim() || isCreatingClass"
-                :loading="isCreatingClass"
-              >
-                إنشاء وربط بالدورة
-              </UButton>
-            </div>
-          </form>
-        </div>
-      </template>
-    </UModal>
     </div>
   </div>
 </template>

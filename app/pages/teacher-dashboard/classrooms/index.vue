@@ -641,7 +641,7 @@ async function handleRestoreEgyptStages() {
 <template>
   <div class="flex flex-col min-h-full">
     <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar max-width="max-w-7xl" container-class="px-6 sm:px-8 lg:px-10">
+    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
       <UButton
         color="primary"
         variant="solid"
@@ -678,7 +678,7 @@ async function handleRestoreEgyptStages() {
       </template>
     </DashboardActionBar>
 
-    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-7xl mx-auto w-full box-border">
+    <div class="p-6 md:p-10 flex flex-col gap-6 w-full box-border">
       <!-- Search & Stage Filter Toolbar -->
       <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col gap-3.5">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">

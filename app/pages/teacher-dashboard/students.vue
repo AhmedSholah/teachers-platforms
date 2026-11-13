@@ -110,7 +110,7 @@ function getStudentActions(student: Student) {
 <template>
   <div class="flex flex-col min-h-full">
     <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar>
+    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
       <UButton
         icon="i-lucide-user-plus"
         color="primary"
@@ -131,7 +131,7 @@ function getStudentActions(student: Student) {
       </UButton>
     </DashboardActionBar>
 
-    <div class="p-6 sm:p-8 lg:p-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+    <div class="p-6 md:p-10 flex flex-col gap-6 w-full box-border">
 
     <!-- Quick Stats Summary -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">

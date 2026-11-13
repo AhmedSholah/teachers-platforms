@@ -75,7 +75,7 @@ function shareCertificate(cert: EarnedCertificate) {
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div class="space-y-8 p-6 md:p-10 w-full box-border">
     <!-- Header -->
     <div class="flex flex-col gap-1">
       <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">الشهادات</h1>

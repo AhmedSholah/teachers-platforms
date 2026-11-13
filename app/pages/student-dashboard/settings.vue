@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 useHead({
   title: 'الإعدادات - لوحة الطالب'
 })
@@ -100,7 +100,7 @@ function resetSettings() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full max-w-5xl">
+  <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
     <!-- Page Header -->
     <div class="flex flex-col gap-1.5">
       <h1 class="m-0 text-3xl font-extrabold text-slate-900 leading-tight">
