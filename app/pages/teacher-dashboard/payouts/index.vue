@@ -261,16 +261,6 @@ const payoutCount = computed(() => transactions.value.filter(t => t.type === 'pa
             >
               سحب الأرباح الآن
             </UButton>
-            <UButton
-              to="/teacher-dashboard/sales"
-              variant="outline"
-              color="neutral"
-              size="md"
-              icon="i-lucide-bar-chart-3"
-              class="font-bold rounded-xl cursor-pointer"
-            >
-              تقرير المبيعات
-            </UButton>
           </div>
         </template>
       </UCard>

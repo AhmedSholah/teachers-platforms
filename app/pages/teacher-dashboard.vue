@@ -119,13 +119,6 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
     ]
   }
 
-  // 5. Sales
-  if (path.includes('/sales')) {
-    return [
-      { label: 'المبيعات' }
-    ]
-  }
-
   // 6. Payouts
   if (path.includes('/payouts')) {
     if (path.endsWith('/withdraw')) {
@@ -319,19 +312,6 @@ const userMenuItems = [
             @click="closeMobileSidebar"
           >
             الطلاب
-          </UButton>
-
-          <!-- 4. المبيعات -->
-          <UButton
-            to="/teacher-dashboard/sales"
-            icon="i-lucide-trending-up"
-            :variant="route.path.includes('/sales') ? 'subtle' : 'ghost'"
-            :color="route.path.includes('/sales') ? 'primary' : 'neutral'"
-            size="lg"
-            class="w-full justify-start gap-3 rounded-xl px-4 py-3 font-bold text-sm transition-all"
-            @click="closeMobileSidebar"
-          >
-            المبيعات
           </UButton>
 
           <!-- 5. المدفوعات -->
