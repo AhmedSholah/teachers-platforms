@@ -247,13 +247,6 @@ const columns: TableColumn<Transaction>[] = [
             icon="i-lucide-arrow-up-right"
             label="سحب الأرباح"
           />
-          <UButton
-            to="/teacher-dashboard/payouts/methods"
-            variant="outline"
-            color="neutral"
-            icon="i-lucide-credit-card"
-            label="طرق الاستلام"
-          />
         </template>
       </UDashboardToolbar>
 

@@ -11,6 +11,7 @@ export interface LessonItem {
   videoUrl?: string
   videoDescription?: string
   content?: string
+  pdfFile?: File | null
   pdfFileName?: string
   pagesCount?: string
   questionsCount?: string

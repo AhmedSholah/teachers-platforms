@@ -24,6 +24,14 @@ export interface CourseRecord {
   sections: unknown[]
 }
 
+export interface PayoutMethodRecord {
+  id: number
+  type: 'wallet' | 'instapay'
+  phone?: string
+  isDefault: boolean
+  createdAt: string
+}
+
 let dbInstance: DatabaseSync | null = null
 
 const DEFAULT_COURSES_SEED = [
@@ -342,6 +350,19 @@ export function getDb(): DatabaseSync {
       sections_json TEXT NOT NULL DEFAULT '[]',
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS payout_methods (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL,
+      account_name TEXT NOT NULL,
+      bank_name TEXT,
+      iban TEXT,
+      provider TEXT,
+      phone TEXT,
+      email TEXT,
+      is_default INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
   `)
 
   const columns = db.prepare(`PRAGMA table_info(courses)`).all() as Array<{ name: string }>
@@ -403,4 +424,20 @@ export function listCourses(db: DatabaseSync): CourseRecord[] {
       sections: parsedSections
     }
   })
+}
+
+export function listPayoutMethods(db: DatabaseSync): PayoutMethodRecord[] {
+  const rows = db.prepare(`
+    SELECT id, type, phone, is_default, created_at
+    FROM payout_methods
+    ORDER BY is_default DESC, id DESC
+  `).all()
+
+  return rows.map(row => ({
+    id: Number(row.id),
+    type: (String(row.type) as PayoutMethodRecord['type']),
+    phone: row.phone ? String(row.phone) : undefined,
+    isDefault: Boolean(row.is_default),
+    createdAt: String(row.created_at)
+  }))
 }

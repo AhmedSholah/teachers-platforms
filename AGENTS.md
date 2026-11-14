@@ -48,6 +48,8 @@ This document establishes the architectural and styling standards for all AI age
 
 ## 2. Component & Code Conventions
 
+- **RTL Button Order in Dialogs & Footers:** In confirm/cancel or primary/secondary button pairs, the **primary action must come first in the DOM** and the cancel/secondary button second. With the app's `dir="rtl"`, the first DOM element renders on the right (reading start), so the primary button always appears first visually. Never write the cancel button before the primary action in the markup.
+
 - **Vue 3 `<script setup lang="ts">`:** Always use `<script setup lang="ts">` with TypeScript.
 - **Nuxt Auto-Imports:** Leverage Nuxt's auto-import capabilities for Vue composables (`ref`, `computed`, `reactive`, `watch`), Nuxt utilities (`useHead`, `useRoute`, `useRouter`, `navigateTo`), and Nuxt UI components without redundant manual imports.
 - **Responsive Design:** Build mobile-responsive layouts using Tailwind's standard breakpoints (`sm:`, `md:`, `lg:`, `xl:`, `2xl:`).

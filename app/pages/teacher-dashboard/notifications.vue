@@ -247,7 +247,7 @@ const isDetailPanelOpen = computed({
         {{ selectedNotification.description }}
       </div>
 
-      <div v-if="selectedNotification.actionTo" class="pt-4 border-t border-default flex justify-end">
+      <div v-if="selectedNotification.actionTo" class="pt-4 border-t border-default flex">
         <UButton
           :to="selectedNotification.actionTo"
           :label="selectedNotification.actionLabel || 'عرض التفاصيل'"

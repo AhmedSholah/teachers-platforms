@@ -251,7 +251,7 @@ async function saveChanges() {
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6 w-full lg:max-w-4xl mx-auto">
+      <div class="flex flex-col gap-6 w-full">
         <UCard>
           <UStepper
             v-model="currentStep"
@@ -275,7 +275,7 @@ async function saveChanges() {
               <UFormField
                 label="عنوان الدورة"
                 required
-                :error="titleError"
+                :error="titleError || undefined"
               >
                 <UInput
                   v-model="form.title"

@@ -433,9 +433,9 @@ const statusItems = [
         <UFormField label="البريد الإلكتروني" required>
           <UInput v-model="newStudent.email" type="email" placeholder="student@example.com" class="w-full" />
         </UFormField>
-        <div class="flex justify-end gap-2 pt-2">
-          <UButton label="إلغاء" color="neutral" variant="ghost" @click="isAddModalOpen = false" />
+        <div class="flex items-center gap-2 pt-2">
           <UButton type="submit" label="إضافة الطالب" />
+          <UButton label="إلغاء" color="neutral" variant="ghost" @click="isAddModalOpen = false" />
         </div>
       </form>
     </template>
