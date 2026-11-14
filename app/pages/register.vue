@@ -102,8 +102,6 @@ async function handleRegister() {
   <div
     class="w-full min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans"
   >
-    <PublicNavbar />
-
     <div class="flex-1 flex flex-col lg:flex-row">
       <!-- Brand Showcase Section (Side Banner) -->
       <div

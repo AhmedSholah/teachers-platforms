@@ -23,8 +23,6 @@ function handleLogin(_event: LoginSubmitEvent) {
 
 <template>
   <div class="w-full min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
-    <PublicNavbar />
-
     <div class="flex-1 flex flex-col lg:flex-row">
       <!-- Left Hero/Branding Column -->
       <div class="relative hidden lg:flex w-full lg:w-5/12 xl:w-5/12 bg-blue-600 text-white p-8 sm:p-12 lg:p-14 flex-col justify-between overflow-hidden shrink-0">

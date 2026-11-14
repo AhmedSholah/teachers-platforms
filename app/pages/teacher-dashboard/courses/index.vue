@@ -274,36 +274,43 @@ const hasActiveFilters = computed(() => {
         </template>
       </UDashboardToolbar>
 
-      <UDashboardToolbar>
+      <UDashboardToolbar
+        :ui="{
+          root: 'flex-col items-stretch py-3 gap-3 overflow-visible xl:flex-row xl:items-center xl:justify-between xl:py-0 xl:gap-1.5',
+          left: 'w-full xl:w-auto',
+          right: 'w-full xl:w-auto'
+        }"
+      >
         <template #left>
           <UTabs
             v-model="selectedStatus"
             :items="statusTabs"
             :content="false"
             size="xs"
+            class="w-full xl:w-auto"
           />
         </template>
 
         <template #right>
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full xl:w-auto">
             <UInput
               v-model="searchQuery"
               icon="i-lucide-search"
               placeholder="بحث في الدورات..."
               size="sm"
-              class="w-48 sm:w-56"
+              class="w-full sm:w-56"
             />
             <USelect
               v-model="selectedClassroom"
               :items="classroomFilterItems"
               size="sm"
-              class="w-40"
+              class="w-full sm:w-40"
             />
             <USelect
               v-model="sortBy"
               :items="sortItems"
               size="sm"
-              class="w-36"
+              class="w-full sm:w-36"
             />
             <UButton
               v-if="hasActiveFilters"
@@ -312,6 +319,7 @@ const hasActiveFilters = computed(() => {
               size="xs"
               icon="i-lucide-rotate-ccw"
               label="إعادة ضبط"
+              class="w-full sm:w-auto justify-center"
               @click="resetFilters"
             />
           </div>
