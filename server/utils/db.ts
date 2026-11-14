@@ -2,30 +2,11 @@ import { mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 
-export interface StageRecord {
-  id: string
-  name: string
-  description?: string
-  colorClass: string
-  sortOrder: number
-}
-
-export interface ClassroomRecord {
-  id: string
-  stageId: string
-  name: string
-  description?: string
-  colorClass: string
-  sortOrder: number
-  courses: number[]
-}
-
 export interface CourseRecord {
   id: number
   title: string
   lessonsCount: number
   studentsCount: number
-  classroom: string
   price: string
   status: 'published' | 'draft' | 'archived'
   headerBg: string
@@ -45,54 +26,11 @@ export interface CourseRecord {
 
 let dbInstance: DatabaseSync | null = null
 
-const EGYPT_STAGES_SEED = [
-  {
-    id: 'stage-primary',
-    name: 'المرحلة الابتدائية',
-    description: 'صفوف التعليم الأساسي - المرحلة الابتدائية في مصر',
-    colorClass: 'bg-emerald-600',
-    sortOrder: 1,
-    grades: [
-      { id: 'eg-prim-1', name: 'الصف الأول الابتدائي', colorClass: 'bg-emerald-600' },
-      { id: 'eg-prim-2', name: 'الصف الثاني الابتدائي', colorClass: 'bg-teal-600' },
-      { id: 'eg-prim-3', name: 'الصف الثالث الابتدائي', colorClass: 'bg-cyan-600' },
-      { id: 'eg-prim-4', name: 'الصف الرابع الابتدائي', colorClass: 'bg-blue-600' },
-      { id: 'eg-prim-5', name: 'الصف الخامس الابتدائي', colorClass: 'bg-indigo-600' },
-      { id: 'eg-prim-6', name: 'الصف السادس الابتدائي', colorClass: 'bg-purple-600' }
-    ]
-  },
-  {
-    id: 'stage-preparatory',
-    name: 'المرحلة الإعدادية',
-    description: 'صفوف المرحلة الإعدادية والشهادة الإعدادية المصرية',
-    colorClass: 'bg-amber-500',
-    sortOrder: 2,
-    grades: [
-      { id: 'eg-prep-1', name: 'الصف الأول الإعدادي', colorClass: 'bg-amber-500' },
-      { id: 'eg-prep-2', name: 'الصف الثاني الإعدادي', colorClass: 'bg-orange-500' },
-      { id: 'eg-prep-3', name: 'الصف الثالث الإعدادي', colorClass: 'bg-rose-500' }
-    ]
-  },
-  {
-    id: 'stage-secondary',
-    name: 'المرحلة الثانوية',
-    description: 'صفوف المرحلة الثانوية العامة المصرية',
-    colorClass: 'bg-blue-600',
-    sortOrder: 3,
-    grades: [
-      { id: 'eg-sec-1', name: 'الصف الأول الثانوي', colorClass: 'bg-blue-600' },
-      { id: 'eg-sec-2', name: 'الصف الثاني الثانوي', colorClass: 'bg-indigo-600' },
-      { id: 'eg-sec-3', name: 'الصف الثالث الثانوي', colorClass: 'bg-emerald-600' }
-    ]
-  }
-]
-
-const EGYPT_COURSES_SEED = [
+const DEFAULT_COURSES_SEED = [
   {
     title: 'الرياضيات وتأسيس الحساب - المنهج المصري الجديد',
     lessonsCount: 14,
     studentsCount: 64,
-    classroom: 'الصف الرابع الابتدائي',
     price: '200 ج.م',
     status: 'published',
     headerBg: 'bg-blue-100/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400',
@@ -106,13 +44,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ ساعتين',
     isFeatured: false,
     category: 'رياضيات',
-    description: 'شرح مبسط وتدريبات شاملة على الكسور والأعداد العشرية والهندسة وفقاً لمنهج وزارة التربية والتعليم المصرية.'
+    description: 'شرح مبسط وتدريبات شاملة على الكسور والأعداد العشرية والهندسة.'
   },
   {
     title: 'العلوم المتكاملة وتجارب المنهج الجديد',
     lessonsCount: 12,
     studentsCount: 52,
-    classroom: 'الصف الخامس الابتدائي',
     price: '220 ج.م',
     status: 'published',
     headerBg: 'bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400',
@@ -126,13 +63,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ يوم',
     isFeatured: false,
     category: 'علوم',
-    description: 'تغطية تفاعلية لجميع مفاهيم العلوم والمشروعات البحثية لطلاب الصف الخامس الابتدائي في مصر.'
+    description: 'تغطية تفاعلية لجميع مفاهيم العلوم والمشروعات البحثية.'
   },
   {
-    title: 'الرياضيات للشهادة الابتدائية - الترم الأول',
+    title: 'الرياضيات المتقدمة - الترم الأول',
     lessonsCount: 16,
     studentsCount: 88,
-    classroom: 'الصف السادس الابتدائي',
     price: '240 ج.م',
     status: 'published',
     headerBg: 'bg-purple-100/80 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400',
@@ -146,13 +82,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ 3 أيام',
     isFeatured: true,
     category: 'رياضيات',
-    description: 'تأسيس قوي لطلاب الشهادة الابتدائية في النسبة والتناسب والهندسة مع نماذج امتحانات المحافظات.'
+    description: 'تأسيس قوي في النسبة والتناسب والهندسة مع نماذج امتحانات شاملة.'
   },
   {
-    title: 'الجبر والهندسة - المرحلة الإعدادية',
+    title: 'الجبر والهندسة التحليلية',
     lessonsCount: 15,
     studentsCount: 73,
-    classroom: 'الصف الأول الإعدادي',
     price: '230 ج.م',
     status: 'published',
     headerBg: 'bg-amber-100/80 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400',
@@ -166,13 +101,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ يومين',
     isFeatured: false,
     category: 'رياضيات',
-    description: 'شرح متكامل لمفاهيم الجبر والبرهان الهندسي للانتقال السلس من المرحلة الابتدائية إلى الإعدادية.'
+    description: 'شرح متكامل لمفاهيم الجبر والبرهان الهندسي.'
   },
   {
-    title: 'العلوم والمراجعة الشاملة للصف الثاني الإعدادي',
+    title: 'العلوم والمراجعة الشاملة',
     lessonsCount: 14,
     studentsCount: 61,
-    classroom: 'الصف الثاني الإعدادي',
     price: '250 ج.م',
     status: 'published',
     headerBg: 'bg-cyan-100/80 text-cyan-800 dark:bg-cyan-950/50 dark:text-cyan-400',
@@ -186,13 +120,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ 4 أيام',
     isFeatured: false,
     category: 'علوم',
-    description: 'دراسة الجدول الدوري الحديث والحركة الموجية والصوت والضوء مع تجارب عملية وحل تدريبات كتاب الوزارة.'
+    description: 'دراسة الجدول الدوري الحديث والحركة الموجية والصوت والضوء مع تجارب عملية.'
   },
   {
-    title: 'الشهادة الإعدادية - المراجعة النهائية في الرياضيات',
+    title: 'المراجعة النهائية في الرياضيات',
     lessonsCount: 20,
     studentsCount: 192,
-    classroom: 'الصف الثالث الإعدادي',
     price: '280 ج.م',
     status: 'published',
     headerBg: 'bg-rose-100/80 text-rose-800 dark:bg-rose-950/50 dark:text-rose-400',
@@ -206,13 +139,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ 3 ساعات',
     isFeatured: true,
     category: 'رياضيات',
-    description: 'حل جميع امتحانات المحافظات السابقة في الجبر وحساب المثلثات والهندسة التحليلية لطلاب الشهادة الإعدادية.'
+    description: 'حل جميع الامتحانات السابقة في الجبر وحساب المثلثات والهندسة التحليلية.'
   },
   {
-    title: 'أساسيات الجبر والمعادلات - نظام الثانوية الحديثة',
+    title: 'أساسيات الجبر والمعادلات',
     lessonsCount: 18,
     studentsCount: 124,
-    classroom: 'الصف الأول الثانوي',
     price: '260 ج.م',
     status: 'published',
     headerBg: 'bg-blue-100/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400',
@@ -226,13 +158,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ 5 ساعات',
     isFeatured: true,
     category: 'رياضيات عامة',
-    description: 'شرح متكامل لموضوعات الجبر والمصفوفات وحساب المثلثات وفقاً لنظام التقييم الجديد بالمرحلة الثانوية.'
+    description: 'شرح متكامل لموضوعات الجبر والمصفوفات وحساب المثلثات.'
   },
   {
     title: 'اللغة العربية - النحو والبلاغة الكاملة',
     lessonsCount: 22,
     studentsCount: 145,
-    classroom: 'الصف الثاني الثانوي',
     price: '280 ج.م',
     status: 'published',
     headerBg: 'bg-amber-100/80 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400',
@@ -246,13 +177,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'أمس',
     isFeatured: true,
     category: 'لغة عربية',
-    description: 'تدريبات نحوية وبلاغية متدرجة وأدب العصور الإسلامية والأندلسية بنظام أسئلة الاختيار من متعدد.'
+    description: 'تدريبات نحوية وبلاغية متدرجة وأدب العصور الإسلامية والأندلسية.'
   },
   {
-    title: 'التفاضل والتكامل للثانوية العامة',
+    title: 'التفاضل والتكامل المتقدم',
     lessonsCount: 24,
     studentsCount: 230,
-    classroom: 'الصف الثالث الثانوي',
     price: '400 ج.م',
     status: 'published',
     headerBg: 'bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400',
@@ -266,13 +196,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ ساعة',
     isFeatured: true,
     category: 'رياضيات بحتة',
-    description: 'تغطية شاملة للاشتقاق وتطبيقات القيم العظمى والصغرى والتكامل المحدد وحل امتحانات الثانوية العامة المصرية.'
+    description: 'تغطية شاملة للاشتقاق وتطبيقات القيم العظمى والصغرى والتكامل المحدد.'
   },
   {
-    title: 'الفيزياء الكهربية والمغناطيسية - الثانوية العامة',
+    title: 'الفيزياء الكهربية والمغناطيسية',
     lessonsCount: 26,
     studentsCount: 275,
-    classroom: 'الصف الثالث الثانوي',
     price: '380 ج.م',
     status: 'published',
     headerBg: 'bg-indigo-100/80 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-400',
@@ -286,13 +215,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ ساعتين',
     isFeatured: true,
     category: 'فيزياء',
-    description: 'شرح قانون أوم وكيرشوف والحث الكهرومغناطيسي والفيزياء الحديثة مع حل أفكار كتاب الامتحان والنماذج الاسترشادية.'
+    description: 'شرح قانون أوم وكيرشوف والحث الكهرومغناطيسي والفيزياء الحديثة.'
   },
   {
-    title: 'الكيمياء العضوية والكهربية - الثانوية العامة',
+    title: 'الكيمياء العضوية والكهربية',
     lessonsCount: 22,
     studentsCount: 210,
-    classroom: 'الصف الثالث الثانوي',
     price: '360 ج.م',
     status: 'published',
     headerBg: 'bg-rose-100/80 text-rose-800 dark:bg-rose-950/50 dark:text-rose-400',
@@ -306,13 +234,12 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ 4 ساعات',
     isFeatured: false,
     category: 'كيمياء',
-    description: 'العناصر الانتقالية والتحليل الكيميائي والاتزان والكيمياء الكهربية والعضوية لطلاب الثانوية العامة.'
+    description: 'العناصر الانتقالية والتحليل الكيميائي والاتزان والكيمياء الكهربية والعضوية.'
   },
   {
     title: 'الرياضيات التطبيقية (الميكانيكا) - مراجعة ليلة الامتحان',
     lessonsCount: 12,
     studentsCount: 0,
-    classroom: 'الصف الثالث الثانوي',
     price: '220 ج.م',
     status: 'draft',
     headerBg: 'bg-slate-100 text-slate-600 dark:bg-slate-800/80 dark:text-slate-400',
@@ -326,90 +253,49 @@ const EGYPT_COURSES_SEED = [
     updatedAt: 'منذ أسبوع',
     isFeatured: false,
     category: 'رياضيات تطبيقية',
-    description: 'قيد المراجعة النهائية - مراجعة شاملة على الاستاتيكا والديناميكا وحل أسئلة بنك المعرفة المصري.'
+    description: 'قيد المراجعة النهائية - مراجعة شاملة على الاستاتيكا والديناميكا.'
   }
 ]
 
-export function seedEgyptData(db: DatabaseSync, options?: { includeCourses?: boolean }) {
+function seedDefaultCourses(db: DatabaseSync) {
+  const countRow = db.prepare(`SELECT COUNT(*) AS count FROM courses`).get() as { count: number }
+  if (countRow.count > 0) return
+
   const now = new Date().toISOString()
-
-  const insertStage = db.prepare(`
-    INSERT OR IGNORE INTO academic_stages (id, name, description, color_class, sort_order, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
+  const insertCourse = db.prepare(`
+    INSERT INTO courses (
+      title, lessons_count, students_count, price, status,
+      header_bg, icon_color, rating, revenue, revenue_numeric,
+      completion_rate, duration_hours, quizzes_count, updated_at,
+      is_featured, category, description, sections_json, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 
-  const insertClassroom = db.prepare(`
-    INSERT OR IGNORE INTO classrooms (id, stage_id, name, description, color_class, sort_order, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `)
-
-  const findStageByName = db.prepare(`SELECT id FROM academic_stages WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))`)
-  const findClassroomByName = db.prepare(`SELECT id FROM classrooms WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))`)
-
-  for (const stage of EGYPT_STAGES_SEED) {
-    const existingStage = findStageByName.get(stage.name) as { id: string } | undefined
-    const targetStageId = existingStage?.id || stage.id
-
-    if (!existingStage) {
-      insertStage.run(stage.id, stage.name, stage.description, stage.colorClass, stage.sortOrder, now)
-    }
-
-    stage.grades.forEach((grade, idx) => {
-      const existingGrade = findClassroomByName.get(grade.name)
-      if (!existingGrade) {
-        insertClassroom.run(
-          grade.id,
-          targetStageId,
-          grade.name,
-          null,
-          grade.colorClass,
-          idx + 1,
-          now
-        )
-      }
-    })
+  for (const course of DEFAULT_COURSES_SEED) {
+    insertCourse.run(
+      course.title,
+      course.lessonsCount,
+      course.studentsCount,
+      course.price,
+      course.status,
+      course.headerBg,
+      course.iconColor,
+      course.rating,
+      course.revenue,
+      course.revenueNumeric,
+      course.completionRate,
+      course.durationHours,
+      course.quizzesCount,
+      course.updatedAt,
+      course.isFeatured ? 1 : 0,
+      course.category,
+      course.description,
+      '[]',
+      now
+    )
   }
 
-  if (options?.includeCourses) {
-    const countRow = db.prepare(`SELECT COUNT(*) AS count FROM courses`).get() as { count: number }
-    if (countRow.count === 0) {
-      const insertCourse = db.prepare(`
-        INSERT INTO courses (
-          title, lessons_count, students_count, classroom, price, status,
-          header_bg, icon_color, rating, revenue, revenue_numeric,
-          completion_rate, duration_hours, quizzes_count, updated_at,
-          is_featured, category, description, sections_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `)
-
-      for (const course of EGYPT_COURSES_SEED) {
-        insertCourse.run(
-          course.title,
-          course.lessonsCount,
-          course.studentsCount,
-          course.classroom,
-          course.price,
-          course.status,
-          course.headerBg,
-          course.iconColor,
-          course.rating,
-          course.revenue,
-          course.revenueNumeric,
-          course.completionRate,
-          course.durationHours,
-          course.quizzesCount,
-          course.updatedAt,
-          course.isFeatured ? 1 : 0,
-          course.category,
-          course.description,
-          '[]',
-          now
-        )
-      }
-    }
-  }
-
-  db.prepare(`INSERT OR REPLACE INTO app_meta (key, value) VALUES ('egypt_seeded_v1', '1')`).run()
+  db.prepare(`INSERT OR REPLACE INTO app_meta (key, value) VALUES ('courses_seeded_v1', '1')`).run()
 }
 
 export function getDb(): DatabaseSync {
@@ -431,32 +317,14 @@ export function getDb(): DatabaseSync {
       value TEXT NOT NULL
     );
 
-    CREATE TABLE IF NOT EXISTS academic_stages (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      description TEXT,
-      color_class TEXT NOT NULL DEFAULT 'bg-blue-600',
-      sort_order INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS classrooms (
-      id TEXT PRIMARY KEY,
-      stage_id TEXT NOT NULL,
-      name TEXT NOT NULL UNIQUE,
-      description TEXT,
-      color_class TEXT NOT NULL DEFAULT 'bg-blue-600',
-      sort_order INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL,
-      FOREIGN KEY (stage_id) REFERENCES academic_stages(id) ON DELETE CASCADE
-    );
+    DROP TABLE IF EXISTS classrooms;
+    DROP TABLE IF EXISTS academic_stages;
 
     CREATE TABLE IF NOT EXISTS courses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       lessons_count INTEGER NOT NULL DEFAULT 0,
       students_count INTEGER NOT NULL DEFAULT 0,
-      classroom TEXT NOT NULL DEFAULT 'بدون فصل دراسي',
       price TEXT NOT NULL DEFAULT 'مجانية',
       status TEXT NOT NULL DEFAULT 'published',
       header_bg TEXT NOT NULL,
@@ -476,63 +344,28 @@ export function getDb(): DatabaseSync {
     );
   `)
 
-  const seededRow = db.prepare(`SELECT value FROM app_meta WHERE key = 'egypt_seeded_v1'`).get()
-  if (!seededRow) {
-    seedEgyptData(db, { includeCourses: true })
+  const columns = db.prepare(`PRAGMA table_info(courses)`).all() as Array<{ name: string }>
+  if (columns.some(col => col.name === 'classroom')) {
+    db.exec(`ALTER TABLE courses DROP COLUMN classroom`)
+  }
+
+  const seededRow = db.prepare(`SELECT value FROM app_meta WHERE key = 'courses_seeded_v1'`).get()
+  const legacySeededRow = db.prepare(`SELECT value FROM app_meta WHERE key = 'egypt_seeded_v1'`).get()
+  if (!seededRow && !legacySeededRow) {
+    seedDefaultCourses(db)
+  } else if (legacySeededRow) {
+    db.prepare(`DELETE FROM app_meta WHERE key = 'egypt_seeded_v1'`).run()
+    db.prepare(`INSERT OR REPLACE INTO app_meta (key, value) VALUES ('courses_seeded_v1', '1')`).run()
   }
 
   dbInstance = db
   return db
 }
 
-export function listStages(db: DatabaseSync): StageRecord[] {
-  const rows = db.prepare(`
-    SELECT id, name, description, color_class, sort_order
-    FROM academic_stages
-    ORDER BY sort_order ASC, created_at ASC
-  `).all()
-
-  return rows.map(row => ({
-    id: String(row.id),
-    name: String(row.name),
-    description: row.description ? String(row.description) : undefined,
-    colorClass: String(row.color_class),
-    sortOrder: Number(row.sort_order ?? 0)
-  }))
-}
-
-export function listClassrooms(db: DatabaseSync): ClassroomRecord[] {
-  const rows = db.prepare(`
-    SELECT id, stage_id, name, description, color_class, sort_order
-    FROM classrooms
-    ORDER BY sort_order ASC, created_at ASC
-  `).all()
-
-  const courseLinks = db.prepare(`SELECT id, classroom FROM courses`).all()
-  const coursesByClassroom = new Map<string, number[]>()
-  for (const row of courseLinks) {
-    const clsName = String(row.classroom || '')
-    if (!coursesByClassroom.has(clsName)) {
-      coursesByClassroom.set(clsName, [])
-    }
-    coursesByClassroom.get(clsName)!.push(Number(row.id))
-  }
-
-  return rows.map(row => ({
-    id: String(row.id),
-    stageId: String(row.stage_id),
-    name: String(row.name),
-    description: row.description ? String(row.description) : undefined,
-    colorClass: String(row.color_class),
-    sortOrder: Number(row.sort_order ?? 0),
-    courses: coursesByClassroom.get(String(row.name)) || []
-  }))
-}
-
 export function listCourses(db: DatabaseSync): CourseRecord[] {
   const rows = db.prepare(`
     SELECT
-      id, title, lessons_count, students_count, classroom, price, status,
+      id, title, lessons_count, students_count, price, status,
       header_bg, icon_color, rating, revenue, revenue_numeric,
       completion_rate, duration_hours, quizzes_count, updated_at,
       is_featured, category, description, sections_json
@@ -553,7 +386,6 @@ export function listCourses(db: DatabaseSync): CourseRecord[] {
       title: String(row.title),
       lessonsCount: Number(row.lessons_count ?? 0),
       studentsCount: Number(row.students_count ?? 0),
-      classroom: String(row.classroom || 'بدون فصل دراسي'),
       price: String(row.price || 'مجانية'),
       status: (String(row.status || 'published') as CourseRecord['status']),
       headerBg: String(row.header_bg),

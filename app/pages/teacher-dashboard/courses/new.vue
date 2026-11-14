@@ -1,24 +1,21 @@
 <script setup lang="ts">
-import type { SectionItem } from '~/composables/useClassrooms'
-
-const route = useRoute()
+import type { SectionItem } from '~/composables/useCourses'
 
 useHead({
   title: 'دورة جديدة - لوحة التحكم'
 })
 
 const {
-  classroomOptions,
   ensureLoaded,
   addCourse
-} = useClassrooms()
+} = useCourses()
 
 await ensureLoaded()
 
 const stepperItems = [
   {
     title: 'معلومات الدورة',
-    description: 'العنوان، المرحلة والفصل والغلاف'
+    description: 'العنوان، الوصف والغلاف'
   },
   {
     title: 'دروس الدورة',
@@ -36,7 +33,6 @@ const titleError = ref('')
 interface CourseForm {
   title: string
   description: string
-  classroom: string
   coverImage: File | null
   isFree: boolean
   price: string | number
@@ -48,7 +44,6 @@ interface CourseForm {
 const form = ref<CourseForm>({
   title: '',
   description: '',
-  classroom: (route.query.classroom as string) || classroomOptions.value[0] || 'الصف الأول الثانوي',
   coverImage: null,
   isFree: false,
   price: '250',
@@ -144,7 +139,6 @@ async function handleFinalSubmit(publish: boolean) {
   try {
     await addCourse({
       title: form.value.title.trim(),
-      classroom: form.value.classroom,
       price: coursePrice,
       status: publish ? 'published' : 'draft',
       lessonsCount: totalLessonsCount.value,
@@ -226,7 +220,7 @@ function saveAsDraftQuick() {
         <div v-if="currentStep === 0" class="flex flex-col gap-6">
           <UPageCard
             title="البيانات الأساسية"
-            description="حدد عنوان الدورة، وصفها، ومستواها التعليمي."
+            description="حدد عنوان الدورة ووصفها."
             variant="subtle"
           >
             <div class="flex flex-col gap-4">
@@ -251,8 +245,6 @@ function saveAsDraftQuick() {
                   class="w-full"
                 />
               </UFormField>
-
-              <CourseClassroomSelector v-model="form.classroom" />
             </div>
           </UPageCard>
 

@@ -9,7 +9,6 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<{
     title?: string
-    classroom?: string
     price?: string
     status?: 'published' | 'draft' | 'archived'
     lessonsCount?: number
@@ -24,7 +23,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const nextTitle = body?.title !== undefined ? body.title.trim() : existing.title
-  const nextClassroom = body?.classroom !== undefined ? body.classroom : existing.classroom
   const nextPrice = body?.price !== undefined ? body.price : existing.price
   const nextStatus = body?.status !== undefined ? body.status : existing.status
   const nextLessonsCount = body?.lessonsCount !== undefined ? body.lessonsCount : existing.lessonsCount
@@ -33,11 +31,10 @@ export default defineEventHandler(async (event) => {
 
   db.prepare(`
     UPDATE courses
-    SET title = ?, classroom = ?, price = ?, status = ?, lessons_count = ?, description = ?, sections_json = ?, updated_at = 'الآن'
+    SET title = ?, price = ?, status = ?, lessons_count = ?, description = ?, sections_json = ?, updated_at = 'الآن'
     WHERE id = ?
   `).run(
     nextTitle,
-    nextClassroom,
     nextPrice,
     nextStatus,
     nextLessonsCount,

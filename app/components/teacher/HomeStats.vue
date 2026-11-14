@@ -6,7 +6,7 @@ const props = defineProps<{
   range: DashboardDateRange
 }>()
 
-const { courses, classrooms } = useClassrooms()
+const { courses } = useCourses()
 const { formatCurrency, formatNumber } = useTeacherDashboard()
 
 interface StatCard {
@@ -55,7 +55,7 @@ const stats = computed<StatCard[]>(() => {
       title: 'الدورات المنشورة',
       icon: 'i-lucide-book-open',
       value: formatNumber(publishedCourses),
-      variation: classrooms.value.length > 0 ? 8 : 5,
+      variation: 8,
       to: '/teacher-dashboard/courses'
     },
     {

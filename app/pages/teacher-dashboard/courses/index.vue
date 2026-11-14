@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
-import type { CourseItem } from '~/composables/useClassrooms'
+import type { CourseItem } from '~/composables/useCourses'
 
 useHead({
   title: 'دوراتي - لوحة تحكم المعلم'
 })
 
-const route = useRoute()
 const toast = useToast()
 
 const UBadge = resolveComponent('UBadge')
@@ -17,17 +16,15 @@ const UIcon = resolveComponent('UIcon')
 const NuxtLink = resolveComponent('NuxtLink')
 
 const {
-  classrooms,
   courses,
   ensureLoaded,
   updateCourse,
   deleteCourse
-} = useClassrooms()
+} = useCourses()
 
 await ensureLoaded()
 
 const searchQuery = ref('')
-const selectedClassroom = ref<string>((route.query.classroom as string) || 'all')
 const selectedStatus = ref<'all' | 'published' | 'draft'>('all')
 const sortBy = ref<'newest' | 'revenue' | 'students' | 'alphabetical'>('newest')
 
@@ -47,15 +44,6 @@ const statusTabs = computed(() => [
   { label: `مسودة (${statusCounts.value.draft})`, value: 'draft' }
 ])
 
-const classroomFilterItems = computed(() => {
-  const base = [{ label: 'كافة الفصول الدراسية', value: 'all' }]
-  const list = classrooms.value.map(c => ({
-    label: c.name,
-    value: c.name
-  }))
-  return [...base, ...list, { label: 'بدون فصل دراسي', value: 'بدون فصل دراسي' }]
-})
-
 const sortItems = [
   { label: 'الأحدث أولاً', value: 'newest' },
   { label: 'الأعلى إيراداً', value: 'revenue' },
@@ -65,14 +53,12 @@ const sortItems = [
 
 const filteredCourses = computed(() => {
   const list = courses.value.filter((course) => {
-    const matchesClass = selectedClassroom.value === 'all' || course.classroom === selectedClassroom.value
     const q = searchQuery.value.trim().toLowerCase()
     const matchesSearch = !q ||
       course.title.toLowerCase().includes(q) ||
-      course.classroom.toLowerCase().includes(q) ||
       (course.category && course.category.toLowerCase().includes(q))
     const matchesStatus = selectedStatus.value === 'all' || course.status === selectedStatus.value
-    return matchesClass && matchesSearch && matchesStatus
+    return matchesSearch && matchesStatus
   })
 
   return [...list].sort((a, b) => {
@@ -83,7 +69,7 @@ const filteredCourses = computed(() => {
   })
 })
 
-watch([searchQuery, selectedClassroom, selectedStatus, sortBy], () => {
+watch([searchQuery, selectedStatus, sortBy], () => {
   currentPage.value = 1
 })
 
@@ -176,11 +162,6 @@ const columns: TableColumn<CourseItem>[] = [
     }
   },
   {
-    accessorKey: 'classroom',
-    header: 'الصف الدراسي',
-    cell: ({ row }) => h(UBadge, { color: 'neutral', variant: 'subtle' }, () => row.original.classroom)
-  },
-  {
     accessorKey: 'lessonsCount',
     header: 'المحتوى',
     cell: ({ row }) => h('div', { class: 'flex flex-col' }, [
@@ -228,13 +209,12 @@ const columns: TableColumn<CourseItem>[] = [
 
 function resetFilters() {
   searchQuery.value = ''
-  selectedClassroom.value = 'all'
   selectedStatus.value = 'all'
   sortBy.value = 'newest'
 }
 
 const hasActiveFilters = computed(() => {
-  return searchQuery.value.trim() !== '' || selectedClassroom.value !== 'all' || selectedStatus.value !== 'all'
+  return searchQuery.value.trim() !== '' || selectedStatus.value !== 'all'
 })
 </script>
 
@@ -264,13 +244,6 @@ const hasActiveFilters = computed(() => {
             icon="i-lucide-plus"
             label="دورة جديدة"
           />
-          <UButton
-            to="/teacher-dashboard/classrooms"
-            color="neutral"
-            variant="outline"
-            icon="i-lucide-school"
-            label="الفصول الدراسية"
-          />
         </template>
       </UDashboardToolbar>
 
@@ -299,12 +272,6 @@ const hasActiveFilters = computed(() => {
               placeholder="بحث في الدورات..."
               size="sm"
               class="w-full sm:w-56"
-            />
-            <USelect
-              v-model="selectedClassroom"
-              :items="classroomFilterItems"
-              size="sm"
-              class="w-full sm:w-40"
             />
             <USelect
               v-model="sortBy"

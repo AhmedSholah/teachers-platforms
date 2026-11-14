@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SectionItem } from '~/composables/useClassrooms'
+import type { SectionItem } from '~/composables/useCourses'
 
 const route = useRoute()
 
@@ -8,18 +8,17 @@ useHead({
 })
 
 const {
-  classroomOptions,
   ensureLoaded,
   courses,
   updateCourse
-} = useClassrooms()
+} = useCourses()
 
 await ensureLoaded()
 
 const stepperItems = [
   {
     title: 'معلومات الدورة',
-    description: 'العنوان، المرحلة والفصل والغلاف'
+    description: 'العنوان، الوصف والغلاف'
   },
   {
     title: 'دروس الدورة',
@@ -49,7 +48,6 @@ const matchedCourse = computed(() => {
 interface CourseForm {
   title: string
   description: string
-  classroom: string
   coverImage: File | null
   isFree: boolean
   price: string | number
@@ -67,8 +65,7 @@ function extractPrice(raw: string | number | undefined): string {
 
 const form = ref<CourseForm>({
   title: matchedCourse.value?.title || 'أساسيات الجبر',
-  description: matchedCourse.value?.description || 'دورة شاملة ومكثفة تغطي أساسيات الجبر وحل المعادلات الخطية وتطبيقاتها لطلاب المرحلة الثانوية مع تمارين واختبارات قياسية.',
-  classroom: matchedCourse.value?.classroom || classroomOptions.value[0] || 'الصف الأول الثانوي',
+  description: matchedCourse.value?.description || 'دورة شاملة ومكثفة تغطي أساسيات الجبر وحل المعادلات الخطية وتطبيقاتها مع تمارين واختبارات قياسية.',
   coverImage: null,
   isFree: matchedCourse.value?.price === 'مجانية' || false,
   price: extractPrice(matchedCourse.value?.price),
@@ -89,7 +86,6 @@ watch(matchedCourse, (newVal) => {
     if (newVal.description) {
       form.value.description = newVal.description
     }
-    form.value.classroom = newVal.classroom
     form.value.price = extractPrice(newVal.price)
     form.value.isFree = newVal.price === 'مجانية'
     form.value.isPublished = newVal.status === 'published'
@@ -189,7 +185,6 @@ async function saveChanges() {
   try {
     await updateCourse(matchedCourse.value.id, {
       title: form.value.title.trim(),
-      classroom: form.value.classroom,
       price: form.value.isFree ? 'مجانية' : `${form.value.price || 0} ج.م`,
       status: form.value.isPublished ? 'published' : 'draft',
       lessonsCount: totalLessonsCount.value,
@@ -273,7 +268,7 @@ async function saveChanges() {
         <div v-if="currentStep === 0" class="flex flex-col gap-6">
           <UPageCard
             title="البيانات الأساسية"
-            description="تعديل عنوان الدورة، الوصف، والفصل الدراسي."
+            description="تعديل عنوان الدورة والوصف."
             variant="subtle"
           >
             <div class="flex flex-col gap-4">
@@ -298,8 +293,6 @@ async function saveChanges() {
                   class="w-full"
                 />
               </UFormField>
-
-              <CourseClassroomSelector v-model="form.classroom" />
             </div>
           </UPageCard>
 

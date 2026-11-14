@@ -10,7 +10,6 @@ const COLOR_THEMES = [
 export default defineEventHandler(async (event) => {
   const body = await readBody<{
     title?: string
-    classroom?: string
     price?: string | number
     status?: 'published' | 'draft' | 'archived'
     lessonsCount?: number
@@ -47,15 +46,14 @@ export default defineEventHandler(async (event) => {
 
   const result = db.prepare(`
     INSERT INTO courses (
-      title, lessons_count, students_count, classroom, price, status,
+      title, lessons_count, students_count, price, status,
       header_bg, icon_color, rating, revenue, revenue_numeric,
       completion_rate, duration_hours, quizzes_count, updated_at,
       is_featured, category, description, sections_json, created_at
-    ) VALUES (?, ?, 0, ?, ?, ?, ?, ?, 0, '0 ج.م', 0, 0, 0, 0, 'الآن', 0, ?, ?, ?, ?)
+    ) VALUES (?, ?, 0, ?, ?, ?, ?, 0, '0 ج.م', 0, 0, 0, 0, 'الآن', 0, ?, ?, ?, ?)
   `).run(
     title,
     lessonsCount,
-    body.classroom || 'بدون فصل دراسي',
     formattedPrice,
     body.status || 'published',
     theme.headerBg,

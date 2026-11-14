@@ -7,7 +7,7 @@ useHead({
 })
 
 const { isNotificationsSlideoverOpen, unreadCount } = useTeacherDashboard()
-const { ensureLoaded } = useClassrooms()
+const { ensureLoaded } = useCourses()
 await ensureLoaded()
 
 defineShortcuts({
@@ -21,11 +21,6 @@ const quickActionItems = [[
     label: 'دورة جديدة',
     icon: 'i-lucide-book-plus',
     to: '/teacher-dashboard/courses/new'
-  },
-  {
-    label: 'إضافة صف دراسي',
-    icon: 'i-lucide-school',
-    to: '/teacher-dashboard/classrooms/new'
   },
   {
     label: 'سحب الأرباح',

@@ -9,7 +9,7 @@ const route = useRoute()
 const open = ref(false)
 
 const { unreadCount } = useTeacherDashboard()
-const { courses, ensureLoaded } = useClassrooms()
+const { courses, ensureLoaded } = useCourses()
 await ensureLoaded()
 
 const isSettingsActive = computed(() => {
@@ -29,13 +29,6 @@ const navigationLinks = computed<NavigationMenuItem[]>(() => [
     icon: 'i-lucide-book-open',
     to: '/teacher-dashboard/courses',
     active: route.path.startsWith('/teacher-dashboard/courses'),
-    onSelect: () => { open.value = false }
-  },
-  {
-    label: 'المراحل والصفوف',
-    icon: 'i-lucide-school',
-    to: '/teacher-dashboard/classrooms',
-    active: route.path.startsWith('/teacher-dashboard/classrooms') || route.path.startsWith('/teacher-dashboard/classes'),
     onSelect: () => { open.value = false }
   },
   {
@@ -110,7 +103,6 @@ const searchGroups = computed(() => [
     items: [
       { label: 'الرئيسية', icon: 'i-lucide-house', to: '/teacher-dashboard' },
       { label: 'دوراتي', icon: 'i-lucide-book-open', to: '/teacher-dashboard/courses' },
-      { label: 'المراحل والصفوف', icon: 'i-lucide-school', to: '/teacher-dashboard/classrooms' },
       { label: 'الطلاب', icon: 'i-lucide-users', to: '/teacher-dashboard/students' },
       { label: 'المدفوعات', icon: 'i-lucide-wallet', to: '/teacher-dashboard/payouts' },
       { label: 'الإشعارات', icon: 'i-lucide-inbox', to: '/teacher-dashboard/notifications' },
@@ -123,7 +115,6 @@ const searchGroups = computed(() => [
     label: 'إجراءات سريعة',
     items: [
       { label: 'إنشاء دورة جديدة', icon: 'i-lucide-plus', to: '/teacher-dashboard/courses/new' },
-      { label: 'إضافة صف دراسي', icon: 'i-lucide-folder-plus', to: '/teacher-dashboard/classrooms/new' },
       { label: 'سحب الأرباح', icon: 'i-lucide-arrow-up-right', to: '/teacher-dashboard/payouts/withdraw' }
     ]
   },
@@ -133,7 +124,7 @@ const searchGroups = computed(() => [
         label: 'الدورات',
         items: courses.value.slice(0, 8).map(c => ({
           label: c.title,
-          suffix: c.classroom,
+          suffix: c.category || c.price,
           icon: 'i-lucide-graduation-cap',
           to: `/teacher-dashboard/courses/edit?id=${c.id}`
         }))

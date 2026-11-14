@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SectionItem, LessonItem } from '~/composables/useClassrooms'
+import type { SectionItem, LessonItem } from '~/composables/useCourses'
 
 const props = defineProps<{
   modelValue: SectionItem[]

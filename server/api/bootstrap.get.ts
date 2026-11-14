@@ -1,10 +1,8 @@
-import { getDb, listClassrooms, listCourses, listStages } from '../utils/db'
+import { getDb, listCourses } from '../utils/db'
 
 export default defineEventHandler(() => {
   const db = getDb()
   return {
-    stages: listStages(db),
-    classrooms: listClassrooms(db),
     courses: listCourses(db)
   }
 })
