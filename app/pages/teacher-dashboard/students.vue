@@ -325,13 +325,19 @@ const statusItems = [
         </template>
 
         <template #right>
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
           <UButton
             label="إضافة طالب"
             icon="i-lucide-user-plus"
             @click="isAddModalOpen = true"
           />
         </template>
-      </UDashboardNavbar>
+      </UDashboardToolbar>
     </template>
 
     <template #body>

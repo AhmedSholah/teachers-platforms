@@ -43,6 +43,10 @@ const links = computed<NavigationMenuItem[][]>(() => [[
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+
+        <template #right>
+          <TeacherUserMenu />
+        </template>
       </UDashboardNavbar>
 
       <UDashboardToolbar>

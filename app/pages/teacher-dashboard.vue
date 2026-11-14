@@ -103,44 +103,6 @@ const navigationLinks = computed<NavigationMenuItem[]>(() => [
   }
 ])
 
-const userMenuItems = [
-  [
-    {
-      type: 'label' as const,
-      label: 'الأستاذ أحمد محمد',
-      avatar: {
-        text: 'أ',
-        class: 'bg-primary/10 text-primary font-bold'
-      }
-    }
-  ],
-  [
-    {
-      label: 'الملف الشخصي',
-      icon: 'i-lucide-user',
-      to: '/teacher-dashboard/profile'
-    },
-    {
-      label: 'إعدادات المنصة',
-      icon: 'i-lucide-settings',
-      to: '/teacher-dashboard/settings'
-    },
-    {
-      label: 'اشتراك المنصة',
-      icon: 'i-lucide-sparkles',
-      to: '/teacher-dashboard/settings/subscription'
-    }
-  ],
-  [
-    {
-      label: 'تسجيل الخروج',
-      icon: 'i-lucide-log-out',
-      color: 'error' as const,
-      to: '/login'
-    }
-  ]
-]
-
 const searchGroups = computed(() => [
   {
     id: 'links',
@@ -187,9 +149,9 @@ const searchGroups = computed(() => [
       v-model:open="open"
       collapsible
       resizable
+      :default-size="17"
       :menu="{ side: 'right' }"
       class="bg-elevated/25"
-      :ui="{ footer: 'lg:border-t lg:border-default' }"
     >
       <template #header="{ collapsed }">
         <NuxtLink
@@ -197,12 +159,12 @@ const searchGroups = computed(() => [
           class="flex items-center gap-2.5 min-w-0 px-1 py-1"
           @click="open = false"
         >
-          <div class="size-7 rounded-lg bg-primary text-inverted flex items-center justify-center shrink-0 shadow-xs">
-            <UIcon name="i-lucide-graduation-cap" class="size-4" />
+          <div class="size-8 rounded-lg bg-primary text-inverted flex items-center justify-center shrink-0 shadow-xs">
+            <UIcon name="i-lucide-graduation-cap" class="size-5" />
           </div>
           <span
             v-if="!collapsed"
-            class="text-sm font-bold text-highlighted truncate"
+            class="text-base font-bold text-highlighted truncate"
           >
             منصة المعلم
           </span>
@@ -213,7 +175,9 @@ const searchGroups = computed(() => [
         <UDashboardSearchButton
           :collapsed="collapsed"
           label="بحث..."
+          size="lg"
           class="bg-transparent ring-default"
+          :class="[!collapsed && 'py-2.5']"
         />
 
         <UNavigationMenu
@@ -222,38 +186,17 @@ const searchGroups = computed(() => [
           orientation="vertical"
           tooltip
           popover
+          :ui="{
+            list: 'space-y-1',
+            childList: 'space-y-1 py-1',
+            link: collapsed ? 'py-2.5 justify-center' : 'px-3.5 py-2.5 text-base gap-3 before:rounded-lg',
+            linkLeadingIcon: 'size-6',
+            linkTrailingIcon: 'size-5',
+            linkTrailingBadgeSize: 'md',
+            childLink: 'p-2.5 gap-2.5 text-base',
+            childLinkIcon: 'size-5'
+          }"
         />
-      </template>
-
-      <template #footer="{ collapsed }">
-        <UDropdownMenu
-          :items="userMenuItems"
-          :content="{ align: 'center', collisionPadding: 12 }"
-          :ui="{ content: collapsed ? 'w-48' : 'w-(--reka-dropdown-menu-trigger-width)' }"
-        >
-          <UButton
-            color="neutral"
-            variant="ghost"
-            block
-            :square="collapsed"
-            class="data-[state=open]:bg-elevated justify-start"
-            :class="[!collapsed && 'py-2']"
-          >
-            <UAvatar
-              text="أ"
-              size="2xs"
-              class="bg-primary/10 text-primary font-bold shrink-0"
-            />
-            <span v-if="!collapsed" class="truncate text-sm font-medium text-highlighted">
-              الأستاذ أحمد
-            </span>
-            <UIcon
-              v-if="!collapsed"
-              name="i-lucide-chevrons-up-down"
-              class="size-4 text-dimmed ms-auto shrink-0"
-            />
-          </UButton>
-        </UDropdownMenu>
       </template>
     </UDashboardSidebar>
 

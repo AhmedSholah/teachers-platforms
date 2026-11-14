@@ -54,14 +54,21 @@ function saveProfile() {
         </template>
 
         <template #right>
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
           <UButton
             to="/teacher-dashboard"
             color="neutral"
             variant="outline"
+            icon="i-lucide-arrow-right"
             label="العودة للرئيسية"
           />
         </template>
-      </UDashboardNavbar>
+      </UDashboardToolbar>
     </template>
 
     <template #body>

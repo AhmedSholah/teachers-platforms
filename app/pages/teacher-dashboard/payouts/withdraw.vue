@@ -37,6 +37,12 @@ function handleConfirm() {
         </template>
 
         <template #right>
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
           <UButton
             to="/teacher-dashboard/payouts"
             color="neutral"
@@ -45,7 +51,7 @@ function handleConfirm() {
             label="رجوع إلى المدفوعات"
           />
         </template>
-      </UDashboardNavbar>
+      </UDashboardToolbar>
     </template>
 
     <template #body>

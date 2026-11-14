@@ -232,6 +232,18 @@ async function saveChanges() {
         </template>
 
         <template #right>
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
+          <UButton
+            icon="i-lucide-save"
+            :loading="isSaving"
+            label="حفظ التعديلات"
+            @click="saveChanges"
+          />
           <UButton
             to="/teacher-dashboard/courses"
             color="neutral"
@@ -239,14 +251,8 @@ async function saveChanges() {
             icon="i-lucide-arrow-right"
             label="رجوع"
           />
-          <UButton
-            icon="i-lucide-save"
-            :loading="isSaving"
-            label="حفظ التعديلات"
-            @click="saveChanges"
-          />
         </template>
-      </UDashboardNavbar>
+      </UDashboardToolbar>
     </template>
 
     <template #body>

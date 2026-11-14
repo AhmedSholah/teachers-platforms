@@ -77,6 +77,8 @@ const period = ref<DashboardPeriod>('daily')
               aria-label="إجراء سريع"
             />
           </UDropdownMenu>
+
+          <TeacherUserMenu />
         </template>
       </UDashboardNavbar>
 

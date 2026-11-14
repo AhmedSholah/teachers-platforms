@@ -183,6 +183,12 @@ function saveAsDraftQuick() {
         </template>
 
         <template #right>
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
           <UButton
             to="/teacher-dashboard/courses"
             color="neutral"
@@ -199,7 +205,7 @@ function saveAsDraftQuick() {
             @click="saveAsDraftQuick"
           />
         </template>
-      </UDashboardNavbar>
+      </UDashboardToolbar>
     </template>
 
     <template #body>

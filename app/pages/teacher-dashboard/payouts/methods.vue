@@ -78,6 +78,12 @@ function saveMethod() {
         </template>
 
         <template #right>
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
           <UButton
             to="/teacher-dashboard/payouts"
             color="neutral"
@@ -86,7 +92,7 @@ function saveMethod() {
             label="رجوع إلى المدفوعات"
           />
         </template>
-      </UDashboardNavbar>
+      </UDashboardToolbar>
     </template>
 
     <template #body>

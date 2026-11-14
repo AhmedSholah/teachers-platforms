@@ -173,7 +173,7 @@ const userMenuItems = [
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex flex-col gap-1.5" aria-label="روابط لوحة الطالب">
+        <nav class="flex flex-col gap-2" aria-label="روابط لوحة الطالب">
           <UButton
             v-for="item in navLinks"
             :key="item.to"
@@ -181,8 +181,8 @@ const userMenuItems = [
             :icon="item.icon"
             :variant="item.active ? 'subtle' : 'ghost'"
             :color="item.active ? 'primary' : 'neutral'"
-            size="lg"
-            class="w-full justify-start gap-3 rounded-xl px-4 py-3 font-bold text-sm transition-all"
+            size="xl"
+            class="w-full justify-start gap-3.5 rounded-xl px-4 py-3.5 font-bold text-base transition-all"
             @click="closeMobileSidebar"
           >
             {{ item.label }}

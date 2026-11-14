@@ -106,6 +106,7 @@ const isDetailPanelOpen = computed({
             :content="false"
             size="xs"
           />
+          <TeacherUserMenu class="lg:hidden" />
         </template>
       </UDashboardNavbar>
 
@@ -210,6 +211,7 @@ const isDetailPanelOpen = computed({
               @click="handleDeleteSelected"
             />
           </UTooltip>
+          <TeacherUserMenu />
         </template>
       </UDashboardNavbar>
     </template>
@@ -257,9 +259,21 @@ const isDetailPanelOpen = computed({
     </template>
   </UDashboardPanel>
 
-  <div v-else class="hidden lg:flex flex-1 items-center justify-center">
-    <UIcon name="i-lucide-inbox" class="size-24 text-dimmed/40" />
-  </div>
+  <UDashboardPanel v-else id="teacher-notifications-empty" class="hidden lg:flex">
+    <template #header>
+      <UDashboardNavbar :toggle="false">
+        <template #right>
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+    </template>
+
+    <template #body>
+      <div class="flex flex-1 items-center justify-center h-full">
+        <UIcon name="i-lucide-inbox" class="size-24 text-dimmed/40" />
+      </div>
+    </template>
+  </UDashboardPanel>
 
   <USlideover
     v-if="isMobile && selectedNotification"

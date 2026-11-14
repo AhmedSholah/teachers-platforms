@@ -16,7 +16,6 @@ const toast = useToast()
 const {
   stages,
   classrooms,
-  courses,
   isLoading,
   hasLoaded,
   ensureLoaded,
@@ -94,15 +93,11 @@ const standardStagePresets: Array<{ name: string; colorClass: string; grades: st
   }
 ]
 
-// Search & Filter states
-const searchQuery = ref('')
-const selectedStageFilter = ref<string>('all')
 const collapsedStageIds = ref<Record<string, boolean>>({})
 
 // Inline Quick-Add Grade states (inside each stage card)
 const activeInlineStageId = ref<string | null>(null)
 const inlineGradeName = ref('')
-const inlineGradeColor = ref('bg-blue-600')
 const inlineGradeError = ref('')
 
 // Add Stage Modal states
@@ -137,7 +132,6 @@ const isEditGradeModalOpen = ref(false)
 const editingGradeId = ref('')
 const editingGradeStageId = ref('')
 const editingGradeName = ref('')
-const editingGradeColor = ref('bg-blue-600')
 const editGradeError = ref('')
 
 // Delete Grade Modal states
@@ -175,19 +169,6 @@ function getStageGrades(stageId: string): Classroom[] {
   return classrooms.value.filter(c => c.stageId === stageId)
 }
 
-function getStageCoursesCount(stageId: string): number {
-  const gradeNames = new Set(getStageGrades(stageId).map(g => g.name))
-  return courses.value.filter(c => gradeNames.has(c.classroom)).length
-}
-
-function formatStagesCount(count: number): string {
-  if (count === 0) return 'لا توجد مراحل'
-  if (count === 1) return 'مرحلة واحدة'
-  if (count === 2) return 'مرحلتان'
-  if (count >= 3 && count <= 10) return `${count} مراحل`
-  return `${count} مرحلة`
-}
-
 function formatGradesCount(count: number): string {
   if (count === 0) return 'لا توجد صفوف'
   if (count === 1) return 'صف واحد'
@@ -196,45 +177,12 @@ function formatGradesCount(count: number): string {
   return `${count} صف`
 }
 
-function formatCoursesCount(count: number): string {
-  if (count === 0) return 'لا توجد دورات'
-  if (count === 1) return 'دورة واحدة'
-  if (count === 2) return 'دورتان'
-  if (count >= 3 && count <= 10) return `${count} دورات`
-  return `${count} دورة`
-}
-
 function isStageCollapsed(stageId: string): boolean {
-  if (searchQuery.value.trim()) return false
   return Boolean(collapsedStageIds.value[stageId])
 }
 
 function toggleStageCollapse(stageId: string) {
   collapsedStageIds.value[stageId] = !collapsedStageIds.value[stageId]
-}
-
-// Filtering
-const filteredStages = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase()
-
-  return stages.value.filter((stage) => {
-    if (selectedStageFilter.value !== 'all' && stage.id !== selectedStageFilter.value) {
-      return false
-    }
-    if (!q) return true
-
-    const stageMatches = stage.name.toLowerCase().includes(q)
-    const hasMatchingGrade = getStageGrades(stage.id).some(g => g.name.toLowerCase().includes(q))
-    return stageMatches || hasMatchingGrade
-  })
-})
-
-function getVisibleGradesForStage(stage: AcademicStage): Classroom[] {
-  const grades = getStageGrades(stage.id)
-  const q = searchQuery.value.trim().toLowerCase()
-  if (!q) return grades
-  if (stage.name.toLowerCase().includes(q)) return grades
-  return grades.filter(g => g.name.toLowerCase().includes(q))
 }
 
 function getSuggestedGradesForStage(stage: AcademicStage): string[] {
@@ -261,8 +209,6 @@ function openInlineGradeAdd(stageId: string) {
   activeInlineStageId.value = stageId
   inlineGradeName.value = ''
   inlineGradeError.value = ''
-  const nextColor = colorOptions[classrooms.value.length % colorOptions.length]?.class || 'bg-blue-600'
-  inlineGradeColor.value = nextColor
 
   nextTick(() => {
     const inputEl = document.getElementById(`inline-grade-input-${stageId}`) as HTMLInputElement | null
@@ -293,9 +239,8 @@ async function handleInlineGradeAdd(stageId: string) {
 
   isMutating.value = true
   try {
-    await addClassroom(trimmed, inlineGradeColor.value, stageId)
+    await addClassroom(trimmed, undefined, stageId)
     inlineGradeName.value = ''
-    inlineGradeColor.value = colorOptions[classrooms.value.length % colorOptions.length]?.class || 'bg-blue-600'
 
     toast.add({
       title: 'تمت إضافة الصف الدراسي',
@@ -321,8 +266,7 @@ async function handleQuickAddSuggestedGrade(stageId: string, gradeName: string) 
 
   isMutating.value = true
   try {
-    const color = colorOptions[classrooms.value.length % colorOptions.length]?.class || 'bg-blue-600'
-    await addClassroom(gradeName, color, stageId)
+    await addClassroom(gradeName, undefined, stageId)
     toast.add({
       title: 'تمت إضافة الصف',
       description: `تمت إضافة «${gradeName}» وحفظه بنجاح.`,
@@ -368,7 +312,6 @@ async function handleCreateStage() {
     const createdStage = await addStage(trimmed, defaultColor)
 
     isAddStageModalOpen.value = false
-    selectedStageFilter.value = 'all'
     if (createdStage) {
       collapsedStageIds.value[createdStage.id] = false
       openInlineGradeAdd(createdStage.id)
@@ -443,9 +386,6 @@ async function handleConfirmDeleteStage() {
   isMutating.value = true
   try {
     await deleteStage(deletedId)
-    if (selectedStageFilter.value === deletedId) {
-      selectedStageFilter.value = 'all'
-    }
     isDeleteStageModalOpen.value = false
     stageToDelete.value = null
     toast.add({
@@ -464,7 +404,7 @@ async function handleConfirmDeleteStage() {
   }
 }
 
-// Add Classroom Modal (from ActionBar or Stage Header)
+// Add Classroom Modal (from Stage Header or Grid)
 function openAddGradeModal(stageId?: string) {
   if (stages.value.length === 0) {
     toast.add({
@@ -477,9 +417,6 @@ function openAddGradeModal(stageId?: string) {
   }
   if (stageId && stages.value.some(s => s.id === stageId)) {
     modalGradeStageId.value = stageId
-    isModalStageKnown.value = true
-  } else if (selectedStageFilter.value !== 'all' && stages.value.some(s => s.id === selectedStageFilter.value)) {
-    modalGradeStageId.value = selectedStageFilter.value
     isModalStageKnown.value = true
   } else {
     modalGradeStageId.value = stages.value[0]?.id || ''
@@ -513,10 +450,9 @@ async function handleModalAddGrade() {
 
   isSubmittingGrade.value = true
   try {
-    const defaultColor = colorOptions[classrooms.value.length % colorOptions.length]?.class || 'bg-blue-600'
     await addClassroom(
       trimmed,
-      defaultColor,
+      undefined,
       modalGradeStageId.value
     )
 
@@ -545,7 +481,6 @@ function openEditGradeModal(grade: Classroom) {
   editingGradeId.value = grade.id
   editingGradeStageId.value = grade.stageId
   editingGradeName.value = grade.name
-  editingGradeColor.value = grade.colorClass
   editGradeError.value = ''
   isEditGradeModalOpen.value = true
 }
@@ -570,7 +505,6 @@ async function handleSaveGradeEdit() {
   isMutating.value = true
   try {
     await updateClassroom(editingGradeId.value, trimmed, {
-      colorClass: editingGradeColor.value,
       stageId: editingGradeStageId.value
     })
     isEditGradeModalOpen.value = false
@@ -646,74 +580,19 @@ async function handleRestoreEgyptStages() {
           <UDashboardSidebarCollapse />
         </template>
 
-        <template #trailing>
-          <div class="hidden sm:flex items-center gap-1.5">
-            <UBadge color="primary" variant="subtle" size="sm">
-              {{ formatStagesCount(stages.length) }}
-            </UBadge>
-            <UBadge color="neutral" variant="subtle" size="sm">
-              {{ formatGradesCount(classrooms.length) }}
-            </UBadge>
-          </div>
-        </template>
-
         <template #right>
-          <UButton
-            to="/teacher-dashboard/courses"
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-book-open"
-            label="عرض الدورات"
-            class="hidden sm:inline-flex"
-          />
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
           <UButton
             color="neutral"
             variant="outline"
             icon="i-lucide-folder-plus"
             label="إضافة مرحلة"
             @click="openAddStageModal"
-          />
-          <UButton
-            icon="i-lucide-plus"
-            label="إضافة صف"
-            @click="openAddGradeModal()"
-          />
-        </template>
-      </UDashboardNavbar>
-
-      <UDashboardToolbar>
-        <template #left>
-          <div v-if="stages.length > 0" class="flex items-center gap-1.5 flex-wrap">
-            <UButton
-              size="xs"
-              :color="selectedStageFilter === 'all' ? 'primary' : 'neutral'"
-              :variant="selectedStageFilter === 'all' ? 'solid' : 'ghost'"
-              label="كل المراحل"
-              @click="selectedStageFilter = 'all'"
-            />
-            <UButton
-              v-for="stage in stages"
-              :key="stage.id"
-              size="xs"
-              :color="selectedStageFilter === stage.id ? 'primary' : 'neutral'"
-              :variant="selectedStageFilter === stage.id ? 'solid' : 'ghost'"
-              class="gap-1.5"
-              @click="selectedStageFilter = stage.id"
-            >
-              <span class="size-2 rounded-full shrink-0" :class="stage.colorClass" />
-              <span>{{ stage.name }}</span>
-              <span class="opacity-70">({{ getStageGrades(stage.id).length }})</span>
-            </UButton>
-          </div>
-        </template>
-
-        <template #right>
-          <UInput
-            v-model="searchQuery"
-            icon="i-lucide-search"
-            placeholder="ابحث عن مرحلة أو صف..."
-            size="sm"
-            class="w-56 sm:w-64"
           />
         </template>
       </UDashboardToolbar>
@@ -741,9 +620,9 @@ async function handleRestoreEgyptStages() {
       </div>
 
       <!-- Stages List -->
-      <div v-else-if="filteredStages.length > 0" class="flex flex-col gap-5">
+      <div v-else-if="stages.length > 0" class="flex flex-col gap-5">
         <div
-          v-for="stage in filteredStages"
+          v-for="stage in stages"
           :key="stage.id"
           class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden transition-all"
         >
@@ -762,20 +641,9 @@ async function handleRestoreEgyptStages() {
               </div>
 
               <div class="flex flex-col min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h2 class="text-base sm:text-lg font-extrabold text-slate-900 m-0 group-hover:text-blue-600 transition-colors">
-                    {{ stage.name }}
-                  </h2>
-                  <UBadge color="neutral" variant="subtle" size="xs" class="font-bold">
-                    {{ formatGradesCount(getStageGrades(stage.id).length) }}
-                  </UBadge>
-                  <UBadge v-if="getStageCoursesCount(stage.id) > 0" color="primary" variant="subtle" size="xs" class="font-bold">
-                    {{ formatCoursesCount(getStageCoursesCount(stage.id)) }}
-                  </UBadge>
-                </div>
-                <p v-if="stage.description" class="text-xs text-slate-500 m-0 mt-0.5 truncate">
-                  {{ stage.description }}
-                </p>
+                <h2 class="text-base sm:text-lg font-extrabold text-slate-900 m-0 group-hover:text-blue-600 transition-colors">
+                  {{ stage.name }}
+                </h2>
               </div>
             </button>
 
@@ -833,7 +701,7 @@ async function handleRestoreEgyptStages() {
           <div v-show="!isStageCollapsed(stage.id)" class="p-5 flex flex-col gap-4">
             <!-- Inline Quick-Add Grade Bar (shown when activated or when stage has no grades) -->
             <div
-              v-if="activeInlineStageId === stage.id || (getStageGrades(stage.id).length === 0 && !searchQuery.trim())"
+              v-if="activeInlineStageId === stage.id || getStageGrades(stage.id).length === 0"
               class="p-4 rounded-xl bg-blue-50/60 border border-blue-200/80 flex flex-col gap-3"
             >
               <div class="flex items-center justify-between gap-2">
@@ -861,24 +729,6 @@ async function handleRestoreEgyptStages() {
                   class="flex-1 bg-white rounded-lg"
                   @update:model-value="inlineGradeError = ''"
                 />
-
-                <!-- Compact Color Picker -->
-                <div class="flex items-center gap-1.5 px-1">
-                  <button
-                    v-for="color in colorOptions"
-                    :key="color.class"
-                    type="button"
-                    class="w-6 h-6 rounded-full transition-transform cursor-pointer shrink-0"
-                    :class="[
-                      color.class,
-                      inlineGradeColor === color.class
-                        ? 'ring-2 ring-offset-2 ring-blue-600 scale-110'
-                        : 'opacity-75 hover:opacity-100'
-                    ]"
-                    :title="color.label"
-                    @click="inlineGradeColor = color.class"
-                  />
-                </div>
 
                 <UButton
                   type="submit"
@@ -921,16 +771,15 @@ async function handleRestoreEgyptStages() {
 
             <!-- Grades Grid -->
             <div
-              v-if="getVisibleGradesForStage(stage).length > 0"
+              v-if="getStageGrades(stage.id).length > 0"
               class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
             >
               <div
-                v-for="grade in getVisibleGradesForStage(stage)"
+                v-for="grade in getStageGrades(stage.id)"
                 :key="grade.id"
                 class="group px-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-blue-400 hover:shadow-xs transition-all flex items-center justify-between gap-2"
               >
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="w-3 h-3 rounded-full shrink-0 shadow-2xs" :class="grade.colorClass" />
                   <h3 class="text-sm sm:text-base font-bold text-slate-900 truncate m-0" :title="grade.name">
                     {{ grade.name }}
                   </h3>
@@ -960,7 +809,6 @@ async function handleRestoreEgyptStages() {
 
               <!-- Dashed Quick-Add Slot at end of grid -->
               <button
-                v-if="!searchQuery.trim()"
                 type="button"
                 class="px-4 py-3.5 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 text-slate-500 hover:text-blue-600 cursor-pointer"
                 @click="openAddGradeModal(stage.id)"
@@ -969,69 +817,44 @@ async function handleRestoreEgyptStages() {
                 <span class="text-xs font-bold">إضافة صف في {{ stage.name }}</span>
               </button>
             </div>
-
-            <!-- Empty search state inside stage -->
-            <p
-              v-else-if="getStageGrades(stage.id).length > 0 && searchQuery.trim()"
-              class="text-xs text-slate-500 m-0 py-2"
-            >
-              لا توجد صفوف مطابقة لبحثك داخل هذه المرحلة.
-            </p>
           </div>
         </div>
       </div>
 
-      <!-- Empty State (no stages at all or no search match) -->
+      <!-- Empty State (no stages at all) -->
       <UCard v-else class="border border-slate-200 shadow-xs rounded-2xl bg-white">
         <div class="p-10 text-center flex flex-col items-center justify-center gap-3">
           <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
             <UIcon name="i-lucide-layers" class="w-8 h-8" />
           </div>
           <h3 class="text-lg font-bold text-slate-800 m-0">
-            {{ searchQuery ? 'لم يتم العثور على مراحل أو صفوف مطابقة' : 'ابدأ بإضافة المرحلة الدراسية الأولى' }}
+            ابدأ بإضافة المرحلة الدراسية الأولى
           </h3>
           <p class="text-sm text-slate-500 max-w-md m-0">
-            {{
-              searchQuery
-                ? 'جرّب البحث بكلمة أخرى أو امسح مربع البحث لعرض جميع المراحل.'
-                : 'أنشئ المراحل الدراسية (مثل المرحلة الإعدادية أو الثانوية) ثم أضف بداخلها الصفوف الدراسية لتنظيم دوراتك.'
-            }}
+            أنشئ المراحل الدراسية (مثل المرحلة الإعدادية أو الثانوية) ثم أضف بداخلها الصفوف الدراسية لتنظيم دوراتك.
           </p>
           <div class="flex items-center justify-center gap-2.5 flex-wrap mt-2">
             <UButton
-              v-if="searchQuery"
+              color="primary"
+              variant="solid"
+              size="md"
+              icon="i-lucide-folder-plus"
+              class="font-bold rounded-xl cursor-pointer"
+              @click="openAddStageModal"
+            >
+              إضافة مرحلة دراسية
+            </UButton>
+            <UButton
               color="neutral"
               variant="outline"
               size="md"
-              icon="i-lucide-rotate-ccw"
+              icon="i-lucide-sparkles"
               class="font-bold rounded-xl cursor-pointer"
-              @click="searchQuery = ''; selectedStageFilter = 'all'"
+              :loading="isMutating"
+              @click="handleRestoreEgyptStages"
             >
-              مسح البحث
+              تعبئة المراحل المصرية الافتراضية
             </UButton>
-            <template v-else>
-              <UButton
-                color="primary"
-                variant="solid"
-                size="md"
-                icon="i-lucide-folder-plus"
-                class="font-bold rounded-xl cursor-pointer"
-                @click="openAddStageModal"
-              >
-                إضافة مرحلة دراسية
-              </UButton>
-              <UButton
-                color="neutral"
-                variant="outline"
-                size="md"
-                icon="i-lucide-sparkles"
-                class="font-bold rounded-xl cursor-pointer"
-                :loading="isMutating"
-                @click="handleRestoreEgyptStages"
-              >
-                تعبئة المراحل المصرية الافتراضية
-              </UButton>
-            </template>
           </div>
         </div>
       </UCard>
@@ -1386,26 +1209,6 @@ async function handleRestoreEgyptStages() {
                   @update:model-value="editGradeError = ''"
                 />
               </UFormField>
-
-              <div class="flex flex-col gap-2">
-                <span class="text-xs font-bold text-slate-700">لون التمييز:</span>
-                <div class="flex items-center gap-2.5 flex-wrap">
-                  <button
-                    v-for="color in colorOptions"
-                    :key="color.class"
-                    type="button"
-                    class="w-7 h-7 rounded-full transition-transform cursor-pointer"
-                    :class="[
-                      color.class,
-                      editingGradeColor === color.class
-                        ? 'ring-2 ring-offset-2 ring-blue-600 scale-110'
-                        : 'opacity-75 hover:opacity-100'
-                    ]"
-                    :title="color.label"
-                    @click="editingGradeColor = color.class"
-                  />
-                </div>
-              </div>
 
               <UAlert
                 v-if="editGradeError"

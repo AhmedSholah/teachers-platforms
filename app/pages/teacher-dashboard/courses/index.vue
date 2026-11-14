@@ -253,6 +253,17 @@ const hasActiveFilters = computed(() => {
         </template>
 
         <template #right>
+          <TeacherUserMenu />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
+          <UButton
+            to="/teacher-dashboard/courses/new"
+            icon="i-lucide-plus"
+            label="دورة جديدة"
+          />
           <UButton
             to="/teacher-dashboard/classrooms"
             color="neutral"
@@ -260,13 +271,8 @@ const hasActiveFilters = computed(() => {
             icon="i-lucide-school"
             label="الفصول الدراسية"
           />
-          <UButton
-            to="/teacher-dashboard/courses/new"
-            icon="i-lucide-plus"
-            label="دورة جديدة"
-          />
         </template>
-      </UDashboardNavbar>
+      </UDashboardToolbar>
 
       <UDashboardToolbar>
         <template #left>
