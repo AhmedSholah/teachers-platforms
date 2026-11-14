@@ -3,6 +3,8 @@ useHead({
   title: 'الملف الشخصي - لوحة المعلم'
 })
 
+const toast = useToast()
+
 const profile = ref({
   name: 'أحمد محمد الشناوي',
   title: 'معلم ومحاضر رياضيات متقدمة',
@@ -33,217 +35,186 @@ function saveProfile() {
   isSaving.value = true
   setTimeout(() => {
     isSaving.value = false
-    alert('تم حفظ بيانات الملف الشخصي بنجاح!')
-  }, 600)
+    toast.add({
+      title: 'تم حفظ الملف الشخصي',
+      description: 'تم تحديث بيانات حسابك بنجاح.',
+      color: 'success',
+      icon: 'i-lucide-check'
+    })
+  }, 450)
 }
 </script>
 
 <template>
-  <div class="flex flex-col min-h-full">
-    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
-      <UButton
-        to="/teacher-dashboard"
-        color="neutral"
-        variant="outline"
-        size="md"
-        class="font-bold rounded-xl"
-      >
-        معاينة الصفحة العامة
-      </UButton>
-    </DashboardActionBar>
+  <UDashboardPanel id="teacher-profile" :ui="{ body: 'lg:py-10' }">
+    <template #header>
+      <UDashboardNavbar title="الملف الشخصي">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
 
-    <div class="p-6 md:p-10 flex flex-col gap-8 w-full box-border">
-
-    <!-- Main Profile Form Card -->
-    <UCard class="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
-      <!-- Avatar Section -->
-      <div class="flex items-center gap-5 p-2 pb-6 border-b border-slate-100">
-        <UAvatar
-          text="أ"
-          size="2xl"
-          class="bg-blue-600 text-white font-extrabold text-3xl shrink-0 ring-4 ring-blue-50"
-        />
-        <div class="flex flex-col gap-2">
-          <div class="flex items-center gap-2">
-            <UButton
-              color="primary"
-              variant="subtle"
-              size="sm"
-              icon="i-lucide-camera"
-              class="font-bold rounded-xl"
-            >
-              تغيير الصورة
-            </UButton>
-            <UButton
-              color="error"
-              variant="ghost"
-              size="sm"
-              class="font-bold rounded-xl"
-            >
-              حذف
-            </UButton>
-          </div>
-          <span class="text-xs text-slate-400">يُفضل استخدام صورة مربعة واضحة بصيغة PNG أو JPG.</span>
-        </div>
-      </div>
-
-      <!-- Form Inputs -->
-      <form class="flex flex-col gap-6 pt-6" @submit.prevent="saveProfile">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <UFormField label="الاسم الكامل" required>
-            <UInput
-              v-model="profile.name"
-              icon="i-lucide-user"
-              placeholder="الاسم الكامل"
-              size="md"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="المسمى الأكاديمي أو الوظيفي">
-            <UInput
-              v-model="profile.title"
-              icon="i-lucide-briefcase"
-              placeholder="مثال: معلم رياضيات أول"
-              size="md"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="البريد الإلكتروني للعمل" required>
-            <UInput
-              v-model="profile.email"
-              type="email"
-              icon="i-lucide-mail"
-              placeholder="teacher@example.com"
-              size="md"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="رقم الجوال">
-            <UInput
-              v-model="profile.phone"
-              type="tel"
-              icon="i-lucide-phone"
-              placeholder="+966 50 123 4567"
-              size="md"
-              class="w-full"
-            />
-          </UFormField>
-        </div>
-
-        <!-- Bio -->
-        <UFormField label="النبذة التعريفية (Bio)">
-          <UTextarea
-            v-model="profile.bio"
-            placeholder="اكتب نبذة مختصرة عن مؤهلاتك وخبرتك الأكاديمية..."
-            rows="4"
-            size="md"
-            class="w-full"
-          />
-        </UFormField>
-
-        <!-- Specialties Tags -->
-        <div class="flex flex-col gap-2">
-          <label class="text-sm font-bold text-slate-900">مجالات التخصص والمواد</label>
-          <div class="flex flex-wrap items-center gap-2 mb-2">
-            <UBadge
-              v-for="spec in profile.specialties"
-              :key="spec"
-              color="primary"
-              variant="subtle"
-              size="md"
-              class="font-bold rounded-lg pe-1.5"
-            >
-              <span>{{ spec }}</span>
-              <UButton
-                type="button"
-                color="neutral"
-                variant="ghost"
-                size="xs"
-                icon="i-lucide-x"
-                class="ms-1.5 p-0 text-slate-500 hover:text-red-500 cursor-pointer"
-                @click="removeSpecialty(spec)"
-              />
-            </UBadge>
-          </div>
-
-          <div class="flex items-center gap-2 max-w-md">
-            <UInput
-              v-model="newSpecialty"
-              placeholder="إضافة تخصص جديد..."
-              size="sm"
-              class="flex-1"
-              @keydown.enter.prevent="addSpecialty"
-            />
-            <UButton
-              color="neutral"
-              variant="outline"
-              size="sm"
-              icon="i-lucide-plus"
-              class="rounded-xl font-bold"
-              @click="addSpecialty"
-            >
-              إضافة
-            </UButton>
-          </div>
-        </div>
-
-        <!-- Social & Links -->
-        <div class="border-t border-slate-100 pt-6 flex flex-col gap-4">
-          <h3 class="text-sm font-bold text-slate-900">
-            الروابط وحسابات التواصل
-          </h3>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <UFormField label="الموقع الشخصي">
-              <UInput
-                v-model="profile.website"
-                icon="i-lucide-globe"
-                placeholder="https://..."
-                size="md"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UFormField label="حساب X (تويتر)">
-              <UInput
-                v-model="profile.twitter"
-                icon="i-lucide-at-sign"
-                placeholder="@username"
-                size="md"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UFormField label="قناة يوتيوب">
-              <UInput
-                v-model="profile.youtube"
-                icon="i-lucide-video"
-                placeholder="ChannelName"
-                size="md"
-                class="w-full"
-              />
-            </UFormField>
-          </div>
-        </div>
-
-        <!-- Save Button -->
-        <div class="border-t border-slate-100 pt-6 flex justify-end">
+        <template #right>
           <UButton
-            type="submit"
-            color="primary"
-            variant="solid"
-            size="md"
-            :loading="isSaving"
-            class="font-bold rounded-xl px-8"
+            to="/teacher-dashboard"
+            color="neutral"
+            variant="outline"
+            label="العودة للرئيسية"
+          />
+        </template>
+      </UDashboardNavbar>
+    </template>
+
+    <template #body>
+      <div class="flex flex-col gap-6 w-full lg:max-w-3xl mx-auto">
+        <UForm :state="profile" @submit="saveProfile">
+          <UPageCard
+            title="الملف الشخصي"
+            description="تظهر هذه المعلومات في صفحة المعلم العامة للطلاب."
+            variant="naked"
+            orientation="horizontal"
+            class="mb-4"
           >
-            حفظ التغييرات
-          </UButton>
-        </div>
-      </form>
-    </UCard>
-    </div>
-  </div>
+            <UButton
+              type="submit"
+              label="حفظ التغييرات"
+              color="neutral"
+              :loading="isSaving"
+              class="w-fit lg:ms-auto"
+            />
+          </UPageCard>
+
+          <UPageCard variant="subtle">
+            <UFormField
+              label="الصورة الشخصية"
+              description="JPG أو PNG بحد أقصى 1MB."
+              class="flex max-sm:flex-col justify-between sm:items-center gap-4"
+            >
+              <div class="flex items-center gap-3">
+                <UAvatar
+                  text="أ"
+                  size="lg"
+                  class="bg-primary text-inverted font-bold"
+                />
+                <UButton label="تغيير الصورة" color="neutral" variant="outline" size="sm" />
+              </div>
+            </UFormField>
+
+            <USeparator />
+
+            <UFormField
+              label="الاسم الكامل"
+              description="يظهر على الشهادات وصفحة الدورات."
+              required
+              class="flex max-sm:flex-col justify-between items-start gap-4"
+            >
+              <UInput v-model="profile.name" class="w-full sm:w-72" />
+            </UFormField>
+
+            <USeparator />
+
+            <UFormField
+              label="المسمى الأكاديمي"
+              description="وصف مختصر لتخصصك التعليمي."
+              class="flex max-sm:flex-col justify-between items-start gap-4"
+            >
+              <UInput v-model="profile.title" class="w-full sm:w-72" />
+            </UFormField>
+
+            <USeparator />
+
+            <UFormField
+              label="البريد الإلكتروني"
+              description="يُستخدم لتسجيل الدخول والإشعارات."
+              required
+              class="flex max-sm:flex-col justify-between items-start gap-4"
+            >
+              <UInput v-model="profile.email" type="email" class="w-full sm:w-72" />
+            </UFormField>
+
+            <USeparator />
+
+            <UFormField
+              label="رقم الجوال"
+              class="flex max-sm:flex-col justify-between items-start gap-4"
+            >
+              <UInput v-model="profile.phone" type="tel" class="w-full sm:w-72" />
+            </UFormField>
+
+            <USeparator />
+
+            <UFormField
+              label="النبذة التعريفية"
+              description="نبذة موجزة عن خبرتك ومؤهلاتك."
+              class="flex max-sm:flex-col justify-between items-start gap-4"
+              :ui="{ container: 'w-full sm:w-80' }"
+            >
+              <UTextarea v-model="profile.bio" :rows="4" autoresize class="w-full" />
+            </UFormField>
+
+            <USeparator />
+
+            <UFormField
+              label="مجالات التخصص"
+              description="المواد والمناهج التي تقوم بتدريسها."
+              class="flex max-sm:flex-col justify-between items-start gap-4"
+              :ui="{ container: 'w-full sm:w-80' }"
+            >
+              <div class="flex flex-col gap-2.5 w-full">
+                <div class="flex flex-wrap gap-1.5">
+                  <UBadge
+                    v-for="spec in profile.specialties"
+                    :key="spec"
+                    color="primary"
+                    variant="subtle"
+                    class="gap-1"
+                  >
+                    <span>{{ spec }}</span>
+                    <button
+                      type="button"
+                      class="hover:text-error cursor-pointer"
+                      @click="removeSpecialty(spec)"
+                    >
+                      <UIcon name="i-lucide-x" class="size-3" />
+                    </button>
+                  </UBadge>
+                </div>
+                <div class="flex items-center gap-2">
+                  <UInput
+                    v-model="newSpecialty"
+                    placeholder="أضف تخصصاً..."
+                    size="sm"
+                    class="flex-1"
+                    @keydown.enter.prevent="addSpecialty"
+                  />
+                  <UButton
+                    color="neutral"
+                    variant="outline"
+                    size="sm"
+                    icon="i-lucide-plus"
+                    label="إضافة"
+                    @click="addSpecialty"
+                  />
+                </div>
+              </div>
+            </UFormField>
+
+            <USeparator />
+
+            <UFormField
+              label="حساب X ويوتيوب والموقع"
+              description="روابط التواصل التي تظهر للطلاب."
+              class="flex max-sm:flex-col justify-between items-start gap-4"
+              :ui="{ container: 'w-full sm:w-80' }"
+            >
+              <div class="flex flex-col gap-2 w-full">
+                <UInput v-model="profile.website" icon="i-lucide-globe" placeholder="https://..." />
+                <UInput v-model="profile.twitter" icon="i-lucide-at-sign" placeholder="@username" />
+                <UInput v-model="profile.youtube" icon="i-lucide-video" placeholder="ChannelName" />
+              </div>
+            </UFormField>
+          </UPageCard>
+        </UForm>
+      </div>
+    </template>
+  </UDashboardPanel>
 </template>

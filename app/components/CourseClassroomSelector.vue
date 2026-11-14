@@ -140,7 +140,7 @@ function handleClassroomChange(nextClassroomVal: string | number) {
   <div class="flex flex-col gap-3">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <!-- Educational Stage Select -->
-      <UFormField label="المرحلة التعليمية" class="font-bold text-slate-700 dark:text-slate-300">
+      <UFormField label="المرحلة التعليمية" class="font-bold text-slate-700">
         <USelect
           :model-value="selectedStageId"
           :items="stageItems"
@@ -152,7 +152,7 @@ function handleClassroomChange(nextClassroomVal: string | number) {
       </UFormField>
 
       <!-- Classroom Select (Filtered by Stage) -->
-      <UFormField label="الفصل الدراسي" class="font-bold text-slate-700 dark:text-slate-300">
+      <UFormField label="الفصل الدراسي" class="font-bold text-slate-700">
         <USelect
           :model-value="selectedClassroomValue"
           :items="classroomItems"

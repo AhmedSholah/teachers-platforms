@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { h, resolveComponent } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+import { getPaginationRowModel } from '@tanstack/vue-table'
+
 useHead({
-  title: 'إدارة الطلاب - لوحة المعلم'
+  title: 'الطلاب - لوحة المعلم'
 })
 
 interface Student {
@@ -14,6 +18,15 @@ interface Student {
   status: 'active' | 'inactive'
 }
 
+const UAvatar = resolveComponent('UAvatar')
+const UBadge = resolveComponent('UBadge')
+const UButton = resolveComponent('UButton')
+const UCheckbox = resolveComponent('UCheckbox')
+const UDropdownMenu = resolveComponent('UDropdownMenu')
+
+const toast = useToast()
+const table = useTemplateRef('table')
+
 const students = ref<Student[]>([
   {
     id: 1,
@@ -21,8 +34,8 @@ const students = ref<Student[]>([
     email: 'sara@example.com',
     avatar: 'س',
     enrolledCoursesCount: 3,
-    totalSpent: '450 ر.س',
-    joinDate: '10 يناير 2025',
+    totalSpent: '450 ج.م',
+    joinDate: '10 يناير 2026',
     status: 'active'
   },
   {
@@ -31,8 +44,8 @@ const students = ref<Student[]>([
     email: 'mohammed@example.com',
     avatar: 'م',
     enrolledCoursesCount: 2,
-    totalSpent: '300 ر.س',
-    joinDate: '5 يناير 2025',
+    totalSpent: '300 ج.م',
+    joinDate: '5 يناير 2026',
     status: 'active'
   },
   {
@@ -41,8 +54,8 @@ const students = ref<Student[]>([
     email: 'abdullah@example.com',
     avatar: 'ع',
     enrolledCoursesCount: 1,
-    totalSpent: '150 ر.س',
-    joinDate: '28 ديسمبر 2024',
+    totalSpent: '150 ج.م',
+    joinDate: '28 ديسمبر 2025',
     status: 'active'
   },
   {
@@ -51,8 +64,8 @@ const students = ref<Student[]>([
     email: 'reem@example.com',
     avatar: 'ر',
     enrolledCoursesCount: 4,
-    totalSpent: '600 ر.س',
-    joinDate: '15 ديسمبر 2024',
+    totalSpent: '600 ج.م',
+    joinDate: '15 ديسمبر 2025',
     status: 'inactive'
   },
   {
@@ -61,250 +74,364 @@ const students = ref<Student[]>([
     email: 'yousef@example.com',
     avatar: 'ي',
     enrolledCoursesCount: 2,
-    totalSpent: '280 ر.س',
-    joinDate: '1 ديسمبر 2024',
+    totalSpent: '280 ج.م',
+    joinDate: '1 ديسمبر 2025',
     status: 'active'
+  },
+  {
+    id: 6,
+    name: 'مروة حسن عبد العزيز',
+    email: 'marwa@example.com',
+    avatar: 'م',
+    enrolledCoursesCount: 3,
+    totalSpent: '520 ج.م',
+    joinDate: '20 نوفمبر 2025',
+    status: 'active'
+  },
+  {
+    id: 7,
+    name: 'عمر سامي فاروق',
+    email: 'omar@example.com',
+    avatar: 'ع',
+    enrolledCoursesCount: 1,
+    totalSpent: '200 ج.م',
+    joinDate: '14 نوفمبر 2025',
+    status: 'active'
+  },
+  {
+    id: 8,
+    name: 'نور الهدى طارق',
+    email: 'nour@example.com',
+    avatar: 'ن',
+    enrolledCoursesCount: 2,
+    totalSpent: '350 ج.م',
+    joinDate: '3 نوفمبر 2025',
+    status: 'inactive'
   }
 ])
 
 const searchQuery = ref('')
-const filterStatus = ref<'all' | 'active' | 'inactive'>('all')
+const statusFilter = ref<'all' | 'active' | 'inactive'>('all')
+const columnVisibility = ref<Record<string, boolean>>({})
+const rowSelection = ref<Record<string, boolean>>({})
+const pagination = ref({
+  pageIndex: 0,
+  pageSize: 6
+})
+
+const isAddModalOpen = ref(false)
+const newStudent = ref({
+  name: '',
+  email: ''
+})
+
+function addStudent() {
+  if (!newStudent.value.name.trim() || !newStudent.value.email.trim()) return
+  const nextId = (students.value[0]?.id || 0) + students.value.length + 1
+  students.value.unshift({
+    id: nextId,
+    name: newStudent.value.name.trim(),
+    email: newStudent.value.email.trim(),
+    avatar: newStudent.value.name.trim().charAt(0),
+    enrolledCoursesCount: 0,
+    totalSpent: '0 ج.م',
+    joinDate: 'اليوم',
+    status: 'active'
+  })
+  toast.add({
+    title: 'تمت إضافة الطالب',
+    description: `تمت إضافة ${newStudent.value.name.trim()} بنجاح.`,
+    color: 'success'
+  })
+  newStudent.value = { name: '', email: '' }
+  isAddModalOpen.value = false
+}
 
 const filteredStudents = computed(() => {
-  return students.value.filter(student => {
-    const matchesSearch =
-      student.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchesStatus =
-      filterStatus.value === 'all' || student.status === filterStatus.value
+  return students.value.filter((student) => {
+    const q = searchQuery.value.trim().toLowerCase()
+    const matchesSearch = !q ||
+      student.name.toLowerCase().includes(q) ||
+      student.email.toLowerCase().includes(q)
+    const matchesStatus = statusFilter.value === 'all' || student.status === statusFilter.value
     return matchesSearch && matchesStatus
   })
 })
 
-function getStudentActions(student: Student) {
+const selectedCount = computed(() => Object.values(rowSelection.value).filter(Boolean).length)
+
+function deleteSelected() {
+  const selectedIds = new Set(
+    Object.entries(rowSelection.value)
+      .filter(([, checked]) => checked)
+      .map(([idx]) => filteredStudents.value[Number(idx)]?.id)
+      .filter(Boolean)
+  )
+  students.value = students.value.filter(s => !selectedIds.has(s.id))
+  rowSelection.value = {}
+  toast.add({
+    title: 'تم حذف الطلاب المحددين',
+    color: 'neutral'
+  })
+}
+
+function getRowItems(student: Student) {
   return [
     [
       {
-        label: 'عرض الملف',
-        icon: 'i-lucide-user',
-        click: () => alert(`عرض ملف الطالب: ${student.name}`)
+        type: 'label' as const,
+        label: 'إجراءات الطالب'
       },
       {
-        label: 'مراسلة الطالب',
-        icon: 'i-lucide-mail',
-        click: () => alert(`إرسال رسالة إلى: ${student.email}`)
+        label: 'نسخ البريد الإلكتروني',
+        icon: 'i-lucide-copy',
+        onSelect: () => {
+          navigator.clipboard?.writeText(student.email)
+          toast.add({ title: 'تم نسخ البريد الإلكتروني', color: 'success' })
+        }
+      },
+      {
+        label: student.status === 'active' ? 'تعطيل الحساب' : 'تفعيل الحساب',
+        icon: student.status === 'active' ? 'i-lucide-user-x' : 'i-lucide-user-check',
+        onSelect: () => {
+          student.status = student.status === 'active' ? 'inactive' : 'active'
+          toast.add({
+            title: student.status === 'active' ? 'تم تفعيل حساب الطالب' : 'تم تعطيل حساب الطالب',
+            color: 'neutral'
+          })
+        }
       }
     ],
     [
       {
-        label: 'تجميد الحساب',
-        icon: 'i-lucide-slash',
+        label: 'حذف الطالب',
+        icon: 'i-lucide-trash',
         color: 'error' as const,
-        click: () => alert(`تجميد حساب: ${student.name}`)
+        onSelect: () => {
+          students.value = students.value.filter(s => s.id !== student.id)
+          toast.add({ title: 'تم حذف الطالب', color: 'error' })
+        }
       }
     ]
   ]
 }
+
+const columns: TableColumn<Student>[] = [
+  {
+    id: 'select',
+    header: ({ table: tbl }) => h(UCheckbox, {
+      'modelValue': tbl.getIsSomePageRowsSelected() ? 'indeterminate' : tbl.getIsAllPageRowsSelected(),
+      'onUpdate:modelValue': (value: boolean | 'indeterminate') => tbl.toggleAllPageRowsSelected(!!value),
+      'ariaLabel': 'تحديد الكل'
+    }),
+    cell: ({ row }) => h(UCheckbox, {
+      'modelValue': row.getIsSelected(),
+      'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
+      'ariaLabel': 'تحديد الصف'
+    })
+  },
+  {
+    accessorKey: 'id',
+    header: '#'
+  },
+  {
+    accessorKey: 'name',
+    header: 'الطالب',
+    cell: ({ row }) => h('div', { class: 'flex items-center gap-3' }, [
+      h(UAvatar, { text: row.original.avatar, size: 'md', class: 'bg-primary/10 text-primary font-bold' }),
+      h('div', { class: 'min-w-0' }, [
+        h('p', { class: 'font-medium text-highlighted truncate' }, row.original.name),
+        h('p', { class: 'text-xs text-muted truncate' }, row.original.email)
+      ])
+    ])
+  },
+  {
+    accessorKey: 'enrolledCoursesCount',
+    header: 'الدورات',
+    cell: ({ row }) => `${row.original.enrolledCoursesCount} دورات`
+  },
+  {
+    accessorKey: 'totalSpent',
+    header: 'المدفوعات',
+    cell: ({ row }) => h('span', { class: 'font-medium text-highlighted' }, row.original.totalSpent)
+  },
+  {
+    accessorKey: 'joinDate',
+    header: 'تاريخ الانضمام'
+  },
+  {
+    accessorKey: 'status',
+    header: 'الحالة',
+    cell: ({ row }) => {
+      const isActive = row.original.status === 'active'
+      return h(UBadge, {
+        variant: 'subtle',
+        color: isActive ? 'success' : 'neutral'
+      }, () => isActive ? 'نشط' : 'غير نشط')
+    }
+  },
+  {
+    id: 'actions',
+    cell: ({ row }) => h('div', { class: 'text-end' }, h(UDropdownMenu, {
+      content: { align: 'end' },
+      items: getRowItems(row.original)
+    }, () => h(UButton, {
+      icon: 'i-lucide-ellipsis-vertical',
+      color: 'neutral',
+      variant: 'ghost',
+      class: 'ms-auto',
+      'aria-label': 'إجراءات'
+    })))
+  }
+]
+
+const columnLabels: Record<string, string> = {
+  id: 'الرقم',
+  name: 'الطالب',
+  enrolledCoursesCount: 'الدورات',
+  totalSpent: 'المدفوعات',
+  joinDate: 'تاريخ الانضمام',
+  status: 'الحالة'
+}
+
+const displayColumnItems = computed(() =>
+  (table.value?.tableApi?.getAllColumns().filter((col: { getCanHide: () => boolean }) => col.getCanHide()) || [])
+    .map((column: { id: string; getIsVisible: () => boolean }) => ({
+      label: columnLabels[column.id] || column.id,
+      type: 'checkbox' as const,
+      checked: column.getIsVisible(),
+      onUpdateChecked(checked: boolean) {
+        table.value?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
+      },
+      onSelect(e?: Event) {
+        e?.preventDefault()
+      }
+    }))
+)
+
+const statusItems = [
+  { label: 'الكل', value: 'all' },
+  { label: 'نشط', value: 'active' },
+  { label: 'غير نشط', value: 'inactive' }
+]
 </script>
 
 <template>
-  <div class="flex flex-col min-h-full">
-    <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
-      <UButton
-        icon="i-lucide-user-plus"
-        color="primary"
-        variant="solid"
-        size="md"
-        class="font-bold rounded-xl"
-      >
-        إضافة طالب
-      </UButton>
-      <UButton
-        icon="i-lucide-download"
-        color="neutral"
-        variant="outline"
-        size="md"
-        class="font-bold rounded-xl"
-      >
-        تصدير CSV
-      </UButton>
-    </DashboardActionBar>
+  <UDashboardPanel id="teacher-students">
+    <template #header>
+      <UDashboardNavbar title="الطلاب">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
 
-    <div class="p-6 md:p-10 flex flex-col gap-6 w-full box-border">
-
-    <!-- Quick Stats Summary -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <UCard class="border border-slate-200 shadow-sm rounded-2xl bg-white">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <UIcon name="i-lucide-users" class="w-6 h-6" />
-          </div>
-          <div class="flex flex-col">
-            <span class="text-xs font-bold text-slate-500">إجمالي الطلاب</span>
-            <span class="text-2xl font-extrabold text-slate-900">128 طالب</span>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard class="border border-slate-200 shadow-sm rounded-2xl bg-white">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <UIcon name="i-lucide-user-check" class="w-6 h-6" />
-          </div>
-          <div class="flex flex-col">
-            <span class="text-xs font-bold text-slate-500">الطلاب النشطون</span>
-            <span class="text-2xl font-extrabold text-slate-900">114 طالب</span>
-          </div>
-        </div>
-      </UCard>
-
-      <UCard class="border border-slate-200 shadow-sm rounded-2xl bg-white">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-            <UIcon name="i-lucide-graduation-cap" class="w-6 h-6" />
-          </div>
-          <div class="flex flex-col">
-            <span class="text-xs font-bold text-slate-500">إجمالي التسجيلات</span>
-            <span class="text-2xl font-extrabold text-slate-900">242 دورة</span>
-          </div>
-        </div>
-      </UCard>
-    </div>
-
-    <!-- Filters & Table Card -->
-    <UCard :ui="{ body: 'p-0 sm:p-0' }" class="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
-      <!-- Search & Filters Toolbar -->
-      <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
-        <div class="w-full sm:w-80">
-          <UInput
-            v-model="searchQuery"
-            icon="i-lucide-search"
-            placeholder="بحث بالاسم أو البريد الإلكتروني..."
-            size="md"
-            class="w-full"
+        <template #right>
+          <UButton
+            label="إضافة طالب"
+            icon="i-lucide-user-plus"
+            @click="isAddModalOpen = true"
           />
+        </template>
+      </UDashboardNavbar>
+    </template>
+
+    <template #body>
+      <div class="flex flex-wrap items-center justify-between gap-1.5">
+        <UInput
+          v-model="searchQuery"
+          class="max-w-sm"
+          icon="i-lucide-search"
+          placeholder="ابحث بالاسم أو البريد الإلكتروني..."
+        />
+
+        <div class="flex flex-wrap items-center gap-1.5">
+          <UButton
+            v-if="selectedCount > 0"
+            label="حذف"
+            color="error"
+            variant="subtle"
+            icon="i-lucide-trash"
+            @click="deleteSelected"
+          >
+            <template #trailing>
+              <UKbd>
+                {{ selectedCount }}
+              </UKbd>
+            </template>
+          </UButton>
+
+          <USelect
+            v-model="statusFilter"
+            :items="statusItems"
+            placeholder="تصفية الحالة"
+            class="min-w-28"
+          />
+
+          <UDropdownMenu
+            :items="displayColumnItems"
+            :content="{ align: 'end' }"
+          >
+            <UButton
+              label="الأعمدة"
+              color="neutral"
+              variant="outline"
+              trailing-icon="i-lucide-settings-2"
+            />
+          </UDropdownMenu>
+        </div>
+      </div>
+
+      <UTable
+        ref="table"
+        v-model:column-visibility="columnVisibility"
+        v-model:row-selection="rowSelection"
+        v-model:pagination="pagination"
+        :pagination-options="{ getPaginationRowModel: getPaginationRowModel() }"
+        class="shrink-0"
+        :data="filteredStudents"
+        :columns="columns"
+        :ui="{
+          base: 'table-fixed border-separate border-spacing-0',
+          thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+          tbody: '[&>tr]:last:[&>td]:border-b-0',
+          th: 'py-2 first:rounded-s-lg last:rounded-e-lg border-y border-default first:border-s last:border-e',
+          td: 'border-b border-default',
+          separator: 'h-0'
+        }"
+      />
+
+      <div class="flex items-center justify-between gap-3 border-t border-default pt-4 mt-auto">
+        <div class="text-sm text-muted">
+          تم تحديد {{ selectedCount }} من {{ filteredStudents.length }} طالب.
         </div>
 
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-          <UButton
-            :variant="filterStatus === 'all' ? 'solid' : 'ghost'"
-            :color="filterStatus === 'all' ? 'primary' : 'neutral'"
-            size="sm"
-            class="rounded-xl font-bold px-3.5"
-            @click="filterStatus = 'all'"
-          >
-            الكل
-          </UButton>
-          <UButton
-            :variant="filterStatus === 'active' ? 'solid' : 'ghost'"
-            :color="filterStatus === 'active' ? 'primary' : 'neutral'"
-            size="sm"
-            class="rounded-xl font-bold px-3.5"
-            @click="filterStatus = 'active'"
-          >
-            نشط
-          </UButton>
-          <UButton
-            :variant="filterStatus === 'inactive' ? 'solid' : 'ghost'"
-            :color="filterStatus === 'inactive' ? 'primary' : 'neutral'"
-            size="sm"
-            class="rounded-xl font-bold px-3.5"
-            @click="filterStatus = 'inactive'"
-          >
-            غير نشط
-          </UButton>
+        <UPagination
+          :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
+          :items-per-page="table?.tableApi?.getState().pagination.pageSize"
+          :total="filteredStudents.length"
+          @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)"
+        />
+      </div>
+    </template>
+  </UDashboardPanel>
+
+  <UModal
+    v-model:open="isAddModalOpen"
+    title="إضافة طالب جديد"
+    description="أدخل بيانات الطالب لإضافته إلى منصتك"
+  >
+    <template #body>
+      <form class="flex flex-col gap-4" @submit.prevent="addStudent">
+        <UFormField label="الاسم الكامل" required>
+          <UInput v-model="newStudent.name" placeholder="مثال: أحمد علي" class="w-full" />
+        </UFormField>
+        <UFormField label="البريد الإلكتروني" required>
+          <UInput v-model="newStudent.email" type="email" placeholder="student@example.com" class="w-full" />
+        </UFormField>
+        <div class="flex justify-end gap-2 pt-2">
+          <UButton label="إلغاء" color="neutral" variant="ghost" @click="isAddModalOpen = false" />
+          <UButton type="submit" label="إضافة الطالب" />
         </div>
-      </div>
-
-      <!-- Students Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-start border-collapse">
-          <thead>
-            <tr class="border-b border-slate-200 bg-slate-50/80 text-xs font-bold text-slate-500">
-              <th class="p-4 ps-6 text-start">الطالب</th>
-              <th class="p-4 text-start">الدورات المسجلة</th>
-              <th class="p-4 text-start">إجمالي المدفوعات</th>
-              <th class="p-4 text-start">تاريخ الانضمام</th>
-              <th class="p-4 text-start">الحالة</th>
-              <th class="p-4 pe-6 text-end">إجراءات</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 text-sm">
-            <tr
-              v-for="student in filteredStudents"
-              :key="student.id"
-              class="hover:bg-slate-50/70 transition-colors"
-            >
-              <!-- Student Info -->
-              <td class="p-4 ps-6">
-                <div class="flex items-center gap-3">
-                  <UAvatar
-                    :text="student.avatar"
-                    size="md"
-                    class="bg-blue-100 text-blue-600 font-bold shrink-0"
-                  />
-                  <div class="flex flex-col min-w-0">
-                    <span class="font-bold text-slate-900 truncate">{{ student.name }}</span>
-                    <span class="text-xs text-slate-400 font-mono truncate">{{ student.email }}</span>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Enrolled Courses -->
-              <td class="p-4">
-                <span class="font-bold text-slate-800">{{ student.enrolledCoursesCount }} دورات</span>
-              </td>
-
-              <!-- Total Spent -->
-              <td class="p-4">
-                <span class="font-bold text-emerald-600">{{ student.totalSpent }}</span>
-              </td>
-
-              <!-- Join Date -->
-              <td class="p-4 text-slate-500 text-xs">
-                {{ student.joinDate }}
-              </td>
-
-              <!-- Status -->
-              <td class="p-4">
-                <UBadge
-                  :color="student.status === 'active' ? 'success' : 'neutral'"
-                  variant="subtle"
-                  size="sm"
-                  class="font-bold"
-                >
-                  {{ student.status === 'active' ? 'نشط' : 'غير نشط' }}
-                </UBadge>
-              </td>
-
-              <!-- Actions Dropdown -->
-              <td class="p-4 pe-6 text-end">
-                <UDropdownMenu :items="getStudentActions(student)">
-                  <UButton
-                    icon="i-lucide-more-vertical"
-                    color="neutral"
-                    variant="ghost"
-                    size="sm"
-                    aria-label="إجراءات"
-                  />
-                </UDropdownMenu>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        v-if="filteredStudents.length === 0"
-        class="text-center py-12 p-6 flex flex-col items-center justify-center gap-2"
-      >
-        <UIcon name="i-lucide-users" class="w-8 h-8 text-slate-300" />
-        <p class="text-sm font-bold text-slate-700">لم يتم العثور على أي طلاب</p>
-        <p class="text-xs text-slate-400">جرّب البحث بكلمة أخرى أو تغيير الفلتر.</p>
-      </div>
-    </UCard>
-    </div>
-  </div>
+      </form>
+    </template>
+  </UModal>
 </template>

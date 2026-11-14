@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { SectionItem } from '~/composables/useClassrooms'
+
 const route = useRoute()
 
 useHead({
@@ -14,7 +16,6 @@ const {
 
 await ensureLoaded()
 
-// Stepper items for Nuxt UI UStepper
 const stepperItems = [
   {
     title: 'معلومات الدورة',
@@ -30,11 +31,9 @@ const stepperItems = [
   }
 ]
 
-// Current Step index in the 3-step wizard (0: info, 1: lessons, 2: price & options)
 const currentStep = ref(0)
 const titleError = ref('')
 
-// Find course by route query id if available
 const targetCourseId = computed(() => {
   const idParam = route.query.id
   return idParam ? Number(idParam) : null
@@ -47,7 +46,6 @@ const matchedCourse = computed(() => {
   return null
 })
 
-// Step 1: Course Info
 interface CourseForm {
   title: string
   description: string
@@ -60,7 +58,6 @@ interface CourseForm {
   isPublished: boolean
 }
 
-// Extract numeric price from course string (e.g. '250 ج.م' -> '250')
 function extractPrice(raw: string | number | undefined): string {
   if (!raw) return '250'
   if (typeof raw === 'number') return String(raw)
@@ -80,16 +77,12 @@ const form = ref<CourseForm>({
   isPublished: matchedCourse.value ? matchedCourse.value.status === 'published' : true
 })
 
-import type { SectionItem } from '~/composables/useClassrooms'
-
-// Step 2: Course Sections & Lessons
 const sections = ref<SectionItem[]>([])
 
 const totalLessonsCount = computed(() => {
   return sections.value.reduce((acc, s) => acc + (s.lessons?.length || 0), 0)
 })
 
-// Watch matched course changes if route changes
 watch(matchedCourse, (newVal) => {
   if (newVal) {
     form.value.title = newVal.title
@@ -109,9 +102,7 @@ watch(matchedCourse, (newVal) => {
 }, { immediate: true })
 
 const toast = useToast()
-
-// File Upload
-const fileInputRef = ref<any>(null)
+const fileInputRef = ref<{ $el?: HTMLElement; click?: () => void } | null>(null)
 const previewImage = ref<string | null>(null)
 
 function triggerFileInput() {
@@ -123,9 +114,7 @@ function triggerFileInput() {
       return
     }
   }
-  if (el?.click) {
-    el.click()
-  }
+  el?.click?.()
 }
 
 function handleCoverUpload(event: Event) {
@@ -147,7 +136,6 @@ function removeCoverImage() {
   }
 }
 
-// Navigation Between Steps
 function goToStep(step: number) {
   if (step > 0 && !form.value.title.trim()) {
     titleError.value = 'يرجى إدخال عنوان الدورة أولاً للمتابعة'
@@ -179,18 +167,7 @@ function prevStep() {
   }
 }
 
-// Save Changes
 const isSaving = ref(false)
-const showSuccessNotification = ref(false)
-const notificationMessage = ref('')
-
-function triggerSuccess(msg: string) {
-  notificationMessage.value = msg
-  showSuccessNotification.value = true
-  setTimeout(() => {
-    showSuccessNotification.value = false
-  }, 3500)
-}
 
 async function saveChanges() {
   if (!form.value.title.trim()) {
@@ -219,7 +196,11 @@ async function saveChanges() {
       description: form.value.description.trim() || undefined,
       sections: JSON.parse(JSON.stringify(sections.value))
     })
-    triggerSuccess('تم حفظ كافة تعديلات الدورة بنجاح!')
+    toast.add({
+      title: 'تم حفظ التعديلات',
+      description: 'تم تحديث بيانات الدورة بنجاح.',
+      color: 'success'
+    })
   } catch (err: unknown) {
     const fetchErr = err as { data?: { statusMessage?: string }; statusMessage?: string }
     toast.add({
@@ -234,149 +215,93 @@ async function saveChanges() {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-full">
-    <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
-      <UButton
-        to="/teacher-dashboard/courses"
-        color="neutral"
-        variant="outline"
-        size="md"
-        icon="i-lucide-arrow-right"
-        class="font-bold rounded-xl cursor-pointer shrink-0"
-      >
-        رجوع إلى دوراتي
-      </UButton>
+  <UDashboardPanel id="teacher-courses-edit">
+    <template #header>
+      <UDashboardNavbar :title="form.title || 'تعديل الدورة'">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
 
-      <UButton
-        color="primary"
-        variant="solid"
-        size="md"
-        icon="i-lucide-save"
-        :loading="isSaving"
-        class="font-bold rounded-xl cursor-pointer"
-        @click="saveChanges"
-      >
-        حفظ التعديلات
-      </UButton>
+        <template #trailing>
+          <UBadge
+            :color="form.isPublished ? 'success' : 'warning'"
+            variant="subtle"
+          >
+            {{ form.isPublished ? 'منشورة' : 'مسودة' }}
+          </UBadge>
+        </template>
 
-      <UButton
-        href="https://ahmed.mydomain.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        color="neutral"
-        variant="outline"
-        size="md"
-        icon="i-lucide-external-link"
-        class="font-bold rounded-xl cursor-pointer"
-      >
-        معاينة الدورة
-      </UButton>
+        <template #right>
+          <UButton
+            to="/teacher-dashboard/courses"
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-arrow-right"
+            label="رجوع"
+          />
+          <UButton
+            icon="i-lucide-save"
+            :loading="isSaving"
+            label="حفظ التعديلات"
+            @click="saveChanges"
+          />
+        </template>
+      </UDashboardNavbar>
+    </template>
 
-      <UBadge
-        :color="form.isPublished ? 'success' : 'warning'"
-        variant="subtle"
-        size="sm"
-        class="font-bold rounded-lg"
-      >
-        {{ form.isPublished ? 'منشورة' : 'مسودة' }}
-      </UBadge>
-    </DashboardActionBar>
+    <template #body>
+      <div class="flex flex-col gap-6 w-full lg:max-w-4xl mx-auto">
+        <UCard>
+          <UStepper
+            v-model="currentStep"
+            :items="stepperItems"
+            :linear="false"
+            color="primary"
+            size="md"
+            class="w-full"
+            @update:model-value="goToStep"
+          />
+        </UCard>
 
-    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
-      <!-- Success Toast Alert -->
-      <Transition
-        enter-active-class="transition duration-300 ease-out"
-        enter-from-class="opacity-0 -translate-y-2"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition duration-200 ease-in"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 -translate-y-2"
-      >
-        <div
-          v-if="showSuccessNotification"
-          class="fixed top-20 start-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-sm"
-        >
-          <UIcon name="i-lucide-check-circle" class="w-5 h-5 shrink-0" />
-          <span>{{ notificationMessage }}</span>
-        </div>
-      </Transition>
+        <!-- STEP 1 -->
+        <div v-if="currentStep === 0" class="flex flex-col gap-6">
+          <UPageCard
+            title="البيانات الأساسية"
+            description="تعديل عنوان الدورة، الوصف، والفصل الدراسي."
+            variant="subtle"
+          >
+            <div class="flex flex-col gap-4">
+              <UFormField
+                label="عنوان الدورة"
+                required
+                :error="titleError"
+              >
+                <UInput
+                  v-model="form.title"
+                  placeholder="مثال: أساسيات الجبر وحل المعادلات الخطية"
+                  class="w-full"
+                  @update:model-value="titleError = ''"
+                />
+              </UFormField>
 
-    <!-- Stepper Navigation using Nuxt UI UStepper with numbers -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xs">
-      <UStepper
-        v-model="currentStep"
-        :items="stepperItems"
-        :linear="false"
-        color="primary"
-        size="md"
-        class="w-full"
-        @update:model-value="goToStep"
-      />
-    </div>
+              <UFormField label="وصف الدورة">
+                <UTextarea
+                  v-model="form.description"
+                  placeholder="اكتب نبذة شاملة عمّا سيتعلمه الطالب..."
+                  :rows="4"
+                  class="w-full"
+                />
+              </UFormField>
 
-    <!-- ============================================== -->
-    <!-- STEP 1: Course Info                            -->
-    <!-- ============================================== -->
-    <div v-if="currentStep === 0" class="flex flex-col gap-6">
-          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-5">
-            <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-info" class="w-5 h-5 shrink-0" />
-              </div>
-              <div>
-                <h2 class="m-0 text-lg font-bold text-slate-900 dark:text-white">
-                  البيانات الأساسية
-                </h2>
-                <span class="text-xs text-slate-500 dark:text-slate-400">حدد عنوان الدورة، وصفها، ومستواها التعليمي</span>
-              </div>
+              <CourseClassroomSelector v-model="form.classroom" />
             </div>
+          </UPageCard>
 
-            <!-- Course Title -->
-            <UFormField
-              label="عنوان الدورة"
-              required
-              :error="titleError"
-              class="font-bold text-slate-700 dark:text-slate-300"
-            >
-              <UInput
-                v-model="form.title"
-                placeholder="مثال: أساسيات الجبر وحل المعادلات الخطية"
-                size="md"
-                class="w-full"
-                @update:model-value="titleError = ''"
-              />
-            </UFormField>
-
-            <!-- Course Description -->
-            <UFormField label="وصف الدورة" class="font-bold text-slate-700 dark:text-slate-300">
-              <UTextarea
-                v-model="form.description"
-                placeholder="اكتب نبذة شاملة وموجزة عمّا سيتعلمه الطالب في هذه الدورة وأهدافها..."
-                :rows="4"
-                size="md"
-                class="w-full"
-              />
-            </UFormField>
-
-            <!-- Educational Stage & Classroom Selectors -->
-            <CourseClassroomSelector v-model="form.classroom" />
-          </div>
-
-          <!-- Cover Image Card -->
-          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-4">
-            <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-image" class="w-5 h-5 shrink-0" />
-              </div>
-              <div>
-                <h2 class="m-0 text-lg font-bold text-slate-900 dark:text-white">
-                  غلاف الدورة
-                </h2>
-                <span class="text-xs text-slate-500 dark:text-slate-400">صورة معبرة تظهر للطلاب</span>
-              </div>
-            </div>
-
+          <UPageCard
+            title="غلاف الدورة"
+            description="صورة معبرة تظهر للطلاب."
+            variant="subtle"
+          >
             <UInput
               ref="fileInputRef"
               type="file"
@@ -385,310 +310,111 @@ async function saveChanges() {
               @change="handleCoverUpload"
             />
 
-            <!-- Preview State -->
-            <div v-if="previewImage" class="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-              <img
-                :src="previewImage"
-                alt="غلاف الدورة"
-                class="w-full h-48 sm:h-64 object-cover"
-              />
-              <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <UButton
-                  color="neutral"
-                  variant="solid"
-                  size="sm"
-                  icon="i-lucide-edit"
-                  class="font-bold rounded-lg cursor-pointer"
-                  @click="triggerFileInput"
-                >
-                  تغيير
-                </UButton>
-                <UButton
-                  color="error"
-                  variant="solid"
-                  size="sm"
-                  icon="i-lucide-trash-2"
-                  class="font-bold rounded-lg cursor-pointer"
-                  @click="removeCoverImage"
-                >
-                  حذف
-                </UButton>
+            <div v-if="previewImage" class="relative group rounded-lg overflow-hidden border border-default">
+              <img :src="previewImage" alt="غلاف الدورة" class="w-full h-48 sm:h-64 object-cover">
+              <div class="absolute inset-0 bg-default/75 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <UButton color="neutral" variant="solid" size="sm" icon="i-lucide-edit" label="تغيير" @click="triggerFileInput" />
+                <UButton color="error" variant="solid" size="sm" icon="i-lucide-trash-2" label="حذف" @click="removeCoverImage" />
               </div>
             </div>
 
-            <!-- Upload Dropzone State -->
             <div
               v-else
-              class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-primary-400 hover:bg-primary-50/20 dark:hover:bg-primary-950/20 transition-colors rounded-xl p-6 text-center flex flex-col items-center gap-3 cursor-pointer"
+              class="border-2 border-dashed border-default hover:border-primary transition-colors rounded-lg p-8 text-center flex flex-col items-center gap-2 cursor-pointer bg-default"
               @click="triggerFileInput"
             >
-              <div class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-950/50 text-primary-600 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-upload-cloud" class="w-6 h-6 shrink-0" />
-              </div>
-              <div class="flex flex-col items-center gap-1">
-                <span class="text-sm font-bold text-slate-700 dark:text-slate-300">اسحب صورة الغلاف هنا</span>
-                <UButton
-                  type="button"
-                  variant="outline"
-                  color="neutral"
-                  size="xs"
-                  class="font-bold cursor-pointer rounded-lg my-1"
-                  @click.stop="triggerFileInput"
-                >
-                  تصفح الملفات
-                </UButton>
-                <span class="text-[11px] text-slate-400 mt-1">يُفضل أبعاد 16:9 (1280 × 720)</span>
-              </div>
+              <UIcon name="i-lucide-upload-cloud" class="size-8 text-primary" />
+              <span class="text-sm font-medium text-highlighted">اسحب صورة الغلاف هنا أو اضغط للاختيار</span>
+              <span class="text-xs text-muted">PNG أو JPG بنسبة 16:9</span>
+            </div>
+          </UPageCard>
+
+          <div class="flex items-center justify-between pt-2">
+            <UButton trailing-icon="i-lucide-arrow-left" label="التالي: دروس الدورة" @click="nextStep" />
+            <UButton to="/teacher-dashboard/courses" color="neutral" variant="ghost" label="إلغاء" />
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div v-if="currentStep === 1" class="flex flex-col gap-6">
+          <CourseCurriculumManager v-model="sections" />
+
+          <div class="flex items-center justify-between pt-2">
+            <div class="flex items-center gap-2">
+              <UButton color="neutral" variant="outline" icon="i-lucide-arrow-right" label="السابق: معلومات الدورة" @click="prevStep" />
+              <UButton trailing-icon="i-lucide-arrow-left" label="التالي: السعر والخيارات" @click="nextStep" />
             </div>
           </div>
-
-      <!-- Step 1 Footer Actions -->
-      <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200 dark:border-slate-800">
-        <div class="flex items-center gap-3">
-          <UButton
-            color="primary"
-            variant="solid"
-            size="lg"
-            trailing-icon="i-lucide-arrow-left"
-            class="font-bold rounded-xl px-6 cursor-pointer"
-            @click="nextStep"
-          >
-            التالي: دروس الدورة
-          </UButton>
         </div>
 
-        <div class="flex items-center gap-3">
-          <UButton
-            color="primary"
-            variant="outline"
-            size="md"
-            icon="i-lucide-save"
-            :loading="isSaving"
-            class="font-bold rounded-xl px-4 cursor-pointer"
-            @click="saveChanges"
+        <!-- STEP 3 -->
+        <div v-if="currentStep === 2" class="flex flex-col gap-6">
+          <UPageCard
+            title="تسعير الدورة"
+            description="حدد ما إذا كانت الدورة مجانية أو مدفوعة وسعرها."
+            variant="subtle"
           >
-            حفظ التعديلات
-          </UButton>
-
-          <UButton
-            to="/teacher-dashboard/courses"
-            color="neutral"
-            variant="ghost"
-            size="md"
-            class="font-bold rounded-xl px-4 cursor-pointer"
-          >
-            إلغاء
-          </UButton>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============================================== -->
-    <!-- STEP 2: Course Lessons                         -->
-    <!-- ============================================== -->
-    <div v-if="currentStep === 1" class="flex flex-col gap-6">
-      <CourseCurriculumManager v-model="sections" />
-
-      <!-- Step 2 Footer Actions -->
-      <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200 dark:border-slate-800">
-        <div class="flex items-center gap-3">
-          <UButton
-            color="neutral"
-            variant="outline"
-            size="lg"
-            icon="i-lucide-arrow-right"
-            class="font-bold rounded-xl px-5 cursor-pointer"
-            @click="prevStep"
-          >
-            السابق: معلومات الدورة
-          </UButton>
-
-          <UButton
-            color="primary"
-            variant="solid"
-            size="lg"
-            trailing-icon="i-lucide-arrow-left"
-            class="font-bold rounded-xl px-6 cursor-pointer"
-            @click="nextStep"
-          >
-            التالي: السعر والخيارات
-          </UButton>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <UButton
-            color="primary"
-            variant="outline"
-            size="md"
-            icon="i-lucide-save"
-            :loading="isSaving"
-            class="font-bold rounded-xl px-4 cursor-pointer"
-            @click="saveChanges"
-          >
-            حفظ التعديلات
-          </UButton>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============================================== -->
-    <!-- STEP 3: Course Price and Options               -->
-    <!-- ============================================== -->
-    <div v-if="currentStep === 2" class="flex flex-col gap-6">
-          <!-- Pricing Card -->
-          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-5">
-            <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div class="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-badge-percent" class="w-5 h-5 shrink-0" />
-              </div>
-              <div>
-                <h2 class="m-0 text-lg font-bold text-slate-900 dark:text-white">
-                  تسعير الدورة
-                </h2>
-                <span class="text-xs text-slate-500 dark:text-slate-400">حدد ما إذا كانت الدورة مجانية أو مدفوعة وسعرها</span>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
-              <div class="flex flex-col gap-0.5">
-                <span class="text-sm font-bold text-slate-900 dark:text-white">دورة مجانية للجميع</span>
-                <span class="text-xs text-slate-500 dark:text-slate-400">يمكن لأي طالب التسجيل ومشاهدة المحتوى مجاناً</span>
-              </div>
-              <USwitch
-                v-model="form.isFree"
-                color="primary"
-                size="md"
-                class="cursor-pointer"
-                aria-label="دورة مجانية"
-              />
-            </div>
-
-            <!-- Price Input (if not free) -->
-            <div v-if="!form.isFree" class="flex flex-col gap-2">
-              <UFormField label="سعر الدورة" required class="font-bold text-slate-700 dark:text-slate-300">
-                <UInput
-                  v-model="form.price"
-                  type="number"
-                  placeholder="250"
-                  size="md"
-                  class="w-full"
-                >
-                  <template #trailing>
-                    <span class="text-xs font-bold text-slate-500 pe-1 select-none">ج.م</span>
-                  </template>
-                </UInput>
+            <div class="flex flex-col gap-4">
+              <UFormField
+                label="دورة مجانية للجميع"
+                description="يمكن لأي طالب التسجيل ومشاهدة المحتوى مجاناً."
+                class="flex items-center justify-between gap-4"
+              >
+                <USwitch v-model="form.isFree" />
               </UFormField>
-              <span class="text-xs text-slate-400 font-medium">سيتم تحصيل هذا المبلغ بالجنيه المصري عند اشتراك الطالب.</span>
+
+              <template v-if="!form.isFree">
+                <USeparator />
+                <UFormField label="سعر الدورة" required>
+                  <UInput v-model="form.price" type="number" placeholder="250" class="w-full sm:w-64">
+                    <template #trailing>
+                      <span class="text-xs text-muted">ج.م</span>
+                    </template>
+                  </UInput>
+                </UFormField>
+              </template>
+            </div>
+          </UPageCard>
+
+          <UPageCard
+            title="خيارات وإعدادات الدورة"
+            description="تخصيص مزايا الشهادات والتقييم وحالة النشر."
+            variant="subtle"
+            :ui="{ container: 'divide-y divide-default' }"
+          >
+            <UFormField
+              label="إصدار شهادة إتمام"
+              description="يحصل الطالب على شهادة معتمدة تلقائياً عند إتمام الدروس."
+              class="flex items-center justify-between gap-4 pb-4"
+            >
+              <USwitch v-model="form.issueCertificate" />
+            </UFormField>
+
+            <UFormField
+              label="السماح بتقييمات الطلاب"
+              description="إتاحة كتابة التقييمات والآراء للطلاب المسجلين."
+              class="flex items-center justify-between gap-4 py-4"
+            >
+              <USwitch v-model="form.allowReviews" />
+            </UFormField>
+
+            <UFormField
+              label="نشر الدورة للطلاب"
+              :description="form.isPublished ? 'الدورة منشورة حالياً وتظهر للطلاب.' : 'الدورة محفوظة كمسودة.'"
+              class="flex items-center justify-between gap-4 pt-4"
+            >
+              <USwitch v-model="form.isPublished" />
+            </UFormField>
+          </UPageCard>
+
+          <div class="flex items-center justify-between pt-2">
+            <div class="flex items-center gap-2">
+              <UButton color="neutral" variant="outline" icon="i-lucide-arrow-right" label="السابق: دروس الدورة" @click="prevStep" />
+              <UButton icon="i-lucide-save" :loading="isSaving" label="حفظ تعديلات الدورة" @click="saveChanges" />
             </div>
           </div>
-
-          <!-- Options Card -->
-          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col gap-5">
-            <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div class="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-sliders" class="w-5 h-5 shrink-0" />
-              </div>
-              <div>
-                <h2 class="m-0 text-lg font-bold text-slate-900 dark:text-white">
-                  خيارات وإعدادات الدورة
-                </h2>
-                <span class="text-xs text-slate-500 dark:text-slate-400">تخصيص مزايا الشهادات، التقييم، وحالة النشر</span>
-              </div>
-            </div>
-
-            <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
-              <!-- Issue Certificate -->
-              <div class="flex items-center justify-between gap-4 py-3.5 first:pt-0 last:pb-0">
-                <div class="flex flex-col gap-0.5 leading-snug">
-                  <span class="text-sm font-bold text-slate-800 dark:text-slate-200">إصدار شهادة إتمام</span>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">يحصل الطالب على شهادة معتمدة تلقائياً عند إتمام كافة دروس واختبارات الدورة</span>
-                </div>
-                <USwitch
-                  v-model="form.issueCertificate"
-                  color="primary"
-                  size="md"
-                  class="cursor-pointer shrink-0"
-                  aria-label="إصدار شهادة إتمام"
-                />
-              </div>
-
-              <!-- Allow Reviews -->
-              <div class="flex items-center justify-between gap-4 py-3.5 first:pt-0 last:pb-0">
-                <div class="flex flex-col gap-0.5 leading-snug">
-                  <span class="text-sm font-bold text-slate-800 dark:text-slate-200">السماح بتقييمات ومراجعات الطلاب</span>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">إتاحة كتابة التقييمات والآراء للطلاب المسجلين بالدورة</span>
-                </div>
-                <USwitch
-                  v-model="form.allowReviews"
-                  color="primary"
-                  size="md"
-                  class="cursor-pointer shrink-0"
-                  aria-label="السماح بالتقييمات"
-                />
-              </div>
-
-              <!-- Publish Status -->
-              <div class="flex items-center justify-between gap-4 py-3.5 first:pt-0 last:pb-0">
-                <div class="flex flex-col gap-0.5 leading-snug">
-                  <span class="text-sm font-bold text-slate-800 dark:text-slate-200">نشر الدورة للطلاب</span>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">
-                    {{ form.isPublished ? 'الدورة منشورة حالياً وتظهر للطلاب' : 'الدورة محفوظة كمسودة وغير معروضة للطلاب' }}
-                  </span>
-                </div>
-                <USwitch
-                  v-model="form.isPublished"
-                  color="primary"
-                  size="md"
-                  class="cursor-pointer shrink-0"
-                  aria-label="نشر الدورة"
-                />
-              </div>
-            </div>
-          </div>
-
-      <!-- Step 3 Footer Actions -->
-      <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-200 dark:border-slate-800">
-        <div class="flex items-center gap-3">
-          <UButton
-            color="neutral"
-            variant="outline"
-            size="lg"
-            icon="i-lucide-arrow-right"
-            class="font-bold rounded-xl px-5 cursor-pointer"
-            @click="prevStep"
-          >
-            السابق: دروس الدورة
-          </UButton>
-
-          <UButton
-            color="primary"
-            variant="solid"
-            size="lg"
-            icon="i-lucide-save"
-            class="font-bold rounded-xl px-7 cursor-pointer"
-            :loading="isSaving"
-            @click="saveChanges"
-          >
-            حفظ تعديلات الدورة
-          </UButton>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <UButton
-            to="/teacher-dashboard/courses"
-            color="neutral"
-            variant="ghost"
-            size="md"
-            class="font-bold rounded-xl px-4 cursor-pointer"
-          >
-            الرجوع لقائمة الدورات
-          </UButton>
         </div>
       </div>
-    </div>
-
-
-
-    </div>
-  </div>
+    </template>
+  </UDashboardPanel>
 </template>

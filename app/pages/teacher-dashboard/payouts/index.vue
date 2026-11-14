@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { h, resolveComponent } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+
 useHead({
   title: 'المدفوعات والمعاملات - لوحة التحكم'
 })
@@ -17,23 +20,22 @@ interface Transaction {
   statusLabel: string
 }
 
-// Stats state
+const UBadge = resolveComponent('UBadge')
+const UIcon = resolveComponent('UIcon')
+
 const currency = ref('ج.م')
 const totalAcademyEarnings = ref('48,250')
 const earningsGrowth = ref('+18.4%')
-const courseSalesEarnings = ref('41,200')
-const subscriptionEarnings = ref('7,050')
 const netAvailableProfit = ref('46,970')
-
 const totalUsageAmount = ref('1,280')
 const usageDueDate = ref('30 نوفمبر 2026')
+
 const usageItems = ref([
   { title: 'اشتراك المنصة (الباقة الاحترافية Pro)', amount: '450 ج.م', icon: 'i-lucide-sparkles' },
   { title: 'استهلاك التخزين وبث الفيديو (145 GB)', amount: '520 ج.م', icon: 'i-lucide-hard-drive' },
   { title: 'رسوم بوابات الدفع والمعاملات (1.5%)', amount: '310 ج.م', icon: 'i-lucide-credit-card' }
 ])
 
-// Transactions list
 const transactions = ref<Transaction[]>([
   {
     id: 'TXN-9842',
@@ -141,398 +143,256 @@ const transactions = ref<Transaction[]>([
   }
 ])
 
-// Filter & Search
 const searchQuery = ref('')
 const selectedType = ref<'all' | 'earning' | 'usage' | 'payout'>('all')
 
+const typeFilterTabs = computed(() => [
+  { label: `الكل (${transactions.value.length})`, value: 'all' },
+  { label: `الأرباح (${transactions.value.filter(t => t.type === 'earning').length})`, value: 'earning' },
+  { label: `الاستخدام (${transactions.value.filter(t => t.type === 'usage').length})`, value: 'usage' },
+  { label: `السحوبات (${transactions.value.filter(t => t.type === 'payout').length})`, value: 'payout' }
+])
+
 const filteredTransactions = computed(() => {
-  return transactions.value.filter(item => {
+  return transactions.value.filter((item) => {
     const matchesType = selectedType.value === 'all' || item.type === selectedType.value
-    const matchesQuery =
-      !searchQuery.value.trim() ||
-      item.id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      item.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      item.paymentMethod.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const q = searchQuery.value.trim().toLowerCase()
+    const matchesQuery = !q ||
+      item.id.toLowerCase().includes(q) ||
+      item.title.toLowerCase().includes(q) ||
+      item.description.toLowerCase().includes(q) ||
+      item.paymentMethod.toLowerCase().includes(q)
     return matchesType && matchesQuery
   })
 })
 
-const earningsCount = computed(() => transactions.value.filter(t => t.type === 'earning').length)
-const usageCount = computed(() => transactions.value.filter(t => t.type === 'usage').length)
-const payoutCount = computed(() => transactions.value.filter(t => t.type === 'payout').length)
+const columns: TableColumn<Transaction>[] = [
+  {
+    accessorKey: 'title',
+    header: 'المعاملة والبيان',
+    cell: ({ row }) => {
+      const item = row.original
+      return h('div', { class: 'flex items-center gap-3' }, [
+        h('div', {
+          class: [
+            'size-8 rounded-full flex items-center justify-center shrink-0',
+            item.type === 'earning' ? 'bg-success/10 text-success' : item.type === 'usage' ? 'bg-info/10 text-info' : 'bg-warning/10 text-warning'
+          ]
+        }, [
+          h(UIcon, {
+            name: item.type === 'earning' ? 'i-lucide-arrow-down-left' : item.type === 'usage' ? 'i-lucide-cpu' : 'i-lucide-arrow-up-right',
+            class: 'size-4'
+          })
+        ]),
+        h('div', { class: 'min-w-0' }, [
+          h('p', { class: 'font-medium text-highlighted truncate' }, item.title),
+          h('p', { class: 'text-xs text-muted truncate' }, `${item.id} • ${item.description}`)
+        ])
+      ])
+    }
+  },
+  {
+    accessorKey: 'typeLabel',
+    header: 'النوع',
+    cell: ({ row }) => {
+      const color = row.original.type === 'earning' ? 'success' : row.original.type === 'usage' ? 'info' : 'warning'
+      return h(UBadge, { color, variant: 'subtle' }, () => row.original.typeLabel)
+    }
+  },
+  {
+    accessorKey: 'date',
+    header: 'التاريخ',
+    cell: ({ row }) => h('span', { class: 'text-muted text-xs' }, row.original.date)
+  },
+  {
+    accessorKey: 'paymentMethod',
+    header: 'وسيلة الدفع',
+    cell: ({ row }) => h('span', { class: 'text-default text-xs' }, row.original.paymentMethod)
+  },
+  {
+    accessorKey: 'amount',
+    header: 'المبلغ',
+    cell: ({ row }) => h('span', {
+      class: ['font-semibold', row.original.isPositive ? 'text-success' : 'text-highlighted']
+    }, row.original.amount)
+  },
+  {
+    accessorKey: 'statusLabel',
+    header: () => h('div', { class: 'text-end' }, 'الحالة'),
+    cell: ({ row }) => {
+      const color = row.original.status === 'completed' ? 'success' : row.original.status === 'scheduled' ? 'warning' : 'neutral'
+      return h('div', { class: 'text-end' }, h(UBadge, { color, variant: 'subtle' }, () => row.original.statusLabel))
+    }
+  }
+]
 </script>
 
 <template>
-  <div class="flex flex-col min-h-full">
-    <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
-      <UButton
-        to="/teacher-dashboard/payouts/withdraw"
-        color="primary"
-        variant="solid"
-        size="md"
-        icon="i-lucide-arrow-up-right"
-        class="font-bold cursor-pointer"
-      >
-        سحب الأرباح
-      </UButton>
-      <UButton
-        to="/teacher-dashboard/payouts/methods"
-        variant="outline"
-        color="neutral"
-        size="md"
-        icon="i-lucide-credit-card"
-        class="font-bold cursor-pointer"
-      >
-        طرق الاستلام
-      </UButton>
-    </DashboardActionBar>
+  <UDashboardPanel id="teacher-payouts">
+    <template #header>
+      <UDashboardNavbar title="المدفوعات والمعاملات">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
 
-    <div class="p-6 md:p-10 flex flex-col gap-8 w-full box-border">
+        <template #right>
+          <UButton
+            to="/teacher-dashboard/payouts/methods"
+            variant="outline"
+            color="neutral"
+            icon="i-lucide-credit-card"
+            label="طرق الاستلام"
+          />
+          <UButton
+            to="/teacher-dashboard/payouts/withdraw"
+            icon="i-lucide-arrow-up-right"
+            label="سحب الأرباح"
+          />
+        </template>
+      </UDashboardNavbar>
 
-    <!-- Top 2 Cards: Total Academy Earnings & End of Month Usage Cost -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-      <!-- Card 1: Total Academy Earnings This Month -->
-      <UCard class="rounded-2xl border border-slate-200 shadow-sm bg-white flex flex-col justify-between overflow-hidden">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                <UIcon name="i-lucide-trending-up" class="w-6 h-6 shrink-0" />
-              </div>
-              <div class="flex flex-col">
-                <span class="text-sm font-bold text-slate-700">إجمالي أرباح الأكاديمية هذا الشهر</span>
-                <span class="text-xs text-slate-400">إجمالي إيرادات المبيعات والاشتراكات لشهر نوفمبر 2026</span>
-              </div>
-            </div>
-            <UBadge color="success" variant="subtle" size="sm" class="font-bold inline-flex items-center gap-1">
-              <UIcon name="i-lucide-arrow-up-right" class="w-3.5 h-3.5 shrink-0" />
-              <span>{{ earningsGrowth }}</span>
+      <UDashboardToolbar>
+        <template #left>
+          <UTabs
+            v-model="selectedType"
+            :items="typeFilterTabs"
+            :content="false"
+            size="xs"
+          />
+        </template>
+
+        <template #right>
+          <UInput
+            v-model="searchQuery"
+            icon="i-lucide-search"
+            placeholder="بحث برقم المعاملة أو البيان..."
+            size="sm"
+            class="w-64"
+          />
+        </template>
+      </UDashboardToolbar>
+    </template>
+
+    <template #body>
+      <!-- Connected 3 KPI Summary Cards matching template HomeStats -->
+      <UPageGrid class="lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-px">
+        <UPageCard
+          icon="i-lucide-trending-up"
+          title="إجمالي أرباح الأكاديمية"
+          variant="subtle"
+          :ui="{
+            container: 'gap-y-1.5',
+            wrapper: 'items-start',
+            leading: 'p-2.5 rounded-full bg-primary/10 ring ring-inset ring-primary/25 flex-col',
+            title: 'font-normal text-muted text-xs'
+          }"
+          class="lg:rounded-none first:rounded-s-lg last:rounded-e-lg hover:z-1"
+        >
+          <div class="flex items-center gap-2">
+            <span class="text-2xl font-semibold text-highlighted">
+              {{ totalAcademyEarnings }} {{ currency }}
+            </span>
+            <UBadge color="success" variant="subtle" class="text-xs">
+              {{ earningsGrowth }}
             </UBadge>
           </div>
-        </template>
+        </UPageCard>
 
-        <div class="flex flex-col gap-4 py-2">
-          <!-- Main Amount Display -->
-          <div class="flex items-baseline gap-2">
-            <span class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">{{ totalAcademyEarnings }}</span>
-            <span class="text-xl font-bold text-slate-500">{{ currency }}</span>
-          </div>
-
-          <!-- Breakdown pills -->
-          <div class="grid grid-cols-2 gap-3">
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
-              <span class="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-                <UIcon name="i-lucide-book-open" class="w-3.5 h-3.5 text-blue-500" />
-                مبيعات الدورات
-              </span>
-              <span class="text-base font-extrabold text-slate-900">{{ courseSalesEarnings }} {{ currency }}</span>
-            </div>
-
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1">
-              <span class="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-                <UIcon name="i-lucide-users" class="w-3.5 h-3.5 text-purple-500" />
-                اشتراكات الطلاب
-              </span>
-              <span class="text-base font-extrabold text-slate-900">{{ subscriptionEarnings }} {{ currency }}</span>
-            </div>
-          </div>
-
-          <!-- Net Available Info Banner -->
-          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 border border-emerald-100 text-emerald-900 text-xs sm:text-sm font-medium">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-wallet" class="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>صافي الرصيد المتاح للسحب حالياً:</span>
-            </div>
-            <span class="font-extrabold text-emerald-700 text-sm sm:text-base">{{ netAvailableProfit }} {{ currency }}</span>
-          </div>
-        </div>
-
-        <template #footer>
-          <div class="flex items-center gap-3 pt-1">
-            <UButton
-              to="/teacher-dashboard/payouts/withdraw"
-              color="primary"
-              variant="solid"
-              size="md"
-              icon="i-lucide-arrow-up-right"
-              class="font-bold flex-1 justify-center rounded-xl cursor-pointer"
-            >
-              سحب الأرباح الآن
-            </UButton>
-          </div>
-        </template>
-      </UCard>
-
-      <!-- Card 2: End-of-Month Platform Usage Cost -->
-      <UCard class="rounded-2xl border border-slate-200 shadow-sm bg-white flex flex-col justify-between overflow-hidden">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
-                <UIcon name="i-lucide-server" class="w-6 h-6 shrink-0" />
-              </div>
-              <div class="flex flex-col">
-                <span class="text-sm font-bold text-slate-700">المستحق سداده نهاية الشهر (تكلفة الاستخدام)</span>
-                <span class="text-xs text-slate-400">حساب استهلاك المنصة والخدمات السحابية لشهر نوفمبر</span>
-              </div>
-            </div>
-            <UBadge color="warning" variant="subtle" size="sm" class="font-bold inline-flex items-center gap-1">
-              <UIcon name="i-lucide-calendar-clock" class="w-3.5 h-3.5 shrink-0" />
-              <span>تستحق في {{ usageDueDate }}</span>
+        <UPageCard
+          icon="i-lucide-wallet"
+          title="صافي الرصيد المتاح للسحب"
+          to="/teacher-dashboard/payouts/withdraw"
+          variant="subtle"
+          :ui="{
+            container: 'gap-y-1.5',
+            wrapper: 'items-start',
+            leading: 'p-2.5 rounded-full bg-primary/10 ring ring-inset ring-primary/25 flex-col',
+            title: 'font-normal text-muted text-xs'
+          }"
+          class="lg:rounded-none first:rounded-s-lg last:rounded-e-lg hover:z-1"
+        >
+          <div class="flex items-center gap-2">
+            <span class="text-2xl font-semibold text-highlighted">
+              {{ netAvailableProfit }} {{ currency }}
+            </span>
+            <UBadge color="primary" variant="subtle" class="text-xs">
+              جاهز للسحب
             </UBadge>
           </div>
-        </template>
+        </UPageCard>
 
-        <div class="flex flex-col gap-4 py-2">
-          <!-- Main Amount Display -->
-          <div class="flex items-baseline gap-2">
-            <span class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">{{ totalUsageAmount }}</span>
-            <span class="text-xl font-bold text-slate-500">{{ currency }}</span>
+        <UPageCard
+          icon="i-lucide-server"
+          title="تكلفة الاستخدام المستحقة"
+          to="/teacher-dashboard/settings/subscription"
+          variant="subtle"
+          :ui="{
+            container: 'gap-y-1.5',
+            wrapper: 'items-start',
+            leading: 'p-2.5 rounded-full bg-primary/10 ring ring-inset ring-primary/25 flex-col',
+            title: 'font-normal text-muted text-xs'
+          }"
+          class="lg:rounded-none first:rounded-s-lg last:rounded-e-lg hover:z-1"
+        >
+          <div class="flex items-center gap-2">
+            <span class="text-2xl font-semibold text-highlighted">
+              {{ totalUsageAmount }} {{ currency }}
+            </span>
+            <UBadge color="warning" variant="subtle" class="text-xs">
+              {{ usageDueDate }}
+            </UBadge>
           </div>
+        </UPageCard>
+      </UPageGrid>
 
-          <!-- Usage Breakdown List -->
-          <div class="flex flex-col gap-2">
-            <div
-              v-for="(item, idx) in usageItems"
-              :key="idx"
-              class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs sm:text-sm"
-            >
-              <div class="flex items-center gap-2 text-slate-700 font-medium">
-                <UIcon :name="item.icon" class="w-4 h-4 text-indigo-500 shrink-0" />
-                <span>{{ item.title }}</span>
-              </div>
-              <span class="font-bold text-slate-900">{{ item.amount }}</span>
+      <!-- Usage Cost Breakdown -->
+      <UCard>
+        <template #header>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p class="font-semibold text-highlighted text-sm">تفاصيل تكلفة الاستخدام الشهرية</p>
+              <p class="text-xs text-muted">تُخصم تلقائياً من الرصيد في {{ usageDueDate }}</p>
             </div>
-          </div>
-
-          <!-- Usage Deduction Notice -->
-          <div class="flex items-center gap-2 p-2.5 rounded-xl bg-indigo-50/60 border border-indigo-100 text-indigo-900 text-xs font-medium">
-            <UIcon name="i-lucide-info" class="w-4 h-4 text-indigo-600 shrink-0" />
-            <span>يتم خصم مستحقات الاستخدام تلقائياً من محفظة أرباحك في 30 من الشهر الجاري.</span>
-          </div>
-        </div>
-
-        <template #footer>
-          <div class="flex items-center gap-3 pt-1">
             <UButton
               to="/teacher-dashboard/settings/subscription"
-              variant="outline"
+              variant="ghost"
               color="neutral"
-              size="md"
+              size="xs"
               icon="i-lucide-sliders"
-              class="font-bold flex-1 justify-center rounded-xl cursor-pointer"
-            >
-              إدارة باقة الاشتراك والاستهلاك
-            </UButton>
+              label="إدارة الباقة"
+            />
           </div>
         </template>
-      </UCard>
-    </div>
 
-    <!-- Transactions Table Section -->
-    <UCard class="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden p-0">
-      <template #header>
-        <div class="flex flex-col gap-4">
-          <!-- Section Title & Meta -->
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-receipt" class="w-5 h-5 shrink-0" />
-              </div>
-              <div class="flex flex-col">
-                <h2 class="m-0 text-lg sm:text-xl font-bold text-slate-900">جدول المعاملات المالية</h2>
-                <span class="text-xs sm:text-sm text-slate-500">
-                  سجل تفصيلي لجميع المبيعات والأرباح، استقطاعات الاستخدام الشهرية، وعمليات السحب.
-                </span>
-              </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div
+            v-for="(item, idx) in usageItems"
+            :key="idx"
+            class="flex items-center justify-between p-3 rounded-lg bg-elevated/50 border border-default text-xs"
+          >
+            <div class="flex items-center gap-2 text-default min-w-0">
+              <UIcon :name="item.icon" class="size-4 text-primary shrink-0" />
+              <span class="truncate">{{ item.title }}</span>
             </div>
-
-            <UBadge color="neutral" variant="subtle" size="sm" class="font-bold">
-              {{ filteredTransactions.length }} من {{ transactions.length }} معاملة
-            </UBadge>
-          </div>
-
-          <!-- Search and Filter Toolbar -->
-          <div class="flex flex-col md:flex-row items-center justify-between gap-3 pt-2 border-t border-slate-100">
-            <!-- Search Input -->
-            <div class="w-full md:w-80">
-              <UInput
-                v-model="searchQuery"
-                icon="i-lucide-search"
-                placeholder="بحث برقم المعاملة، البيان، وسيلة الدفع..."
-                size="md"
-                class="w-full"
-              />
-            </div>
-
-            <!-- Filter Buttons -->
-            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <UButton
-                :variant="selectedType === 'all' ? 'solid' : 'ghost'"
-                :color="selectedType === 'all' ? 'primary' : 'neutral'"
-                size="sm"
-                class="rounded-xl font-bold cursor-pointer"
-                @click="selectedType = 'all'"
-              >
-                الكل ({{ transactions.length }})
-              </UButton>
-              <UButton
-                :variant="selectedType === 'earning' ? 'solid' : 'ghost'"
-                :color="selectedType === 'earning' ? 'primary' : 'neutral'"
-                size="sm"
-                class="rounded-xl font-bold cursor-pointer"
-                @click="selectedType = 'earning'"
-              >
-                أرباح الأكاديمية ({{ earningsCount }})
-              </UButton>
-              <UButton
-                :variant="selectedType === 'usage' ? 'solid' : 'ghost'"
-                :color="selectedType === 'usage' ? 'primary' : 'neutral'"
-                size="sm"
-                class="rounded-xl font-bold cursor-pointer"
-                @click="selectedType = 'usage'"
-              >
-                تكاليف الاستخدام ({{ usageCount }})
-              </UButton>
-              <UButton
-                :variant="selectedType === 'payout' ? 'solid' : 'ghost'"
-                :color="selectedType === 'payout' ? 'primary' : 'neutral'"
-                size="sm"
-                class="rounded-xl font-bold cursor-pointer"
-                @click="selectedType = 'payout'"
-              >
-                سحب الأرباح ({{ payoutCount }})
-              </UButton>
-            </div>
+            <span class="font-semibold text-highlighted shrink-0 ms-2">{{ item.amount }}</span>
           </div>
         </div>
-      </template>
+      </UCard>
 
-      <!-- Table Body -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-start border-collapse">
-          <thead>
-            <tr class="bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-500">
-              <th class="py-3.5 px-6 text-start">المعاملة والبيان</th>
-              <th class="py-3.5 px-6 text-start">النوع</th>
-              <th class="py-3.5 px-6 text-start">التاريخ والوقت</th>
-              <th class="py-3.5 px-6 text-start">طريقة الدفع / التحصيل</th>
-              <th class="py-3.5 px-6 text-start">المبلغ</th>
-              <th class="py-3.5 px-6 text-end">الحالة</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr
-              v-for="item in filteredTransactions"
-              :key="item.id"
-              class="hover:bg-slate-50/70 transition-colors"
-            >
-              <!-- Transaction Details -->
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    :class="{
-                      'bg-emerald-50 text-emerald-600': item.type === 'earning',
-                      'bg-indigo-50 text-indigo-600': item.type === 'usage',
-                      'bg-amber-50 text-amber-600': item.type === 'payout'
-                    }"
-                  >
-                    <UIcon
-                      :name="item.type === 'earning' ? 'i-lucide-arrow-down-left' : (item.type === 'usage' ? 'i-lucide-cpu' : 'i-lucide-arrow-up-right')"
-                      class="w-5 h-5 shrink-0"
-                    />
-                  </div>
-                  <div class="flex flex-col">
-                    <span class="font-bold text-slate-900">{{ item.title }}</span>
-                    <span class="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                      <span class="font-mono text-slate-500 font-medium">{{ item.id }}</span>
-                      <span>•</span>
-                      <span>{{ item.description }}</span>
-                    </span>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Type Badge -->
-              <td class="py-4 px-6">
-                <UBadge
-                  :color="item.type === 'earning' ? 'success' : (item.type === 'usage' ? 'info' : 'warning')"
-                  variant="subtle"
-                  size="sm"
-                  class="font-bold"
-                >
-                  {{ item.typeLabel }}
-                </UBadge>
-              </td>
-
-              <!-- Date -->
-              <td class="py-4 px-6 text-slate-600">
-                <div class="flex items-center gap-1.5 text-xs">
-                  <UIcon name="i-lucide-calendar" class="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>{{ item.date }}</span>
-                </div>
-              </td>
-
-              <!-- Payment Method -->
-              <td class="py-4 px-6 text-slate-700 text-xs font-medium">
-                <div class="flex items-center gap-1.5">
-                  <UIcon name="i-lucide-credit-card" class="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>{{ item.paymentMethod }}</span>
-                </div>
-              </td>
-
-              <!-- Amount -->
-              <td class="py-4 px-6">
-                <span
-                  class="font-extrabold text-base"
-                  :class="item.isPositive ? 'text-emerald-600' : (item.type === 'usage' ? 'text-indigo-700' : 'text-slate-800')"
-                >
-                  {{ item.amount }}
-                </span>
-              </td>
-
-              <!-- Status -->
-              <td class="py-4 px-6 text-end">
-                <UBadge
-                  :color="item.status === 'completed' ? 'success' : (item.status === 'scheduled' ? 'warning' : 'neutral')"
-                  variant="subtle"
-                  size="sm"
-                  class="font-bold inline-flex items-center gap-1"
-                >
-                  <UIcon
-                    :name="item.status === 'completed' ? 'i-lucide-check-circle-2' : 'i-lucide-clock'"
-                    class="w-3.5 h-3.5 shrink-0"
-                  />
-                  <span>{{ item.statusLabel }}</span>
-                </UBadge>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        v-if="filteredTransactions.length === 0"
-        class="text-center py-12 p-6 flex flex-col items-center justify-center gap-2"
-      >
-        <UIcon name="i-lucide-receipt" class="w-10 h-10 text-slate-300" />
-        <p class="text-sm font-bold text-slate-700">لم يتم العثور على أي معاملات</p>
-        <p class="text-xs text-slate-400">جرب البحث بكلمات أخرى أو اختر تصنيفاً مختلفاً من القائمة.</p>
-        <UButton
-          size="xs"
-          variant="outline"
-          color="neutral"
-          class="mt-2 font-bold cursor-pointer"
-          @click="searchQuery = ''; selectedType = 'all'"
-        >
-          إعادة ضبط الفلاتر
-        </UButton>
-      </div>
-    </UCard>
-    </div>
-  </div>
+      <!-- Transactions Table -->
+      <UTable
+        :data="filteredTransactions"
+        :columns="columns"
+        empty="لم يتم العثور على أي معاملات مطابقة للبحث."
+        class="shrink-0"
+        :ui="{
+          base: 'table-fixed border-separate border-spacing-0',
+          thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+          tbody: '[&>tr]:last:[&>td]:border-b-0',
+          th: 'first:rounded-s-lg last:rounded-e-lg border-y border-default first:border-s last:border-e',
+          td: 'border-b border-default'
+        }"
+      />
+    </template>
+  </UDashboardPanel>
 </template>

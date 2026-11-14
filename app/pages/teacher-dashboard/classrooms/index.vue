@@ -639,96 +639,88 @@ async function handleRestoreEgyptStages() {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-full">
-    <!-- Sub-navbar Action Bar -->
-    <DashboardActionBar max-width="max-w-none" container-class="px-6 md:px-10">
-      <UButton
-        color="primary"
-        variant="solid"
-        size="md"
-        icon="i-lucide-plus"
-        class="font-bold rounded-xl cursor-pointer shadow-sm shadow-blue-500/20"
-        @click="openAddGradeModal()"
-      >
-        إضافة فصل دراسي
-      </UButton>
+  <UDashboardPanel id="teacher-classrooms">
+    <template #header>
+      <UDashboardNavbar title="المراحل والصفوف الدراسية">
+        <template #leading>
+          <UDashboardSidebarCollapse />
+        </template>
 
-      <UButton
-        color="neutral"
-        variant="outline"
-        size="md"
-        icon="i-lucide-folder-plus"
-        class="font-bold rounded-xl cursor-pointer"
-        @click="openAddStageModal"
-      >
-        إضافة مرحلة دراسية
-      </UButton>
-
-      <template #end>
-        <UButton
-          to="/teacher-dashboard/courses"
-          color="neutral"
-          variant="ghost"
-          size="md"
-          icon="i-lucide-book-open"
-          class="font-bold rounded-xl cursor-pointer"
-        >
-          عرض الدورات
-        </UButton>
-      </template>
-    </DashboardActionBar>
-
-    <div class="p-6 md:p-10 flex flex-col gap-6 w-full box-border">
-      <!-- Search & Stage Filter Toolbar -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col gap-3.5">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div class="w-full md:w-80">
-            <UInput
-              v-model="searchQuery"
-              icon="i-lucide-search"
-              placeholder="ابحث عن مرحلة أو صف دراسي..."
-              size="md"
-              class="w-full"
-            />
-          </div>
-
-          <div class="flex items-center gap-2 flex-wrap">
-            <UBadge color="primary" variant="subtle" size="md" class="font-bold px-3 py-1">
+        <template #trailing>
+          <div class="hidden sm:flex items-center gap-1.5">
+            <UBadge color="primary" variant="subtle" size="sm">
               {{ formatStagesCount(stages.length) }}
             </UBadge>
-            <UBadge color="neutral" variant="subtle" size="md" class="font-bold px-3 py-1">
+            <UBadge color="neutral" variant="subtle" size="sm">
               {{ formatGradesCount(classrooms.length) }}
             </UBadge>
           </div>
-        </div>
+        </template>
 
-        <!-- Stage Filter Pills -->
-        <div v-if="stages.length > 0" class="flex items-center gap-2 flex-wrap pt-3 border-t border-slate-100">
-          <span class="text-xs font-bold text-slate-500 me-1">تصفية حسب المرحلة:</span>
+        <template #right>
           <UButton
-            size="xs"
-            :color="selectedStageFilter === 'all' ? 'primary' : 'neutral'"
-            :variant="selectedStageFilter === 'all' ? 'solid' : 'subtle'"
-            class="rounded-lg font-bold cursor-pointer"
-            @click="selectedStageFilter = 'all'"
-          >
-            كل المراحل
-          </UButton>
+            to="/teacher-dashboard/courses"
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-book-open"
+            label="عرض الدورات"
+            class="hidden sm:inline-flex"
+          />
           <UButton
-            v-for="stage in stages"
-            :key="stage.id"
-            size="xs"
-            :color="selectedStageFilter === stage.id ? 'primary' : 'neutral'"
-            :variant="selectedStageFilter === stage.id ? 'solid' : 'subtle'"
-            class="rounded-lg font-bold cursor-pointer gap-1.5"
-            @click="selectedStageFilter = stage.id"
-          >
-            <span class="w-2 h-2 rounded-full shrink-0" :class="stage.colorClass" />
-            <span>{{ stage.name }}</span>
-            <span class="opacity-70">({{ getStageGrades(stage.id).length }})</span>
-          </UButton>
-        </div>
-      </div>
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-folder-plus"
+            label="إضافة مرحلة"
+            @click="openAddStageModal"
+          />
+          <UButton
+            icon="i-lucide-plus"
+            label="إضافة صف"
+            @click="openAddGradeModal()"
+          />
+        </template>
+      </UDashboardNavbar>
+
+      <UDashboardToolbar>
+        <template #left>
+          <div v-if="stages.length > 0" class="flex items-center gap-1.5 flex-wrap">
+            <UButton
+              size="xs"
+              :color="selectedStageFilter === 'all' ? 'primary' : 'neutral'"
+              :variant="selectedStageFilter === 'all' ? 'solid' : 'ghost'"
+              label="كل المراحل"
+              @click="selectedStageFilter = 'all'"
+            />
+            <UButton
+              v-for="stage in stages"
+              :key="stage.id"
+              size="xs"
+              :color="selectedStageFilter === stage.id ? 'primary' : 'neutral'"
+              :variant="selectedStageFilter === stage.id ? 'solid' : 'ghost'"
+              class="gap-1.5"
+              @click="selectedStageFilter = stage.id"
+            >
+              <span class="size-2 rounded-full shrink-0" :class="stage.colorClass" />
+              <span>{{ stage.name }}</span>
+              <span class="opacity-70">({{ getStageGrades(stage.id).length }})</span>
+            </UButton>
+          </div>
+        </template>
+
+        <template #right>
+          <UInput
+            v-model="searchQuery"
+            icon="i-lucide-search"
+            placeholder="ابحث عن مرحلة أو صف..."
+            size="sm"
+            class="w-56 sm:w-64"
+          />
+        </template>
+      </UDashboardToolbar>
+    </template>
+
+    <template #body>
+      <div class="flex flex-col gap-5 w-full">
 
       <!-- Loading Skeleton -->
       <div v-if="isLoading && !hasLoaded" class="flex flex-col gap-5">
@@ -1494,6 +1486,7 @@ async function handleRestoreEgyptStages() {
           </div>
         </template>
       </UModal>
-    </div>
-  </div>
+      </div>
+    </template>
+  </UDashboardPanel>
 </template>

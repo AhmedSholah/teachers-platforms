@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import { h, resolveComponent } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+
 useHead({
   title: 'اشتراك المنصة - الإعدادات'
 })
 
-// Current Plan details
+const UBadge = resolveComponent('UBadge')
+const UButton = resolveComponent('UButton')
+
 const currentPlan = {
   name: 'الباقة الاحترافية (Pro)',
   price: '49$',
@@ -17,7 +22,6 @@ const currentPlan = {
   studentsCount: 348
 }
 
-// Available Plans
 const plans = [
   {
     id: 'starter',
@@ -25,14 +29,13 @@ const plans = [
     icon: 'i-lucide-zap',
     price: '19$',
     period: '/ شهرياً',
-    description: 'مثالية للمدرسين في بداية انطلاقهم وتقديم أول دوراتهم.',
+    description: 'مثالية للمدرسين في بداية انطلاقهم.',
     isCurrent: false,
     features: [
       'حتى 3 دورات تدريبية',
       'حتى 100 طالب نشط',
       'مساحة تخزين 20 جيجابايت',
-      'عمولة مبيعات 7%',
-      'دعم فني عبر البريد الإلكتروني'
+      'عمولة مبيعات 7%'
     ]
   },
   {
@@ -41,17 +44,14 @@ const plans = [
     icon: 'i-lucide-sparkles',
     price: '49$',
     period: '/ شهرياً',
-    description: 'الخيار الأفضل للنمو والتوسع مع نطاق مخصص وميزات متقدمة.',
+    description: 'الخيار الأفضل للنمو والتوسع مع نطاق مخصص.',
     isCurrent: true,
     popular: true,
     features: [
-      'دورات تدريبية غير محدودة',
-      'عدد طلاب غير محدود',
+      'دورات وطلاب غير محدودين',
       'مساحة تخزين 100 جيجابايت',
-      'ربط نطاق خاص (دومين مخصص)',
-      'عمولة مبيعات مخفّضة 3%',
-      'شهادات إتمام مخصصة',
-      'دعم فني بأولوية عبر الدردشة المباشرة'
+      'ربط نطاق خاص (Custom Domain)',
+      'عمولة مبيعات مخفّضة 3%'
     ]
   },
   {
@@ -60,272 +60,184 @@ const plans = [
     icon: 'i-lucide-crown',
     price: '129$',
     period: '/ شهرياً',
-    description: 'حلول متكاملة للمراكز التعليمية والأكاديميات الكبرى.',
+    description: 'حلول متكاملة للمراكز والأكاديميات الكبرى.',
     isCurrent: false,
     features: [
       'جميع ميزات الباقة الاحترافية',
       'مساحة تخزين 500 جيجابايت',
       'عمولة مبيعات 0%',
-      'حسابات متعددة للمدرسين والمساعدين',
-      'تطبيق جوال خاص بالأكاديمية (اختياري)',
-      'مدير حساب خاص ودعم مخصص على مدار الساعة'
+      'حسابات متعددة للمدرسين'
     ]
   }
 ]
 
-// Billing History
-const invoices = [
+interface Invoice {
+  id: string
+  date: string
+  amount: string
+  status: string
+}
+
+const invoices: Invoice[] = [
   { id: 'INV-2026-003', date: '15 أكتوبر 2026', amount: '49.00$', status: 'مدفوعة' },
   { id: 'INV-2026-002', date: '15 سبتمبر 2026', amount: '49.00$', status: 'مدفوعة' },
   { id: 'INV-2026-001', date: '15 أغسطس 2026', amount: '49.00$', status: 'مدفوعة' }
 ]
+
+const invoiceColumns: TableColumn<Invoice>[] = [
+  {
+    accessorKey: 'id',
+    header: 'رقم الفاتورة',
+    cell: ({ row }) => h('span', { class: 'font-mono font-medium text-highlighted' }, row.getValue('id'))
+  },
+  {
+    accessorKey: 'date',
+    header: 'التاريخ',
+    cell: ({ row }) => h('span', { class: 'text-muted' }, row.getValue('date'))
+  },
+  {
+    accessorKey: 'amount',
+    header: 'المبلغ',
+    cell: ({ row }) => h('span', { class: 'font-medium text-highlighted' }, row.getValue('amount'))
+  },
+  {
+    accessorKey: 'status',
+    header: 'الحالة',
+    cell: ({ row }) => h(UBadge, { color: 'success', variant: 'subtle' }, () => row.getValue('status'))
+  },
+  {
+    id: 'actions',
+    header: () => h('div', { class: 'text-end' }, 'الإجراء'),
+    cell: () => h('div', { class: 'text-end' }, h(UButton, {
+      variant: 'ghost',
+      color: 'neutral',
+      size: 'xs',
+      icon: 'i-lucide-download',
+      label: 'تحميل'
+    }))
+  }
+]
 </script>
 
 <template>
-  <div class="flex flex-col min-h-full">
-    <div class="h-14 shrink-0" aria-hidden="true" />
-    <div class="flex flex-col gap-8 p-6 md:p-10 box-border w-full">
-    <!-- Current Subscription Card -->
-    <UCard class="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
+  <div class="flex flex-col gap-6">
+    <UPageCard
+      :title="currentPlan.name"
+      :description="`تتجدد تلقائياً في ${currentPlan.renewalDate}`"
+      variant="subtle"
+    >
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <UIcon name="i-lucide-credit-card" class="w-6 h-6 shrink-0" />
-            </div>
-            <div class="flex flex-col">
-              <div class="flex items-center gap-2.5">
-                <h2 class="m-0 text-xl font-bold text-slate-900">{{ currentPlan.name }}</h2>
-                <UBadge color="success" variant="subtle" size="sm" class="font-bold">
-                  {{ currentPlan.status }}
-                </UBadge>
-              </div>
-              <span class="text-sm text-slate-500">تتجدد تلقائياً في {{ currentPlan.renewalDate }}</span>
-            </div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-lg font-semibold text-highlighted">{{ currentPlan.name }}</span>
+            <UBadge color="success" variant="subtle">{{ currentPlan.status }}</UBadge>
           </div>
-
           <div class="flex items-baseline gap-1">
-            <span class="text-3xl font-extrabold text-slate-900">{{ currentPlan.price }}</span>
-            <span class="text-sm text-slate-500">/ {{ currentPlan.cycle }}</span>
+            <span class="text-2xl font-bold text-highlighted">{{ currentPlan.price }}</span>
+            <span class="text-xs text-muted">/ {{ currentPlan.cycle }}</span>
           </div>
         </div>
       </template>
 
-      <!-- Usage and Limits Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 py-2">
-        <div class="flex flex-col gap-2 p-4 rounded-xl bg-slate-50 border border-slate-100">
-          <div class="flex items-center justify-between text-sm">
-            <span class="flex items-center gap-1.5 text-slate-700 font-bold">
-              <UIcon name="i-lucide-hard-drive" class="w-4 h-4 text-slate-400 shrink-0" />
-              مساحة التخزين المستهلكة
-            </span>
-            <span class="font-extrabold text-slate-900">{{ currentPlan.storageUsed }} / {{ currentPlan.storageLimit }} جيجابايت</span>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-3.5 rounded-lg bg-default border border-default flex flex-col gap-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-muted">التخزين</span>
+            <span class="font-semibold text-highlighted">{{ currentPlan.storageUsed }} / {{ currentPlan.storageLimit }} GB</span>
           </div>
-          <UProgress :model-value="45" color="primary" size="sm" />
-          <span class="text-xs text-slate-400">متبقي 55 جيجابايت من السعة المتاحة</span>
+          <UProgress :model-value="45" size="sm" />
         </div>
 
-        <div class="flex flex-col gap-2 p-4 rounded-xl bg-slate-50 border border-slate-100">
-          <div class="flex items-center justify-between text-sm">
-            <span class="flex items-center gap-1.5 text-slate-700 font-bold">
-              <UIcon name="i-lucide-book-open" class="w-4 h-4 text-blue-500 shrink-0" />
-              الدورات المنشورة
-            </span>
-            <span class="font-extrabold text-blue-600">{{ currentPlan.coursesCount }} دورة ({{ currentPlan.coursesLimit }})</span>
+        <div class="p-3.5 rounded-lg bg-default border border-default flex flex-col gap-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-muted">الدورات</span>
+            <span class="font-semibold text-highlighted">{{ currentPlan.coursesCount }} ({{ currentPlan.coursesLimit }})</span>
           </div>
           <UProgress :model-value="100" color="success" size="sm" />
-          <span class="text-xs text-slate-400">يمكنك إنشاء عدد غير محدود من الدورات</span>
         </div>
 
-        <div class="flex flex-col gap-2 p-4 rounded-xl bg-slate-50 border border-slate-100">
-          <div class="flex items-center justify-between text-sm">
-            <span class="flex items-center gap-1.5 text-slate-700 font-bold">
-              <UIcon name="i-lucide-users" class="w-4 h-4 text-emerald-500 shrink-0" />
-              الطلاب المسجلين
-            </span>
-            <span class="font-extrabold text-slate-900">{{ currentPlan.studentsCount }} طالب</span>
+        <div class="p-3.5 rounded-lg bg-default border border-default flex flex-col gap-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-muted">الطلاب</span>
+            <span class="font-semibold text-highlighted">{{ currentPlan.studentsCount }} طالب</span>
           </div>
           <UProgress :model-value="100" color="success" size="sm" />
-          <span class="text-xs text-slate-400">استيعاب مفتوح بدون حدود لعدد الطلاب</span>
         </div>
       </div>
 
       <template #footer>
-        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
-          <div class="flex flex-wrap items-center gap-3">
-            <UButton 
-              color="primary" 
-              size="md" 
-              icon="i-lucide-sparkles"
-              class="font-bold cursor-pointer"
-            >
-              ترقية الباقة
-            </UButton>
-            <UButton 
-              variant="outline" 
-              color="neutral" 
-              size="md" 
-              icon="i-lucide-credit-card"
-              class="font-bold cursor-pointer"
-            >
-              إدارة بطاقة الدفع
-            </UButton>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <UButton icon="i-lucide-sparkles" label="ترقية الباقة" />
+            <UButton color="neutral" variant="outline" icon="i-lucide-credit-card" label="بطاقة الدفع" />
           </div>
-          <UButton 
-            variant="ghost" 
-            color="error" 
-            size="sm" 
-            icon="i-lucide-x"
-            class="font-bold cursor-pointer"
-          >
-            إلغاء الاشتراك
-          </UButton>
+          <UButton color="error" variant="ghost" size="sm" label="إلغاء الاشتراك" />
         </div>
       </template>
-    </UCard>
+    </UPageCard>
 
-    <!-- Available Plans Section -->
-    <div class="flex flex-col gap-5">
-      <div class="flex flex-col gap-1">
-        <h2 class="m-0 text-xl font-bold text-slate-900">باقات الاشتراك المتاحة</h2>
-        <span class="text-sm text-slate-500">اختر الخطة المناسبة لحجم ونمو أكاديميتك التعليمية.</span>
-      </div>
+    <div>
+      <UPageCard
+        title="الباقات المتاحة"
+        description="اختر الخطة المناسبة لحجم ونمو أكاديميتك."
+        variant="naked"
+        class="mb-4"
+      />
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        <UCard 
-          v-for="plan in plans" 
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <UPageCard
+          v-for="plan in plans"
           :key="plan.id"
-          class="rounded-2xl border transition-all duration-200 flex flex-col justify-between"
-          :class="plan.popular ? 'border-blue-500 ring-2 ring-blue-500/20 bg-white' : 'border-slate-200 bg-white'"
+          :title="plan.name"
+          :description="plan.description"
+          :icon="plan.icon"
+          :highlight="plan.popular"
+          variant="subtle"
         >
-          <template #header>
-            <div class="flex flex-col gap-3">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div 
-                    class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                    :class="plan.popular ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'"
-                  >
-                    <UIcon :name="plan.icon" class="w-4 h-4 shrink-0" />
-                  </div>
-                  <span class="text-lg font-bold text-slate-900">{{ plan.name }}</span>
-                </div>
-                <UBadge v-if="plan.popular" color="primary" variant="solid" size="xs" class="font-bold">
-                  الأكثر شيوعاً
-                </UBadge>
-                <UBadge v-else-if="plan.isCurrent" color="neutral" variant="subtle" size="xs" class="font-bold">
-                  باقتك الحالية
-                </UBadge>
-              </div>
-              <p class="text-sm text-slate-500 leading-relaxed min-h-[40px]">{{ plan.description }}</p>
-              <div class="flex items-baseline gap-1 pt-2">
-                <span class="text-3xl font-extrabold text-slate-900">{{ plan.price }}</span>
-                <span class="text-sm text-slate-500">{{ plan.period }}</span>
-              </div>
-            </div>
-          </template>
+          <div class="flex items-baseline gap-1 my-2">
+            <span class="text-2xl font-bold text-highlighted">{{ plan.price }}</span>
+            <span class="text-xs text-muted">{{ plan.period }}</span>
+          </div>
 
-          <!-- Plan Features -->
-          <ul class="flex flex-col gap-3 p-0 m-0 list-none my-4">
-            <li 
-              v-for="(feature, fIdx) in plan.features" 
-              :key="fIdx"
-              class="flex items-center gap-2.5 text-sm text-slate-700"
-            >
-              <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-check" class="w-3.5 h-3.5 shrink-0" />
-              </div>
-              <span>{{ feature }}</span>
+          <ul class="flex flex-col gap-2 text-xs text-default">
+            <li v-for="(feat, i) in plan.features" :key="i" class="flex items-center gap-2">
+              <UIcon name="i-lucide-check" class="size-3.5 text-primary shrink-0" />
+              <span>{{ feat }}</span>
             </li>
           </ul>
 
           <template #footer>
-            <div class="pt-2">
-              <UButton 
-                v-if="plan.isCurrent"
-                disabled
-                variant="subtle"
-                color="neutral"
-                block
-                size="md"
-                icon="i-lucide-check-circle"
-                class="font-bold w-full justify-center"
-              >
-                باقتك الحالية
-              </UButton>
-              <UButton 
-                v-else-if="plan.popular"
-                color="primary"
-                block
-                size="md"
-                icon="i-lucide-sparkles"
-                class="font-bold w-full justify-center cursor-pointer"
-              >
-                الترقية لهذه الباقة
-              </UButton>
-              <UButton 
-                v-else
-                variant="outline"
-                color="neutral"
-                block
-                size="md"
-                icon="i-lucide-arrow-left"
-                class="font-bold w-full justify-center cursor-pointer"
-              >
-                اختيار هذه الباقة
-              </UButton>
-            </div>
+            <UButton
+              :disabled="plan.isCurrent"
+              :variant="plan.isCurrent ? 'subtle' : plan.popular ? 'solid' : 'outline'"
+              :color="plan.isCurrent ? 'neutral' : plan.popular ? 'primary' : 'neutral'"
+              block
+              :label="plan.isCurrent ? 'باقتك الحالية' : 'اختيار الباقة'"
+            />
           </template>
-        </UCard>
+        </UPageCard>
       </div>
     </div>
 
-    <!-- Invoices & Billing History -->
-    <div class="flex flex-col gap-4">
-      <div class="flex flex-col gap-1">
-        <h2 class="m-0 text-xl font-bold text-slate-900">سجل الفواتير والمدفوعات</h2>
-        <span class="text-sm text-slate-500">استعراض وتحميل فواتير الاشتراك الشهرية السابقة.</span>
-      </div>
+    <div>
+      <UPageCard
+        title="سجل الفواتير"
+        description="استعراض وتحميل فواتير الاشتراك السابقة."
+        variant="naked"
+        class="mb-4"
+      />
 
-      <UCard class="rounded-2xl border border-slate-200 bg-white overflow-hidden p-0">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-right border-collapse">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
-                <th class="py-3 px-6 text-start">رقم الفاتورة</th>
-                <th class="py-3 px-6 text-start">التاريخ</th>
-                <th class="py-3 px-6 text-start">المبلغ</th>
-                <th class="py-3 px-6 text-start">الحالة</th>
-                <th class="py-3 px-6 text-end">الإجراء</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="inv in invoices" :key="inv.id" class="hover:bg-slate-50/70 transition-colors">
-                <td class="py-4 px-6 font-mono font-bold text-slate-800">{{ inv.id }}</td>
-                <td class="py-4 px-6 text-slate-600">{{ inv.date }}</td>
-                <td class="py-4 px-6 font-extrabold text-slate-900">{{ inv.amount }}</td>
-                <td class="py-4 px-6">
-                  <UBadge color="success" variant="subtle" size="sm" class="font-bold">
-                    {{ inv.status }}
-                  </UBadge>
-                </td>
-                <td class="py-4 px-6 text-end">
-                  <UButton 
-                    variant="ghost" 
-                    color="primary" 
-                    size="sm" 
-                    icon="i-lucide-download"
-                    class="font-bold cursor-pointer"
-                  >
-                    تحميل الفاتورة
-                  </UButton>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </UCard>
-    </div>
+      <UTable
+        :data="invoices"
+        :columns="invoiceColumns"
+        :ui="{
+          base: 'table-fixed border-separate border-spacing-0',
+          thead: '[&>tr]:bg-elevated/50 [&>tr]:after:content-none',
+          tbody: '[&>tr]:last:[&>td]:border-b-0',
+          th: 'first:rounded-s-lg last:rounded-e-lg border-y border-default first:border-s last:border-e',
+          td: 'border-b border-default'
+        }"
+      />
     </div>
   </div>
 </template>
